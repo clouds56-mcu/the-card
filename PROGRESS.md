@@ -4,9 +4,9 @@
 
 ## Status
 
-🟢 **Schematic captured in code — validated (0 ERC errors, 53 parts). The 3 VERIFY
-   items are resolved against datasheets (DW01A, ST25DV04KC, GDEY029T94).** Ready
-   for PCB layout once KiCad is installed.
+🟢 **Schematic generated as a real `.kicad_sch` (KiCad 10, 53 parts, ERC 0 errors) —
+   not just a netlist.** All pinouts cross-checked against datasheets. Ready for
+   hand-tidying in eeschema, then PCB layout.
 
 ---
 

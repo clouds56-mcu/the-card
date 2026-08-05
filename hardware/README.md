@@ -1,18 +1,21 @@
 # hardware/ — Schematic & PCB (KiCad, code-first)
 
-The electrical design of **the-card**, captured in code and regenerated into a
-KiCad netlist. No EDA GUI is needed to produce the netlist — KiCad is only
-required later for PCB layout.
+The electrical design of **the-card**, captured in code and emitted as both a
+KiCad **schematic** (`.kicad_sch`) and a **netlist** (`.net`). KiCad 10 is
+installed; the schematic opens in eeschema and is ERC-clean (0 errors).
 
 ```
 hardware/
 ├── parts.yaml              # SOURCE OF TRUTH: parts, LCSC#s, nets, passives
-├── pyproject.toml          # uv project: skidl + easyeda2kicad
-├── uv.lock                 # pinned dependency lockfile (committed)
-├── circuit.py              # the schematic in SKiDL  ->  the-card.net
-├── the-card.net            # GENERATED (gitignored) KiCad netlist
-├── scripts/
-│   └── fetch_libs.sh       # regenerate libraries/ from LCSC#s in parts.yaml
+├── pyproject.toml + uv.lock# uv project: skidl + easyeda2kicad (+ pypdf dev)
+├── circuit.py              # the design in SKiDL (connectivity) -> the-card.net
+├── gen_schematic.py        # circuit.py + libs -> the-card.kicad_sch (placed)
+├── the-card.kicad_pro      # KiCad 10 project
+├── the-card.kicad_sch      # GENERATED schematic (53 parts, ERC 0 errors)
+├── sym-lib-table / fp-lib-table  # register our the-card + passives libraries
+├── SCHEMATIC-GUIDE.md      # per-sheet drawing notes (if hand-tidying in eeschema)
+├── datasheets/             # archived datasheet PDFs + index
+├── scripts/fetch_libs.sh   # regenerate libraries/ from LCSC#s in parts.yaml
 └── libraries/              # GENERATED (gitignored): symbols / footprints / 3D
 ```
 
@@ -24,41 +27,51 @@ uv sync                     # create .venv, install skidl + easyeda2kicad
 ./scripts/fetch_libs.sh     # fetch symbol/footprint/3D for every LCSC part
 ```
 
-## Generate the netlist
+## Generate the schematic + netlist
 
 ```bash
-uv run python circuit.py   # runs ERC, writes the-card.net (0 errors expected)
+uv run python circuit.py        # SKiDL: build circuit, ERC, write the-card.net
+uv run python gen_schematic.py  # place parts + net-label every pin -> the-card.kicad_sch
+kicad-cli sch erc the-card.kicad_sch -o /tmp/erc.txt   # 0 errors expected
 ```
 
-Import `the-card.net` into KiCad PCBNEW (**File → Import → Netlist**) to place
-footprints and route the board.
+Open the schematic:
+```bash
+/Applications/KiCad/KiCad.app/Contents/MacOS/eeschema the-card.kicad_sch
+```
+
+> `gen_schematic.py` **overwrites** `the-card.kicad_sch`. Run it to regenerate
+> from `circuit.py`; once you start hand-editing in eeschema, stop regenerating
+> (or your edits are lost). The v1 layout is functional, not pretty — connections
+> are via net labels at each pin; tidy into wires / sheets as desired.
 
 ## How it fits together
 
-`parts.yaml` is the single source of truth. `fetch_libs.sh` reads it to build
-two KiCad libraries (regenerable, gitignored); `circuit.py` instantiates those
-parts, wires every net, runs ERC, and emits the netlist. Change the design →
-edit `circuit.py` → re-run.
+`parts.yaml` is the single source of truth. `fetch_libs.sh` builds the two KiCad
+libraries; `circuit.py` wires the circuit (ERC-verified, datasheet-cross-checked);
+`gen_schematic.py` places the parts and emits the `.kicad_sch`. Change the design
+→ edit `circuit.py` → re-run both generators.
 
-## ⚠️ Verify before tape-out
+## Verification status (done)
 
-`circuit.py` flags these sections that depend on datasheet details:
+All three originally-flagged sections were checked against datasheets (see
+`../PROGRESS.md` §7 and the full pinout cross-check). No wiring errors found.
+Residual layout-time items (non-blocking):
 
-- **DW01A + FS8205A** battery-protection topology (safety-critical — pin naming
-  in the EasyEDA symbol is non-standard; confirm against the reference design).
-- **GDEY029T94 FPC pinout** (the 1:GND, 2:VDD, 3:MOSI … mapping must match the
-  panel's FFC; the connector footprint from EasyEDA is *staggered* — verify it
-  fits the panel's flat FFC).
-- **ST25DV04KC NFC antenna** geometry (a PCB layout task; AC0/AC1 are left as
-  named nets `NFC_ANT_A/B`).
+- **DW01A+FS8205A** — topology confirmed; final eyeball of the FS8205A app circuit.
+- **GDEY029T94 booster/HV caps** — confirm host-side need vs DESPI reference.
+- **ST25DV04KC antenna** — design the 13.56 MHz PCB trace coil on AC0/AC1.
+- **C6081230 FPC footprint** is *staggered* in EasyEDA — verify it fits the panel's
+  flat 24-pin FFC, or pick a non-staggered alternative.
 
 ## Gotchas
 
 - **easyeda2kicad 1.0.1:** `--output` must be **absolute** with
   `--project-relative` (relative paths crash). `fetch_libs.sh` handles this.
-- **EasyEDA API 403:** rate-limits after a big batch — re-run the script in a
-  few minutes.
+- **EasyEDA API 403:** rate-limits after a big batch — re-run in a few minutes.
+- **skidl reports pin Y inverted** vs KiCad (math y-up vs KiCad y-down);
+  `gen_schematic.py` negates Y when placing labels.
 - **ESP32-S3-WROOM-1** does **not** break out GPIO33/34 (reserved by internal
-  SPI); `circuit.py` uses GPIO16 for `EPD_PWR_EN` instead.
-- Harmless `KICAD*_SYMBOL_DIR` warnings at runtime are expected (we use the
-  project libraries, not KiCad's stock symbols).
+  SPI); `circuit.py` uses GPIO16 for `EPD_PWR_EN`.
+- `gen_schematic.py` sets all embedded pins to `passive` type (EasyEDA mistypes
+  them) so KiCad ERC is clean; real connectivity is verified in `circuit.py`.
