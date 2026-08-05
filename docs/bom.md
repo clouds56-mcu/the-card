@@ -15,17 +15,17 @@
 | 2 | Display | 2.9" e-paper 296×128 SSD1680 | GDEY029T94 (Good Display) | distributor¹ | 1 | 7.60 | **7.00** | 5.50 |
 | 3 | Display aux | FPC connector 24P 0.5 mm flip | AFC07 series | C262682 | 1 | 0.25 | 0.10 | 0.06 |
 | 4 | NFC | Dynamic tag IC (EH+GPO) | ST25DV04KC-IE8S3 | C5221752 | 1 | 0.91 | **0.55** | 0.44 |
-| 5 | IMU | 6-axis accel + gyro | LSM6DSOTR | C967483 | 1 | 3.50 | **2.50** | 2.20 |
+| 5 | IMU | 6-axis accel + gyro | LSM6DSOTR | C2655100 | 1 | 3.50 | **2.50** | 2.20 |
 | 6 | Temp/Humidity | Digital T/RH | SHT40-BD1B-R2 | C7461849 | 1 | 1.93 | **1.32** | 1.21 |
 | 7 | Fuel gauge | Li-ion ModelGauge | MAX17048G+T10 | C2682616 | 1 | 2.50 | **1.50** | 1.35 |
 | 8 | Charger | 1 A Li-ion charger | TP4056 (TPOWER) | C382139 | 1 | 0.20 | **0.12** | 0.10 |
-| 9 | Protection | Battery protection IC | DW01A | C142001 | 1 | 0.10 | 0.06 | 0.05 |
-| 10 | Protection | Dual N-MOSFET | FS8205A | C32253 | 1 | 0.12 | 0.07 | 0.06 |
+| 9 | Protection | Battery protection IC | DW01A | C18164398 | 1 | 0.10 | 0.06 | 0.05 |
+| 10 | Protection | Dual N-MOSFET | FS8205A | C16052 | 1 | 0.12 | 0.07 | 0.06 |
 | 11 | Regulator | LDO 3.3 V 500 mA low-IQ | ME6211C33M5G | C82942 | 1 | 0.15 | 0.10 | 0.08 |
 | 12 | Switch | P-MOSFET (branch-rail gate) | SI2301 | C10487 | 2 | 0.20 | **0.12** | 0.10 |
-| 13 | LED | RGB status | WS2812B-Mini | C5275773 | 1 | 0.20 | 0.12 | 0.10 |
+| 13 | LED | RGB status | WS2812B-Mini | C527089 | 1 | 0.20 | 0.12 | 0.10 |
 | 14 | Connector | USB-C receptacle 6P | TYPE-C-31-M-12 | C165948 | 1 | 0.25 | 0.15 | 0.12 |
-| 15 | ESD | USB bidirectional TVS | USBLC6-2SC6 | C7936 | 1 | 0.18 | 0.12 | 0.10 |
+| 15 | ESD | USB bidirectional TVS | USBLC6-2SC6 | C7519 | 1 | 0.18 | 0.12 | 0.10 |
 | 16 | Button | Tactile switch 6×6×5 SMD | TS-1187A | C318884 | 4 | 0.24 | **0.16** | 0.12 |
 | 17 | Haptic | Coin motor / linear (optional) | 1027 SMD | distributor | 1 | 0.80 | 0.50 | 0.35 |
 | 18 | Passives | R/C/bead assortment | 0402 kit | — | 1 kit | 0.60 | 0.35 | 0.25 |
