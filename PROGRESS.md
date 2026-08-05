@@ -118,10 +118,18 @@ distributors (no LCSC number).
 
 ---
 
-## ✅ Datasheet verification (done) — residual layout-time items
+## ✅ Datasheet verification (done) — full part cross-check
 
-The three flagged sections were checked against authoritative datasheets (see
-"Completed §7"). Remaining items are layout refinements, not blockers:
+Beyond the three flagged sections (§7), every active part's pinout/connections
+were cross-checked against the archived datasheets using pypdf text extraction:
+USBLC6-2 (D±/VBUS/GND), TP4056 (TEMP/CE/PROG), MAX17048 (CTG/QSTRT/CELL),
+LSM6DSO (CS=high→I²C, addr), ME6211 (CE active-high), SI2301 (1=G/2=S/3=D),
+SHT40 (1=SDA/2=SCL/3=VDD/4=VSS). **No wiring errors found.**
+
+One non-blocking note: TP4056 RPROG=1.2 kΩ yields ~0.83 A on this TPOWER chip
+(datasheet: 1.0 kΩ → 1 A) — a healthy 0.83 C for the 1000 mAh cell.
+
+Remaining items are layout refinements, not blockers:
 
 - **DW01A+FS8205A** — topology confirmed; do a final eyeball of the Fortune
   FS8205A app circuit before routing the negative-path FETs.

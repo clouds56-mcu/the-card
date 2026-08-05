@@ -196,7 +196,7 @@ decouple(vbus, "C_vbus", "0603")
 # ─────────────────────────────────────────────────────────────────────────────
 chg = part("U6_CHG")
 vbus += chg["VCC"]; bat += chg["BAT"]; gnd += chg["GND"]; gnd += chg["EP"]
-rp = R("1.2k", "R_prog"); rp[1] += chg["PROG"]; rp[2] += gnd   # I_chg = 1A
+rp = R("1.2k", "R_prog"); rp[1] += chg["PROG"]; rp[2] += gnd   # TPOWER TP4056: 1.0k->1A, so 1.2k->~0.83A (healthy 0.83C for 1000mAh)
 gnd += chg["TEMP"]                  # no NTC
 vbus += chg["CE"]                   # always enabled while powered
 rc = R("10k", "R_chrg"); p3v3 += rc[1]; rc[2] += chg["~{CHRG}"]
@@ -290,7 +290,7 @@ decouple(aux, "C_imu1"); decouple(aux, "C_imu2", "0603")
 # Temp/Humidity SHT40 (U4) — on AUX rail
 # ─────────────────────────────────────────────────────────────────────────────
 sht = part("U4_SHT")
-aux += sht["VDD"]; gnd += sht["VSS"]; gnd += sht["EP"]
+aux += sht["VDD"]; gnd += sht["VSS"]; gnd += sht["EP"]   # EP is NC per datasheet (die pad floats); tied to GND harmlessly
 i2c_scl += sht["SCL"]; i2c_sda += sht["SDA"]
 decouple(aux, "C_sht")
 

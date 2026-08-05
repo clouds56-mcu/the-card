@@ -76,3 +76,6 @@ hardware/skidl_REPL*
 hardware/*.erc
 hardware/*_sklib.py
 hardware/*.net
+
+# ---- datasheet text extractions (temp verify artifacts) ----
+hardware/.verify/
