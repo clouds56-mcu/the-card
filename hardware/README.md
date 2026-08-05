@@ -42,10 +42,12 @@ Open the schematic:
 
 > `gen_schematic.py` **overwrites** `the-card.kicad_sch`. Run it to regenerate
 > from `circuit.py`; once you start hand-editing in eeschema, stop regenerating
-> (or your edits are lost). v2 layout groups parts by subsystem (POWER/MCU/DISPLAY/
-> SENSORS/UI bands), uses real KiCad power symbols + PWR_FLAGs for rails, and net
-> labels for signals — ERC-clean (0 errors). It isn't wire-routed; tidy into wires /
-> hierarchical sheets in eeschema for final polish.
+> (or your edits are lost). v3 uses a **hand-crafted placement** (power chain
+> top-left, MCU centre, sensors on the I²C side, e-ink/LED below, buttons at the
+> bottom, decoupling caps against their ICs), real KiCad power symbols + PWR_FLAGs
+> for rails, net labels for MCU-fanout signals, and direct wires for the few 2-pin
+> signal nets that land close. ERC-clean (0 errors). For final polish, hand-wire
+> the label clusters / split into hierarchical sheets in eeschema.
 
 ## How it fits together
 

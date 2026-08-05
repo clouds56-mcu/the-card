@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-"""Generate hardware/the-card.kicad_sch directly — v2 (grouped + power symbols).
+"""Generate hardware/the-card.kicad_sch — v3 (hand-crafted layout + local wires).
 
-  - parts grouped by subsystem (POWER / MCU / DISPLAY / SENSORS / UI), each in its
-    own labelled band instead of sorted-by-ref;
-  - power rails (GND/+3V3/+BAT/VBUS/AUX_3V3/EPD_VDD) use real KiCad power symbols
-    from the installed power.kicad_sym, with one PWR_FLAG per rail (power_out pin
-    satisfies ERC's "power input not driven");
-  - signals use net labels; intentionally-unused pins get no_connect.
+The auto grid looked bad, so placement is now a hand-designed table (parts placed
+by signal flow: power chain top-left, MCU centre, peripherals on the side their
+MCU pins are on, decoupling caps against their ICs). Power rails use KiCad power
+symbols + PWR_FLAG; signals use net labels; and 2-pin signal nets whose endpoints
+land close together are wired directly (the rest stay labels — an MCU-fanout
+board can't be all-wire without spaghetti).
 
     cd hardware && uv run python gen_schematic.py
     kicad-cli sch erc the-card.kicad_sch -o /tmp/erc.txt   # expect 0 errors
@@ -24,7 +24,8 @@ POWER_LIB = "/Applications/KiCad/KiCad.app/Contents/SharedSupport/symbols/power.
 PROJECT = "the-card"
 
 PASSIVE_SYMS = {"0402WGF1002TCE", "CL05B104KO5NNNC", "CL10A106KP8NNNC"}
-POWER_NETS = {"GND", "+3V3", "+BAT", "VBUS", "AUX_3V3", "EPD_VDD"}  # BAT_NEG stays a label
+POWER_NETS = {"GND", "+3V3", "+BAT", "VBUS", "AUX_3V3", "EPD_VDD"}
+WIRE_MAX = 52.0  # mm; 2-pin signal nets closer than this get a wire, else a label
 
 _pwr = 0
 def pwref():
@@ -33,6 +34,38 @@ def pwref():
 
 def U():
     return str(uuid.uuid4())
+
+def snap(v):
+    return round(v / 1.27) * 1.27
+
+
+# ── hand-crafted placement (mm, snapped to 1.27 grid) ─────────────────────────
+# POWER chain top-left · MCU centre · sensors left (I2C) · e-ink/LED below ·
+# buttons bottom · IMU/vbat/gates right. Decoupling caps hug their ICs.
+RAW_PLACE = {
+    # power input & charging
+    "J1": (50, 70), "U10": (108, 70), "U6": (50, 135), "U9": (125, 135),
+    "C_vbus": (90, 110), "C_bat": (90, 160), "R_prog": (78, 168), "R_chrg": (108, 96),
+    "C_ldoi": (155, 120), "C_ldoo": (155, 152),
+    # battery protection + fuel gauge + gates
+    "U7": (50, 205), "U8": (120, 205), "U5": (195, 205),
+    "R_dvcc": (78, 188), "R_dvm": (158, 222), "C_dprot": (90, 225),
+    "C_fg": (225, 188), "Q1": (270, 135), "Q2": (270, 205),
+    "R_q1g": (298, 116), "R_q2g": (298, 188),
+    # MCU + local support
+    "U1": (372, 158), "C_mcu1": (332, 96), "C_mcu2": (354, 96),
+    "C_en": (410, 96), "R_en": (410, 76), "R_io0": (414, 212),
+    "R_vbh": (446, 124), "R_vbl": (470, 146), "C_vb": (446, 146),
+    # sensors / NFC (left, near MCU I2C pins)
+    "U2": (250, 150), "U3": (250, 220), "U4": (305, 220),
+    "C_nfc": (218, 150), "C_imu1": (218, 220), "C_imu2": (250, 250),
+    "C_sht": (305, 250), "R_scl": (218, 178), "R_sda": (235, 178),
+    # e-ink + LED (below MCU, near SPI/LED pins)
+    "J2": (360, 258), "C_epdvdd": (360, 232), "D1": (430, 258), "C_led": (430, 232),
+    # buttons (bottom)
+    "SW1": (300, 320), "SW2": (340, 320), "SW3": (380, 320), "SW4": (420, 320),
+    "C_btn1": (300, 344), "C_btn2": (340, 344), "C_btn3": (380, 344), "C_btn4": (420, 344),
+}
 
 
 # ── parts from the built circuit ─────────────────────────────────────────────
@@ -49,59 +82,22 @@ for p in dc.parts:
                   "fp": getattr(p, "footprint", None) or "",
                   "value": getattr(p, "value", None) or p.name, "pins": pins})
 
-
-# ── subsystem bands ──────────────────────────────────────────────────────────
-GROUPS = {
-    "POWER SUPPLY & CHARGING": [
-        "J1", "U10", "U6", "U7", "U8", "U9", "U5", "Q1", "Q2",
-        "R_prog", "R_dvcc", "R_dvm", "R_chrg", "R_q1g", "R_q2g",
-        "C_bat", "C_vbus", "C_dprot", "C_ldoi", "C_ldoo", "C_fg"],
-    "MCU — ESP32-S3": [
-        "U1", "C_mcu1", "C_mcu2", "C_en", "C_vb", "R_en", "R_io0", "R_vbh", "R_vbl"],
-    "E-INK DISPLAY": ["J2", "C_epdvdd"],
-    "SENSORS & NFC (I2C)": [
-        "U2", "U3", "U4", "C_nfc", "C_imu1", "C_imu2", "C_sht", "R_scl", "R_sda"],
-    "USER INTERFACE": [
-        "D1", "SW1", "SW2", "SW3", "SW4", "C_led", "C_btn1", "C_btn2", "C_btn3", "C_btn4"],
-}
-GX0, BAND_H, PART_DX, ROW_DY, MAXX = 38.1, 88.9, 25.4, 38.1, 533.4  # 1.27 mm grid
-occupied = {}  # pin-endpoint coord -> net (avoid cross-net collisions)
-
-def _pincoords(pr, x, y):
-    return {(round(x + pin["x"], 3), round(y - pin["y"], 3)): pin["net"] for pin in pr["pins"]}
-
-def _clear(pr, sx, sy):
-    x, y = sx, sy
-    for _ in range(6000):
-        pc = _pincoords(pr, x, y)
-        if all((c not in occupied) or (occupied[c] == net) for c, net in pc.items()):
-            for c, net in pc.items():
-                occupied[c] = net
-            return x, y
-        x = x + 2.54 if x + 2.54 <= MAXX else GX0
-        if x == GX0:
-            y += ROW_DY
-    return x, y
-
-for gi, (title, refs) in enumerate(GROUPS.items()):
-    cx = GX0
-    for ref in refs:
-        pr = next((p for p in parts if p["ref"] == ref), None)
-        if pr is None:
-            continue
-        x, y = _clear(pr, cx, 50.8 + gi * BAND_H)
-        pr["x"], pr["y"], pr["rot"] = x, y, 0
-        cx = x + PART_DX
-cx = GX0
+# apply placement
+by_ref = {p["ref"]: p for p in parts}
+cx, cy = 520, 90
 for p in parts:
-    if "x" not in p:
-        x, y = _clear(p, cx, 50.8 + len(GROUPS) * BAND_H)
-        p["x"], p["y"], p["rot"] = x, y, 0
-        cx = x + PART_DX
+    if p["ref"] in RAW_PLACE:
+        x, y = RAW_PLACE[p["ref"]]
+    else:
+        x, y = cx, cy
+        cx += 25.4
+        if cx > 700:
+            cx, cy = 520, cy + 30
+    p["x"], p["y"], p["rot"] = snap(x), snap(y), 0
 PAPER = "A1"
 
 
-# ── extract raw symbol blocks ────────────────────────────────────────────────
+# ── symbol-block extraction ──────────────────────────────────────────────────
 def extract_symbols(path):
     t = open(path).read()
     d, i, n = {}, 0, len(t)
@@ -132,10 +128,7 @@ PW = extract_symbols(POWER_LIB)
 
 
 def power_block(net):
-    if net in PW:
-        blk = PW[net]
-    else:
-        blk = PW["+3V3"].replace("+3V3", net)
+    blk = PW[net] if net in PW else PW["+3V3"].replace("+3V3", net)
     return blk.replace(f'(symbol "{net}"', f'(symbol "power:{net}"', 1)
 
 
@@ -144,7 +137,12 @@ def rot_pt(x, y, r):
     return {(0,): (x, y), (90,): (-y, x), (180,): (-x, -y), (270,): (y, -x)}[(r,)]
 
 
-def emit_power_inst(L, lib_id, value, x, y):
+def pinabs(part, pin):
+    ax, ay = rot_pt(pin["x"], -pin["y"], part["rot"])
+    return (round(part["x"] + ax, 3), round(part["y"] + ay, 3))
+
+
+def emit_pwr(L, lib_id, value, x, y):
     r = pwref()
     L.append("\t(symbol")
     L.append(f'\t\t(lib_id "{lib_id}")\n\t\t(at {x:.3f} {y:.3f} 0)\n\t\t'
@@ -165,6 +163,20 @@ def emit_power_inst(L, lib_id, value, x, y):
     L.append("\t)")
 
 
+# ── net pin map + decide which signal nets get a wire ─────────────────────────
+netpins = {}
+for p in parts:
+    for pin in p["pins"]:
+        if pin["net"]:
+            netpins.setdefault(pin["net"], []).append(pinabs(p, pin))
+wired = set()
+for net, pts in netpins.items():
+    if net in POWER_NETS or len(pts) != 2:
+        continue
+    (x1, y1), (x2, y2) = pts
+    if abs(x1 - x2) + abs(y1 - y2) <= WIRE_MAX:
+        wired.add(net)
+
 # ── emit ─────────────────────────────────────────────────────────────────────
 ROOT = U()
 L = [f'(kicad_sch\n\t(version 20250114)\n\t(generator "eeschema")\n\t'
@@ -172,7 +184,8 @@ L = [f'(kicad_sch\n\t(version 20250114)\n\t(generator "eeschema")\n\t'
      '\t(title_block\n\t\t(title "the-card")\n\t\t(date "2026-08-06")\n\t\t'
      '(company "ESP32-S3 e-paper smart badge")\n\t)']
 
-power_used, pwr_first = set(), {}
+power_used = {pin["net"] for p in parts for pin in p["pins"] if pin["net"] in POWER_NETS}
+pwr_first = {}
 L.append("\t(lib_symbols")
 seen = set()
 for p in parts:
@@ -181,21 +194,13 @@ for p in parts:
         continue
     seen.add(key)
     blk = SYMS[p["name"]].replace(f'(symbol "{p["name"]}"', f'(symbol "{p["lib"]}:{p["name"]}"', 1)
-    blk = re.sub(r'\(pin \w+ line', '(pin passive line', blk)
-    L.append(blk)
-    for pin in p["pins"]:
-        if pin["net"] in POWER_NETS:
-            power_used.add(pin["net"])
+    L.append(re.sub(r'\(pin \w+ line', '(pin passive line', blk))
 for net in sorted(power_used):
     L.append(power_block(net))
 L.append(PW["PWR_FLAG"].replace('(symbol "PWR_FLAG"', '(symbol "power:PWR_FLAG"', 1))
 L.append("\t)")
 
-for title in GROUPS:
-    gy = 50.8 + list(GROUPS).index(title) * BAND_H
-    L.append(f'\t(text "{title}"\n\t\t(at {GX0 - 5} {gy - 15} 0)\n\t\t'
-             f'(effects (font (size 3.5 3.5) bold) (justify left)))')
-
+# part instances
 for p in parts:
     x, y, rot = p["x"], p["y"], p["rot"]
     L.append("\t(symbol")
@@ -203,9 +208,9 @@ for p in parts:
              '(unit 1)\n\t\t(exclude_from_sim no)\n\t\t(in_bom yes)\n\t\t'
              '(on_board yes)\n\t\t(dnp no)')
     L.append(f'\t\t(uuid "{U()}")')
-    L.append(f'\t\t(property "Reference" "{p["ref"]}"\n\t\t\t(at {x} {y - 6} 0)\n\t\t\t'
-             '(effects (font (size 1.5 1.5))))')
-    L.append(f'\t\t(property "Value" "{p["value"]}"\n\t\t\t(at {x} {y + 6} 0)\n\t\t\t'
+    L.append(f'\t\t(property "Reference" "{p["ref"]}"\n\t\t\t(at {x} {y - 8} 0)\n\t\t\t'
+             '(effects (font (size 1.6 1.6))))')
+    L.append(f'\t\t(property "Value" "{p["value"]}"\n\t\t\t(at {x} {y + 8} 0)\n\t\t\t'
              '(effects (font (size 1.4 1.4))))')
     L.append(f'\t\t(property "Footprint" "{p["fp"]}"\n\t\t\t(at {x} {y} 0)\n\t\t\t'
              '(effects (font (size 1.27 1.27)) (hide yes)))')
@@ -217,24 +222,32 @@ for p in parts:
              f'(path "/{ROOT}"\n\t\t\t\t\t(reference "{p["ref"]}")\n\t\t\t\t\t(unit 1))))')
     L.append("\t)")
     for pin in p["pins"]:
-        ax, ay = rot_pt(pin["x"], -pin["y"], rot)
-        ax, ay = x + ax, y + ay
+        ax, ay = pinabs(p, pin)
         if not pin["net"]:
             L.append(f'\t\t(no_connect\n\t\t\t(at {ax:.3f} {ay:.3f})\n\t\t\t(uuid "{U()}"))')
         elif pin["net"] in POWER_NETS:
             pwr_first.setdefault(pin["net"], (ax, ay))
-            emit_power_inst(L, f'power:{pin["net"]}', pin["net"], ax, ay)
+            emit_pwr(L, f'power:{pin["net"]}', pin["net"], ax, ay)
+        elif pin["net"] in wired:
+            pass  # connected by a wire (emitted below)
         else:
             L.append(f'\t(label "{pin["net"]}"\n\t\t(at {ax:.3f} {ay:.3f} 0)\n\t\t'
                      f'(effects (font (size 1.1 1.1)) (justify left bottom))\n\t\t(uuid "{U()}"))')
 
-# one PWR_FLAG per power rail (power_out pin satisfies "power input not driven")
+# direct wires for close 2-pin signal nets
+for net in wired:
+    (x1, y1), (x2, y2) = netpins[net]
+    L.append(f'\t\t(wire (pts (xy {x1:.3f} {y1:.3f}) (xy {x2:.3f} {y1:.3f}))\n\t\t\t(uuid "{U()}"))' if x1 != x2 else "")
+    L.append(f'\t\t(wire (pts (xy {x2:.3f} {y1:.3f}) (xy {x2:.3f} {y2:.3f}))\n\t\t\t(uuid "{U()}"))' if y1 != y2 else "")
+L = [x for x in L if x]  # drop blanks from straight wires
+
+# one PWR_FLAG per power rail
 for net, (fx, fy) in pwr_first.items():
-    emit_power_inst(L, "power:PWR_FLAG", "PWR_FLAG", fx, fy)
+    emit_pwr(L, "power:PWR_FLAG", "PWR_FLAG", fx, fy)
 
 L.append('\t(sheet_instances\n\t\t(path "/"\n\t\t\t(page "1")))\n\t(embedded_fonts no)\n)')
 open(OUT, "w").write("\n".join(L))
 miss = sorted({p["name"] for p in parts} - set(SYMS))
-print(f"OK wrote {OUT}  parts={len(parts)} groups={len(GROUPS)} paper={PAPER} power={sorted(power_used)}")
+print(f"OK wrote {OUT}  parts={len(parts)} wires={len(wired)} power={sorted(power_used)}")
 if miss:
     print(f"   ⚠ missing symbols: {miss}")
