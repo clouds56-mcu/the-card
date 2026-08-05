@@ -70,3 +70,7 @@ dist/
 
 # ---- easyeda2kicad generated libs (regenerable via hardware/scripts/fetch_libs.sh) ----
 hardware/libraries/
+
+# ---- SKiDL temp/output artifacts ----
+hardware/skidl_REPL*
+hardware/*.erc
