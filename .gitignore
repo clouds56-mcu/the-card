@@ -1,0 +1,69 @@
+# ---- OS ----
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---- Editors / IDE ----
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+nbproject/
+
+# ---- Firmware build artifacts (ESP-IDF / CMake) ----
+build/
+**/build/
+managed_components/
+dependencies.lock
+sdkconfig.old
+sdkconfig.defaults.old
+*.o
+*.a
+*.obj
+*.elf
+*.bin
+*.hex
+*.map
+
+# ---- Python (tooling / scripts) ----
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# ---- KiCad / EDA (keep designs + fabrication output; ignore autosave/backup/cache) ----
+*.bak
+*-bak
+*-backup
+_autosave-*
+*.sch-bak
+*.kicad_pcb-bak
+*.kicad_sch-bak
+*-save.kicad_pcb
+*-save.kicad_sch
+*-cache.lib
+*-rescue.lib
+fp-info-cache
+*.tsv
+*.dcm
+
+# Fabrication output is kept by default for open hardware.
+# Uncomment the lines below if you prefer to ignore generated outputs:
+# gerbers/
+# exports/
+# JLCGBO/
+
+# ---- Node / web (for any companion app later) ----
+node_modules/
+dist/
+.next/
+
+# ---- Secrets / env ----
+.env
+.env.*
+!.env.example
+
+# ---- Misc logs ----
+*.log
