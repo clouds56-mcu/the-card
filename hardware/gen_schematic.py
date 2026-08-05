@@ -1,20 +1,15 @@
 #!/usr/bin/env python3
-"""Generate hardware/the-card.kicad_sch — v3 (hand-crafted layout + local wires).
+"""Generate hardware/the-card.kicad_sch — v4 (pin-cluster placement + pervasive wires).
 
-The auto grid looked bad, so placement is now a hand-designed table (parts placed
-by signal flow: power chain top-left, MCU centre, peripherals on the side their
-MCU pins are on, decoupling caps against their ICs). Power rails use KiCad power
-symbols + PWR_FLAG; signals use net labels; and 2-pin signal nets whose endpoints
-land close together are wired directly (the rest stay labels — an MCU-fanout
-board can't be all-wire without spaghetti).
+Peripherals are placed exactly on the side of the MCU where their signal pins
+are (SPI bus below, buttons & USB & I²C on the left, vbat on the right), so
+point-to-point nets turn into short direct wires. Shared buses (I²C) and power
+stay as labels / power symbols. ERC-clean.
 
     cd hardware && uv run python gen_schematic.py
-    kicad-cli sch erc the-card.kicad_sch -o /tmp/erc.txt   # expect 0 errors
+    kicad-cli sch erc the-card.kicad_sch -o /tmp/erc.txt
 """
-import os
-import re
-import uuid
-
+import os, re, uuid
 import circuit
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -25,47 +20,16 @@ PROJECT = "the-card"
 
 PASSIVE_SYMS = {"0402WGF1002TCE", "CL05B104KO5NNNC", "CL10A106KP8NNNC"}
 POWER_NETS = {"GND", "+3V3", "+BAT", "VBUS", "AUX_3V3", "EPD_VDD"}
-WIRE_MAX = 52.0  # mm; 2-pin signal nets closer than this get a wire, else a label
+WIRE_MAX = 100.0
 
 _pwr = 0
 def pwref():
     global _pwr; _pwr += 1
     return f"#PWR{_pwr:04d}"
-
-def U():
-    return str(uuid.uuid4())
-
-def snap(v):
-    return round(v / 1.27) * 1.27
-
-
-# ── hand-crafted placement (mm, snapped to 1.27 grid) ─────────────────────────
-# POWER chain top-left · MCU centre · sensors left (I2C) · e-ink/LED below ·
-# buttons bottom · IMU/vbat/gates right. Decoupling caps hug their ICs.
-RAW_PLACE = {
-    # power input & charging
-    "J1": (50, 70), "U10": (108, 70), "U6": (50, 135), "U9": (125, 135),
-    "C_vbus": (90, 110), "C_bat": (90, 160), "R_prog": (78, 168), "R_chrg": (108, 96),
-    "C_ldoi": (155, 120), "C_ldoo": (155, 152),
-    # battery protection + fuel gauge + gates
-    "U7": (50, 205), "U8": (120, 205), "U5": (195, 205),
-    "R_dvcc": (78, 188), "R_dvm": (158, 222), "C_dprot": (90, 225),
-    "C_fg": (225, 188), "Q1": (270, 135), "Q2": (270, 205),
-    "R_q1g": (298, 116), "R_q2g": (298, 188),
-    # MCU + local support
-    "U1": (372, 158), "C_mcu1": (332, 96), "C_mcu2": (354, 96),
-    "C_en": (410, 96), "R_en": (410, 76), "R_io0": (414, 212),
-    "R_vbh": (446, 124), "R_vbl": (470, 146), "C_vb": (446, 146),
-    # sensors / NFC (left, near MCU I2C pins)
-    "U2": (250, 150), "U3": (250, 220), "U4": (305, 220),
-    "C_nfc": (218, 150), "C_imu1": (218, 220), "C_imu2": (250, 250),
-    "C_sht": (305, 250), "R_scl": (218, 178), "R_sda": (235, 178),
-    # e-ink + LED (below MCU, near SPI/LED pins)
-    "J2": (360, 258), "C_epdvdd": (360, 232), "D1": (430, 258), "C_led": (430, 232),
-    # buttons (bottom)
-    "SW1": (300, 320), "SW2": (340, 320), "SW3": (380, 320), "SW4": (420, 320),
-    "C_btn1": (300, 344), "C_btn2": (340, 344), "C_btn3": (380, 344), "C_btn4": (420, 344),
-}
+def U(): return str(uuid.uuid4())
+def snap(v): return round(v / 1.27) * 1.27
+def rot_pt(x, y, r):
+    return {(0,): (x, y), (90,): (-y, x), (180,): (-x, -y), (270,): (y, -x)}[(r % 360,)]
 
 
 # ── parts from the built circuit ─────────────────────────────────────────────
@@ -81,21 +45,112 @@ for p in dc.parts:
     parts.append({"ref": p.ref, "lib": lib, "name": p.name,
                   "fp": getattr(p, "footprint", None) or "",
                   "value": getattr(p, "value", None) or p.name, "pins": pins})
-
-# apply placement
 by_ref = {p["ref"]: p for p in parts}
-cx, cy = 520, 90
+
+
+# ── pin-cluster placement ─────────────────────────────────────────────────────
+mcu = by_ref["U1"]
+MCU_X, MCU_Y = 420.0, 240.0
+mcu["x"], mcu["y"], mcu["rot"] = MCU_X, MCU_Y, 0
+
+# zone offsets from MCU origin (mm, snapped to 1.27 later)
+LEFT_X, RIGHT_X = 280.0, 560.0                     # for parts whose MCU pins are left/right
+ABOVE_Y, BELOW_Y = 160.0, 340.0                    # for parts on top/bottom
+# power chain: absolute area top-left
+POWER_X, POWER_Y = 50.0, 70.0
+# each zone's parts are stacked with spacing
+STACK_DY, STACK_DX = 41.91, 41.91  # 33 × 1.27 mm grid
+
+zone = {}  # ref -> (x0, y0, axis, sign, index)  (axis='y' stack vertically, 'x' horizontally)
+# assign each peripheral
 for p in parts:
-    if p["ref"] in RAW_PLACE:
-        x, y = RAW_PLACE[p["ref"]]
+    r = p["ref"]
+    if r == "U1" or r in ("U6","U7","U8","U9","U5","C_bat","C_vbus","R_prog","R_chrg",
+                          "C_ldoi","C_ldoo","R_dvcc","R_dvm","C_dprot","C_fg","R_q1g","R_q2g"):
+        continue  # MCU & power chain — placed below
+    # find MCU-connected signal nets
+    mcu_nets = {pin["net"] for pin in mcu["pins"] if pin["net"] and pin["net"] not in POWER_NETS}
+    p_nets = {pin["net"] for pin in p["pins"] if pin["net"] and pin["net"] not in POWER_NETS}
+    shared = mcu_nets & p_nets
+    if not shared:
+        shared = p_nets  # fallback: use any signal net
+    # compute MCU-pin centroid for shared nets (KiCad coords)
+    pts = []
+    for pin in mcu["pins"]:
+        if pin["net"] in shared:
+            ax, ay = rot_pt(pin["x"] or 0, -(pin["y"] or 0), 0)
+            pts.append((MCU_X + ax, MCU_Y + ay))
+    if not pts:
+        continue
+    cx = sum(x for x, y in pts) / len(pts); cy = sum(y for x, y in pts) / len(pts)
+    dx, dy = cx - MCU_X, cy - MCU_Y
+    if abs(dx) >= abs(dy):
+        zone[r] = (RIGHT_X if dx > 0 else LEFT_X, cy, "y", 0)
     else:
-        x, y = cx, cy
-        cx += 25.4
-        if cx > 700:
-            cx, cy = 520, cy + 30
-    p["x"], p["y"], p["rot"] = snap(x), snap(y), 0
+        zone[r] = (cx, BELOW_Y if dy > 0 else ABOVE_Y, "x", 0)
+
+# assign zone indices (resolve overlaps)
+zone_cols, zone_rows = {}, {}
+for r, (x0, y0, axis, _) in zone.items():
+    if axis == "y":
+        zone_cols.setdefault(int(x0), []).append(r)
+    else:
+        zone_rows.setdefault(int(y0), []).append(r)
+idx = {}
+for x0, refs in zone_cols.items():
+    for i, r in enumerate(refs):
+        idx[r] = i
+for y0, refs in zone_rows.items():
+    for i, r in enumerate(refs):
+        idx[r] = i
+for r, (x0, y0, axis, _) in zone.items():
+    i = idx.get(r, 0)
+    if axis == "y":
+        zone[r] = (x0, y0, "y", i)
+
+# place parts
+power_parts = []
+for r in ("J1","U10","J1","U10","U6","U7","U8","U9","U5","Q1","Q2",
+          "C_bat","C_vbus","R_prog","R_chrg","C_ldoi","C_ldoo",
+          "R_dvcc","R_dvm","C_dprot","C_fg","R_q1g","R_q2g"):
+    power_parts.extend([pp for pp in parts if pp["ref"] == r])
+power_parts_dedup = list({pp["ref"]: pp for pp in power_parts}.values())
+px, py = POWER_X, POWER_Y
+for pp in power_parts_dedup:
+    pp["x"], pp["y"], pp["rot"] = snap(px), snap(py), 0
+    px += snap(54.61)
+    if px > 320:
+        px, py = POWER_X, snap(py + 54.61)
+
+for p in parts:
+    if p is mcu: continue
+    r = p["ref"]
+    if r in zone:
+        x0, y0, axis, i = zone[r]
+        if axis == "y":
+            p["x"], p["y"], p["rot"] = snap(x0), snap(y0 + i * STACK_DY), 0
+        else:
+            p["x"], p["y"], p["rot"] = snap(x0 + i * STACK_DX), snap(y0), 0
+    elif p["ref"] not in {pp["ref"] for pp in power_parts_dedup}:
+        p["x"], p["y"], p["rot"] = snap(640), snap(100 + len(zone)*STACK_DY), 0
+
 PAPER = "A1"
 
+# ── collision avoidance: nudge parts whose pin endpoints collide cross-net ───
+occupied = {}  # (x,y) -> net
+for p in parts:
+    for pin in p["pins"]:
+        if not pin["net"]: continue
+        ax, ay = rot_pt(pin["x"] or 0, -(pin["y"] or 0), p["rot"])
+        c = (round(p["x"] + ax, 3), round(p["y"] + ay, 3))
+        if c in occupied and occupied[c] != pin["net"]:
+            p["x"] += 2.54  # nudge right
+        else:
+            occupied[c] = pin["net"]
+
+# snap all positions to the 1.27 mm grid
+for p in parts:
+    p["x"], p["y"] = snap(p["x"]), snap(p["y"])
 
 # ── symbol-block extraction ──────────────────────────────────────────────────
 def extract_symbols(path):
@@ -103,18 +158,15 @@ def extract_symbols(path):
     d, i, n = {}, 0, len(t)
     while True:
         idx = t.find('(symbol "', i)
-        if idx < 0:
-            break
+        if idx < 0: break
         q1 = t.find('"', idx); q2 = t.find('"', q1 + 1)
         name = t[q1 + 1:q2]
         depth, j = 0, idx
         while j < n:
-            if t[j] == "(":
-                depth += 1
+            if t[j] == "(": depth += 1
             elif t[j] == ")":
                 depth -= 1
-                if depth == 0:
-                    break
+                if depth == 0: break
             j += 1
         if not re.search(r"_\d+_\d+$", name):
             d[name] = t[idx:j + 1]
@@ -125,22 +177,13 @@ SYMS = {}
 for fn in ("passives.kicad_sym", "the-card.kicad_sym"):
     SYMS.update(extract_symbols(os.path.join(LIBS, fn)))
 PW = extract_symbols(POWER_LIB)
-
-
 def power_block(net):
     blk = PW[net] if net in PW else PW["+3V3"].replace("+3V3", net)
     return blk.replace(f'(symbol "{net}"', f'(symbol "power:{net}"', 1)
 
-
-def rot_pt(x, y, r):
-    r %= 360
-    return {(0,): (x, y), (90,): (-y, x), (180,): (-x, -y), (270,): (y, -x)}[(r,)]
-
-
-def pinabs(part, pin):
-    ax, ay = rot_pt(pin["x"], -pin["y"], part["rot"])
-    return (round(part["x"] + ax, 3), round(part["y"] + ay, 3))
-
+def pinabs(pt, pin):
+    ax, ay = rot_pt(pin["x"] or 0, -(pin["y"] or 0), pt["rot"])
+    return (round(pt["x"] + ax, 3), round(pt["y"] + ay, 3))
 
 def emit_pwr(L, lib_id, value, x, y):
     r = pwref()
@@ -163,7 +206,7 @@ def emit_pwr(L, lib_id, value, x, y):
     L.append("\t)")
 
 
-# ── net pin map + decide which signal nets get a wire ─────────────────────────
+# ── net pin map + wires ───────────────────────────────────────────────────────
 netpins = {}
 for p in parts:
     for pin in p["pins"]:
@@ -171,11 +214,11 @@ for p in parts:
             netpins.setdefault(pin["net"], []).append(pinabs(p, pin))
 wired = set()
 for net, pts in netpins.items():
-    if net in POWER_NETS or len(pts) != 2:
-        continue
+    if net in POWER_NETS or len(pts) != 2: continue
     (x1, y1), (x2, y2) = pts
     if abs(x1 - x2) + abs(y1 - y2) <= WIRE_MAX:
         wired.add(net)
+
 
 # ── emit ─────────────────────────────────────────────────────────────────────
 ROOT = U()
@@ -190,8 +233,7 @@ L.append("\t(lib_symbols")
 seen = set()
 for p in parts:
     key = (p["lib"], p["name"])
-    if key in seen or p["name"] not in SYMS:
-        continue
+    if key in seen or p["name"] not in SYMS: continue
     seen.add(key)
     blk = SYMS[p["name"]].replace(f'(symbol "{p["name"]}"', f'(symbol "{p["lib"]}:{p["name"]}"', 1)
     L.append(re.sub(r'\(pin \w+ line', '(pin passive line', blk))
@@ -200,7 +242,6 @@ for net in sorted(power_used):
 L.append(PW["PWR_FLAG"].replace('(symbol "PWR_FLAG"', '(symbol "power:PWR_FLAG"', 1))
 L.append("\t)")
 
-# part instances
 for p in parts:
     x, y, rot = p["x"], p["y"], p["rot"]
     L.append("\t(symbol")
@@ -229,25 +270,24 @@ for p in parts:
             pwr_first.setdefault(pin["net"], (ax, ay))
             emit_pwr(L, f'power:{pin["net"]}', pin["net"], ax, ay)
         elif pin["net"] in wired:
-            pass  # connected by a wire (emitted below)
+            pass  # wire below
         else:
             L.append(f'\t(label "{pin["net"]}"\n\t\t(at {ax:.3f} {ay:.3f} 0)\n\t\t'
                      f'(effects (font (size 1.1 1.1)) (justify left bottom))\n\t\t(uuid "{U()}"))')
 
-# direct wires for close 2-pin signal nets
+# L-shaped wires for close 2-pin nets (only signal, already detected as 'wired')
 for net in wired:
     (x1, y1), (x2, y2) = netpins[net]
-    L.append(f'\t\t(wire (pts (xy {x1:.3f} {y1:.3f}) (xy {x2:.3f} {y1:.3f}))\n\t\t\t(uuid "{U()}"))' if x1 != x2 else "")
-    L.append(f'\t\t(wire (pts (xy {x2:.3f} {y1:.3f}) (xy {x2:.3f} {y2:.3f}))\n\t\t\t(uuid "{U()}"))' if y1 != y2 else "")
-L = [x for x in L if x]  # drop blanks from straight wires
+    if abs(x2 - x1) > 0.01:
+        L.append(f'\t(wire (pts (xy {x1:.3f} {y1:.3f}) (xy {x2:.3f} {y1:.3f}))\n\t\t(uuid "{U()}"))')
+    if abs(y2 - y1) > 0.01:
+        L.append(f'\t(wire (pts (xy {x2:.3f} {y1:.3f}) (xy {x2:.3f} {y2:.3f}))\n\t\t(uuid "{U()}"))')
 
-# one PWR_FLAG per power rail
 for net, (fx, fy) in pwr_first.items():
     emit_pwr(L, "power:PWR_FLAG", "PWR_FLAG", fx, fy)
 
 L.append('\t(sheet_instances\n\t\t(path "/"\n\t\t\t(page "1")))\n\t(embedded_fonts no)\n)')
 open(OUT, "w").write("\n".join(L))
 miss = sorted({p["name"] for p in parts} - set(SYMS))
-print(f"OK wrote {OUT}  parts={len(parts)} wires={len(wired)} power={sorted(power_used)}")
-if miss:
-    print(f"   ⚠ missing symbols: {miss}")
+print(f"OK wrote {OUT}  parts={len(parts)}  wires={len(wired)}  power={sorted(power_used)}")
+if miss: print(f"   ⚠ missing symbols: {miss}")
