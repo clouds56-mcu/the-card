@@ -80,3 +80,8 @@ hardware/*.net
 
 # ---- datasheet text extractions (temp verify artifacts) ----
 hardware/.verify/
+
+# ---- KiCad user-local project settings ----
+hardware/*.kicad_prl
+hardware/*.kicad_pcb-bak
+hardware/*-backups/
