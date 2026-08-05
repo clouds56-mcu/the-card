@@ -1,0 +1,183 @@
+# the-card — Schematic Parts Manifest
+# Source-of-truth for schematic generation.
+#   - actives/ICs/connectors with an `lcsc` id are fetched via `easyeda2kicad`
+#     into hardware/libraries/ (symbol + footprint + 3D).
+#   - passives use KiCad stock `Device:` symbols (no fetch); value + footprint given.
+#   - The e-ink panel is represented as a 24-pin FPC connector (panel-level passives
+#     live on the panel FPC, not on our PCB).
+# Refdes follow the schematic. Update here = update the schematic.
+
+project: the-card
+eda: kicad
+kicad_version: "8.0"
+libs_output: hardware/libraries/
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Active parts / ICs / connectors  (fetch from LCSC via easyeda2kicad)
+# ─────────────────────────────────────────────────────────────────────────────
+lcsc_parts:
+  - ref: U1
+    name: ESP32-S3-WROOM-1-N8R2
+    lcsc: C2913204
+    role: MCU (WiFi+BLE, 8MB Flash, 2MB PSRAM)
+  - ref: U2
+    name: ST25DV04KC-IE8S3
+    lcsc: C5221752
+    role: NFC dynamic tag (Energy Harvesting + GPO)
+  - ref: U3
+    name: LSM6DSOTR
+    lcsc: C2655100
+    role: 6-axis IMU
+  - ref: U4
+    name: SHT40-BD1B-R2
+    lcsc: C7461849
+    role: Temp / Humidity
+  - ref: U5
+    name: MAX17048G+T10
+    lcsc: C2682616
+    role: Li-ion fuel gauge (ModelGauge)
+  - ref: U6
+    name: TP4056
+    lcsc: C382139
+    role: 1A Li-ion charger
+  - ref: U7
+    name: DW01A
+    lcsc: C18164398
+    role: Battery protection IC
+  - ref: U8
+    name: FS8205A
+    lcsc: C16052
+    role: Dual N-MOSFET (protection)
+  - ref: U9
+    name: ME6211C33M5G
+    lcsc: C82942
+    role: LDO 3.3V / 500mA
+  - ref: U10
+    name: USBLC6-2SC6
+    lcsc: C7519
+    role: USB ESD protection  # also exists in KiCad Power_Protection
+  - ref: Q1
+    name: SI2301
+    lcsc: C10487
+    role: P-MOSFET — AUX branch-rail gate (sensors/LED/motor)  # also in Transistor_FET
+    qty: 2                     # Q1, Q2
+  - ref: D1
+    name: WS2812B-Mini
+    lcsc: C527089
+    role: RGB status LED (on AUX branch rail)
+  - ref: J1
+    name: TYPE-C-31-M-12
+    lcsc: C165948
+    role: USB-C receptacle (6-pin, power+data)
+  - ref: SW
+    name: TS-1187A
+    lcsc: C318884
+    role: Tactile button (watch-style)
+    qty: 4                     # SW1 UP, SW2 DOWN, SW3 SEL, SW4 MENU
+  - ref: J2
+    name: FPC 24P 0.5mm flip (AFC07)
+    lcsc: C262682
+    role: E-ink panel FPC connector
+
+# ─────────────────────────────────────────────────────────────────────────────
+# E-ink panel — represented as connector netlist (no LCSC fetch)
+# GDEY029T94, 296x128, SSD1680. Panel passives are onboard the FPC.
+# ─────────────────────────────────────────────────────────────────────────────
+eink_panel:
+  model: GDEY029T94
+  controller: SSD1680
+  interface: 4-wire SPI
+  pins:                       # J2 connector pinout → net
+    1: GND
+    2: "+3V3"
+    3: EPA_SDA        # MOSI  (GPIO9)
+    4: EPA_SCLK       # SCLK  (GPIO10)
+    5: EPA_CS         # CS    (GPIO12)
+    6: EPA_DC         # D/C   (GPIO13)
+    7: EPA_RST        # RST   (GPIO14)
+    8: EPA_BUSY       # BUSY  (GPIO11)
+    # 9..24: GND / NC per GDEY029T94 datasheet (verify at layout)
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Passives — KiCad stock Device:R / Device:C (0402 unless noted)
+# ─────────────────────────────────────────────────────────────────────────────
+passives:
+  decoupling_100nF:            # one per IC VDD/VIN
+    count: 9
+    value: 100nF
+    footprint: "Capacitor_SMD:C_0402_1005Metric"
+    on: [U1(3x VDD/3V3), U2, U3(VDD+VDDIO→use 2), U4, U5, U6(VCC), U9(VIN)]
+    note: "U3 LSM6DSO also wants 10µF on VDD — see below"
+  bulk_3v3:
+    count: 1
+    value: 10µF
+    footprint: "Capacitor_SMD:C_0603_1608Metric"
+    net: "+3V3"
+  bulk_vbat:
+    count: 1
+    value: 10µF
+    footprint: "Capacitor_SMD:C_0603_1608Metric"
+    net: "VBAT"
+  tp4056_vcc_cap:
+    ref: C_vcc
+    value: 10µF                # TP4056 VCC per datasheet
+    footprint: "Capacitor_SMD:C_0603_1608Metric"
+  tp4056_bat_cap:
+    ref: C_bat
+    value: 10µF                # TP4056 BAT per datasheet
+    footprint: "Capacitor_SMD:C_0603_1608Metric"
+  tp4056_prog:
+    ref: R_prog
+    value: 1.2kΩ               # sets I_chg = 1000mA (PROG pin)
+    footprint: "Resistor_SMD:R_0402_1005Metric"
+  imu_vdd_bulk:
+    ref: C_imu
+    value: 10µF                # LSM6DSO VDD bulk
+    footprint: "Capacitor_SMD:C_0603_1608Metric"
+  fg_cap:
+    ref: C_fg
+    value: 1µF                 # MAX17048 VDD decoupling
+    footprint: "Capacitor_SMD:C_0402_1005Metric"
+  ldo_in_cap:
+    ref: C_ldoi
+    value: 1µF                 # ME6211 VIN
+    footprint: "Capacitor_SMD:C_0402_1005Metric"
+  ldo_out_cap:
+    ref: C_ldoo
+    value: 1µF                 # ME6211 VOUT
+    footprint: "Capacitor_SMD:C_0402_1005Metric"
+  led_cap:
+    ref: C_led
+    value: 100nF               # WS2812 VDD
+    footprint: "Capacitor_SMD:C_0402_1005Metric"
+  cc_pulldowns:                # USB-C UFP (we are sink/device): 5.1k on each CC
+    count: 2
+    value: 5.1kΩ
+    footprint: "Resistor_SMD:R_0402_1005Metric"
+    nets: [CC1, CC2]
+  button_debounce_caps:        # 100nF across each button to GND
+    count: 4
+    value: 100nF
+    footprint: "Capacitor_SMD:C_0402_1005Metric"
+  vbatt_divider:               # backup ADC sample; MAX17048 is primary
+    enabled: optional
+    r_high: { value: 1MΩ, footprint: "Resistor_SMD:R_0402_1005Metric" }
+    r_low:  { value: 300kΩ, footprint: "Resistor_SMD:R_0402_1005Metric" }
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Power rails
+# ─────────────────────────────────────────────────────────────────────────────
+rails:
+  VBUS:   "+5V from USB-C"
+  VBAT:   "Battery 3.0–4.2V (post DW01/FS8205A protection)"
+  "+3V3": "System rail from ME6211 LDO (always on)"
+  AUX_3V3: "Switchable branch rail via Q1 (P-MOSFET, PWR_AUX=GPIO47) — sensors/LED/motor"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# TODO at layout time
+# ─────────────────────────────────────────────────────────────────────────────
+todo:
+  - Verify GDEY029T94 FPC pin 9..24 mapping (GND/NC) against latest datasheet
+  - NFC antenna geometry (PCB trace, ~13.56MHz, ST25DV LP0/LP1)
+  - Antenna keepout under ESP32-S3-WROOM-1 PCB antenna
+  - Lanyard hole / CG placement

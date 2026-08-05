@@ -67,3 +67,6 @@ dist/
 
 # ---- Misc logs ----
 *.log
+
+# ---- easyeda2kicad generated libs (regenerable via hardware/scripts/fetch_libs.sh) ----
+hardware/libraries/
