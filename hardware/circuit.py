@@ -205,14 +205,21 @@ decouple(bat, "C_bat", "0603")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Battery protection DW01A (U7) + FS8205A (U8)   ⚠️ VERIFY vs reference design
-# Protection on the NEGATIVE path: +BAT is common; cell- and P- (system GND)
-# are separated by the back-to-back FETs.
+# Battery protection DW01A (U7) + FS8205A (U8)   ✓ VERIFIED vs Fortune/HMSEMI datasheets
+# DW01A pins (EasyEDA = HMSEMI naming): 1=DOUT(DO, discharge gate), 2=VM(CS, sense),
+# 3=COUT(CO, charge gate), 4=NC, 5=VDD(VCC, +supply via R1), 6=VSS(B-).
+# Protection on the NEGATIVE path: +BAT is common; cell- (BAT_NEG) and P- (GND)
+# are separated by the back-to-back FETs. REQUIRED externals: R1 (470Ω VCC<-B+),
+# R2 (2kΩ VM<-P-), C1 (100nF VCC-VSS) — were missing before this verify pass.
 # ─────────────────────────────────────────────────────────────────────────────
 prot = part("U7_PROT")
 fet = part("U8_FET")
-bat += prot["VDD"]; bat_neg += prot["VSS"]; gnd += prot["VM"]
-prot["COUT"] += fet["G1"]; prot["DOUT"] += fet["G2"]
+r_dvcc = R("470", "R_dvcc"); bat += r_dvcc[1]; r_dvcc[2] += prot["VDD"]          # R1
+r_dvm  = R("2k",  "R_dvm");  gnd += r_dvm[1]; r_dvm[2] += prot["VM"]            # R2 (P- sense)
+bat_neg += prot["VSS"]                                                       # B-
+c_dprot = C("100nF", "C_dprot"); prot["VDD"] += c_dprot[1]; c_dprot[2] += bat_neg  # C1
+prot["COUT"] += fet["G1"]   # charge  gate -> FET A (S1=B-)
+prot["DOUT"] += fet["G2"]   # discharge gate -> FET B (S2=P-)
 bat_neg += fet["S1"]; gnd += fet["S2"]
 fet_drain = Net("FET_DRAIN"); fet_drain += fet["D12"]   # internal common-drain node
 
@@ -252,7 +259,9 @@ r_q2g = R("10k", "R_q2g"); p3v3 += r_q2g[1]; r_q2g[2] += epd_pwr
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# NFC ST25DV04KC (U2)   ⚠️ antenna geometry is a layout task
+# NFC ST25DV04KC (U2)   ✓ VERIFIED vs ST datasheet (internal tuning C = 28.5 pF;
+#   antenna goes straight on AC0/AC1 — no external tuning cap. Antenna geometry
+#   itself is a PCB-layout task.)
 # ─────────────────────────────────────────────────────────────────────────────
 nfc = part("U2_NFC")
 p3v3 += nfc["VCC"]; gnd += nfc["VSS"]
@@ -304,17 +313,29 @@ for key, net in [("SW_UP", btn_up), ("SW_DN", btn_dn),
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# E-ink panel connector J2 (24-pos FPC)   ⚠️ VERIFY pinout vs GDEY029T94 FPC
-# Mapping per parts.yaml (1:GND,2:VDD,3:MOSI,4:SCLK,5:CS,6:DC,7:RST,8:BUSY).
+# E-ink panel connector J2 — GDEY029T94 24-pin FFC   ✓ VERIFIED vs Good Display §5
+# Host supplies VCI/VDDIO (3V3) + VSS, the 6 SPI signals, BS1=GND (4-wire SPI),
+# and a VDD core bypass cap. The booster + HV rails (GDR/RESE/VSH*/VGH/VSL/VGL/VCOM)
+# and the temp-sensor I2C are served by components on the panel FFC tab — passed
+# through as named nets (confirm vs DESPI reference schematic at layout).
+# Pin map (FPC 1-24 = signals, 25-26 = shell):
+#   8=BS1 9=BUSY 10=RES# 11=D/C# 12=CS# 13=SCL 14=SDA 15=VDDIO 16=VCI 17=VSS 18=VDD
 # ─────────────────────────────────────────────────────────────────────────────
 epd = part("J2_EPD")
-gnd += epd["1"]
-epd_p += epd["2"]
-n_epd_mosi += epd["3"]; n_epd_sclk += epd["4"]
-n_epd_cs += epd["5"]; n_epd_dc += epd["6"]
-n_epd_rst += epd["7"]; n_epd_busy += epd["8"]
-for p in range(9, 27):          # remaining signal + mount pads -> GND
-    gnd += epd[str(p)]
+epd["1"] += Net("EPD_NC1"); epd["4"] += Net("EPD_NC4"); epd["19"] += Net("EPD_VPP")  # NC / test
+for p, nm in [("2", "EPD_GDR"), ("3", "EPD_RESE"), ("5", "EPD_VSH2"),
+              ("20", "EPD_VSH1"), ("21", "EPD_VGH"), ("22", "EPD_VSL"),
+              ("23", "EPD_VGL"), ("24", "EPD_VCOM")]:                  # booster/HV (panel-side)
+    epd[p] += Net(nm)
+epd["6"] += Net("EPD_TSCL"); epd["7"] += Net("EPD_TSDA")              # temp-sensor I2C (panel-side)
+gnd += epd["8"]                                                       # BS1 = L -> 4-wire SPI
+n_epd_busy += epd["9"]; n_epd_rst += epd["10"]                        # BUSY / RES#
+n_epd_dc   += epd["11"]; n_epd_cs  += epd["12"]                        # D/C# / CS#
+n_epd_sclk += epd["13"]; n_epd_mosi += epd["14"]                       # SCL / SDA(MOSI)
+epd_p += epd["15"]; epd_p += epd["16"]                                # VDDIO + VCI
+gnd   += epd["17"]                                                    # VSS
+c_epdvdd = C("1uF", "C_epdvdd", "0603"); epd["18"] += c_epdvdd[1]; c_epdvdd[2] += gnd  # VDD core bypass
+gnd += epd["25"]; gnd += epd["26"]                                    # shell / mount pads
 
 
 # ─────────────────────────────────────────────────────────────────────────────

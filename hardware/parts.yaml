@@ -102,17 +102,37 @@ passive_templates:
 eink_panel:
   model: GDEY029T94
   controller: SSD1680
-  interface: 4-wire SPI
-  pins:                       # J2 connector pinout → net
-    1: GND
-    2: "+3V3"
-    3: EPA_SDA        # MOSI  (GPIO9)
-    4: EPA_SCLK       # SCLK  (GPIO10)
-    5: EPA_CS         # CS    (GPIO12)
-    6: EPA_DC         # D/C   (GPIO13)
-    7: EPA_RST        # RST   (GPIO14)
-    8: EPA_BUSY       # BUSY  (GPIO11)
-    # 9..24: GND / NC per GDEY029T94 datasheet (verify at layout)
+  interface: 4-wire SPI (BS1 = L)
+  source: Good Display datasheet §5 (verified 2026-08)
+  pins:                       # J2 connector (FPC 1-24 signal, 25-26 shell)
+    1:  NC            # keep open
+    2:  EPD_GDR       # booster gate drive (panel-side FET)
+    3:  EPD_RESE      # booster current sense (panel-side)
+    4:  NC            # keep open
+    5:  EPD_VSH2      # +source drive (cap, panel-side)
+    6:  EPD_TSCL      # temp-sensor I2C clock (panel-side)
+    7:  EPD_TSDA      # temp-sensor I2C data (panel-side)
+    8:  GND           # BS1 = L  -> 4-wire SPI
+    9:  EPA_BUSY      # BUSY     (GPIO11)
+    10: EPA_RST       # RES#     (GPIO14)
+    11: EPA_DC        # D/C#     (GPIO13)
+    12: EPA_CS        # CS#      (GPIO12)
+    13: EPA_SCLK      # SCL      (GPIO10)
+    14: EPA_SDA       # SDA/MOSI (GPIO9)
+    15: EPD_VDDIO     # tie to VCI
+    16: EPD_VCI       # +3V3 (switched via Q2)
+    17: GND           # VSS
+    18: EPD_VDD       # core 1.8V (internal reg); 1uF to VSS
+    19: EPD_VPP       # test - leave open
+    20: EPD_VSH1      # +source drive (cap, panel-side)
+    21: EPD_VGH       # +gate drive (cap, panel-side)
+    22: EPD_VSL       # -source drive (cap, panel-side)
+    23: EPD_VGL       # -gate drive (cap, panel-side)
+    24: EPD_VCOM      # VCOM (cap, panel-side)
+  note: |
+    Booster (GDR/RESE) and HV rail caps (VSH1/2, VGH, VSL, VGL, VCOM) live on the
+    panel FFC tab — host passes them through. Confirm against the DESPI reference
+    schematic at layout (whether any caps must also be host-side).
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Passives — KiCad stock Device:R / Device:C (0402 unless noted)

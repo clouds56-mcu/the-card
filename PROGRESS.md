@@ -1,11 +1,12 @@
 # Progress — the-card
 
-> Living status log for the ESP32-S3 e-paper smart badge. Last updated 2026-08-05.
+> Living status log for the ESP32-S3 e-paper smart badge. Last updated 2026-08-06.
 
 ## Status
 
-🟢 **Schematic captured in code — validated (0 ERC errors).** Ready for PCB layout
-once KiCad is installed and the 3 VERIFY items are confirmed against datasheets.
+🟢 **Schematic captured in code — validated (0 ERC errors, 53 parts). The 3 VERIFY
+   items are resolved against datasheets (DW01A, ST25DV04KC, GDEY029T94).** Ready
+   for PCB layout once KiCad is installed.
 
 ---
 
@@ -25,19 +26,12 @@ Headline numbers: component BOM ~$21 (@100), landed ~$27/unit; daily-use battery
 life ~3–6 months on a 1000 mAh cell.
 
 ### 3. Repository
-Local git repo, MIT license, `main` branch. Commits so far:
-
-```
-d3de851 feat(hardware): SKiDL schematic -> KiCad netlist (49 parts, ERC clean)
-1ce9bef chore: gitignore SKiDL temp artifacts
-4cb8584 build(hardware): add uv KiCad toolchain + LCSC parts manifest
-8b14cd7 fix(bom): correct LCSC part numbers verified against LCSC
-d4f89a5 Initial commit: project docs, MIT license, repo scaffold
-```
+Local git repo, MIT license, `main` branch.
 
 ### 4. Toolchain (uv-managed, self-contained)
-`skidl` (Python netlist) + `easyeda2kicad` (LCSC → KiCad libs). No KiCad GUI
-needed to generate the netlist — only for later PCB layout.
+`skidl` (Python netlist) + `easyeda2kicad` (LCSC → KiCad libs). Web search via
+Exa (API key in `~/.pi/web-search.json`). No KiCad GUI needed to generate the
+netlist — only for later PCB layout.
 
 ### 5. BOM validation (caught by running easyeda2kicad early)
 6 wrong/stale LCSC numbers found and fixed:
@@ -63,10 +57,26 @@ WS2812 LED · 2× SI2301 power gates · 4× buttons · e-ink FPC connector.
 Power muxing: switchable AUX branch rail (Q1, sensors/LED cut in deep sleep) and
 a gated e-ink VDD (Q2) for zero-idle current.
 
-**ERC: 0 errors · 49 components · clean designators** (U1–U10, Q1–Q2, D1, J1–J2,
-SW1–4, 12× R, 18× C). Output: `the-card.net` (imports into KiCad PCBNEW).
+**ERC: 0 errors · 53 components · clean designators** (U1–U10, Q1–Q2, D1, J1–J2,
+SW1–4, 14× R, 19× C). Output: `the-card.net` (imports into KiCad PCBNEW).
 
 Reproducible pipeline: `parts.yaml → fetch_libs.sh → libraries/ → circuit.py → the-card.net`.
+
+### 7. Datasheet verification (VERIFY items resolved)
+Using Exa web search + the Good Display datasheet PDF:
+
+- **DW01A + FS8205A** ✓ — pin mapping confirmed (EasyEDA `DOUT/VM/COUT` = HMSEMI
+  `DO/CS/CO` = discharge / sense / charge). Found **3 missing required parts** and
+  added them: R1 470Ω (VCC←B+), R2 2kΩ (VM←P-), C1 100nF (VCC-VSS). Gate
+  assignment COUT→G1 / DOUT→G2 and S1=B- / S2=P- verified correct.
+- **ST25DV04KC** ✓ — SO-8 pinout matches the symbol; **internal tuning cap
+  28.5 pF** means the antenna connects directly to AC0/AC1 with **no external
+  cap**. Only the PCB antenna geometry remains (a layout task).
+- **GDEY029T94** ✓ — the assumed 8-signal pinout was **wrong**; the real 24-pin
+  FFC brings out raw SSD1680 pins (datasheet §5). Rewired: SPI on pins 9–14,
+  VCI/VDDIO/VSS on 15–17, BS1=GND (4-wire SPI), VDD core bypass added. Booster +
+  HV rails (GDR/RESE/VSH*/VGH/VSL/VGL/VCOM) are panel-side — passed through as
+  named nets.
 
 ---
 
@@ -99,57 +109,33 @@ Reproducible pipeline: `parts.yaml → fetch_libs.sh → libraries/ → circuit.
 
 | Part | LCSC | Used for |
 |---|---|---|
-| 0402 resistor (0402WGF1002TCE) | C25744 | all R (pullups/dividers/limit) |
-| 0402 capacitor (CL05B104KO5NNNC) | C1525 | all 0402 decouple/filter |
-| 0603 capacitor (CL10A106KP8NNNC) | C19702 | all 0603 bulk (10 µF) |
+| 0402 resistor (0402WGF1002TCE) | C25744 | all R (pullups/dividers/limit/DW01 R1/R2) |
+| 0402 capacitor (CL05B104KO5NNNC) | C1525 | all 0402 decouple/filter (incl. DW01 C1) |
+| 0603 capacitor (CL10A106KP8NNNC) | C19702 | all 0603 bulk (10 µF / e-ink VDD) |
 
 Battery (3.7 V 1000 mAh, 603048) and lanyard hardware are sourced from
 distributors (no LCSC number).
 
 ---
 
-## Repository layout
+## ✅ Datasheet verification (done) — residual layout-time items
 
-```
-the-card/
-├── README.md
-├── LICENSE                       # MIT
-├── PROGRESS.md                   # this file
-├── docs/
-│   ├── architecture.md
-│   ├── bom.md
-│   └── power-budget.md
-├── firmware/                     # (future) ESP-IDF project
-├── mechanical/                   # (future) case / lanyard CAD
-└── hardware/
-    ├── parts.yaml                # SOURCE OF TRUTH: parts, LCSC#s, nets, passives
-    ├── pyproject.toml + uv.lock  # uv project: skidl + easyeda2kicad
-    ├── circuit.py                # schematic in SKiDL -> the-card.net
-    ├── README.md                 # hardware workflow + VERIFY notes
-    ├── scripts/fetch_libs.sh     # regenerate libraries/ from parts.yaml
-    └── libraries/                # GENERATED (gitignored): symbols/footprints/3D
-```
+The three flagged sections were checked against authoritative datasheets (see
+"Completed §7"). Remaining items are layout refinements, not blockers:
 
----
-
-## ⚠️ VERIFY before tape-out
-
-`circuit.py` flags these datasheet-dependent sections:
-
-1. **DW01A + FS8205A** battery-protection topology — safety-critical. The EasyEDA
-   symbol pin naming is non-standard; confirm the gate/source/drain mapping
-   against the DW01A + FS8205A reference design.
-2. **GDEY029T94 FPC pinout** — the 1:GND, 2:VDD, 3:MOSI … mapping must match the
-   panel's FFC. The C6081230 connector footprint from EasyEDA is *staggered* —
-   verify it fits the panel's flat FFC (may need a non-staggered alt).
-3. **ST25DV04KC NFC antenna** — geometry is a PCB-layout task; AC0/AC1 are left
-   as named nets `NFC_ANT_A/B`.
+- **DW01A+FS8205A** — topology confirmed; do a final eyeball of the Fortune
+  FS8205A app circuit before routing the negative-path FETs.
+- **GDEY029T94 booster/HV caps** — confirm whether any must be host-side by
+  cross-checking the DESPI reference schematic (currently assumed panel-side).
+- **ST25DV04KC antenna** — design the 13.56 MHz PCB trace coil on AC0/AC1.
+- **C6081230 FPC footprint** is *staggered* in EasyEDA — verify it fits the
+  panel's flat 24-pin FFC, or pick a non-staggered alternative.
 
 ---
 
 ## Next steps (roadmap)
 
-- [ ] Confirm the 3 VERIFY items against datasheets
+- [x] Confirm the 3 VERIFY items against datasheets
 - [ ] Install KiCad (`brew install --cask kicad`) → import `the-card.net` → PCB layout
   (antenna keepout, FPC placement, lanyard CG, battery clearance)
 - [ ] Optional: auto-generate a `.kicad_sch` from `circuit.py` for a reviewable schematic
