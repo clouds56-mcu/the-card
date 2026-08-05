@@ -74,3 +74,5 @@ hardware/libraries/
 # ---- SKiDL temp/output artifacts ----
 hardware/skidl_REPL*
 hardware/*.erc
+hardware/*_sklib.py
+hardware/*.net

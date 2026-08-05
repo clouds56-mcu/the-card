@@ -75,9 +75,25 @@ lcsc_parts:
     role: Tactile button (watch-style)
     qty: 4                     # SW1 UP, SW2 DOWN, SW3 SEL, SW4 MENU
   - ref: J2
-    name: FPC 24P 0.5mm flip (AFC07)
-    lcsc: C262682
-    role: E-ink panel FPC connector
+    name: FPC 0.5-24P flip-lock (e-ink panel)
+    lcsc: C6081230
+    role: E-ink panel FPC connector (24 signal + 2 mount pads)
+    note: footprint is STAGGERED in EasyEDA — verify against GDEY029T94 flat FFC at layout
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Passive templates — fetched into libraries/passives.kicad_sym (symbol only;
+# footprints are assigned in circuit.py). One symbol reused across many values.
+# ─────────────────────────────────────────────────────────────────────────────
+passive_templates:
+  - lcsc: C25744
+    symbol: 0402WGF1002TCE
+    role: 0402 resistor (reused for all R)
+  - lcsc: C1525
+    symbol: CL05B104KO5NNNC
+    role: 0402 capacitor (reused for all 0402 C)
+  - lcsc: C19702
+    symbol: CL10A106KP8NNNC
+    role: 0603 capacitor (reused for all 0603 C)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # E-ink panel — represented as connector netlist (no LCSC fetch)
