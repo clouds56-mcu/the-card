@@ -1,0 +1,4 @@
+(fp_lib_table
+	(version 7)
+	(lib (name "the-card")(type "KiCad")(uri "${KIPRJMOD}/libraries/the-card.pretty")(options "")(descr "Footprints from LCSC via easyeda2kicad"))
+)
