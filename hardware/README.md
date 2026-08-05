@@ -42,11 +42,11 @@ Open the schematic:
 
 > `gen_schematic.py` **overwrites** `the-card.kicad_sch`. Run it to regenerate
 > from `circuit.py`; once you start hand-editing in eeschema, stop regenerating.
-> v4 uses **pin-cluster placement** (each peripheral sits on the MCU side where its
-> pins are — SPI bus below, buttons & USB left, vbat right — so point-to-point nets
-> become short direct L-wires), real KiCad power symbols + PWR_FLAGs for rails,
-> and net labels for shared buses (I²C). ERC: 0 errors, 13 wires. For final
-> polish, tidy wire-label overlaps in eeschema or split into hierarchical sheets.
+> v3.1 uses **hand-crafted placement** (signal-flow layout: power top-left, MCU
+> centre, sensors left, e-ink/LED below, buttons bottom) + real KiCad power symbols
+> + PWR_FLAGs + net labels for shared buses (I²C). Point-to-point signal nets
+> (SPI bus, buttons, USB, LED, etc.) that land close become direct L-wires.
+> ERC: 0 errors, 13 wires. Tidy wire-label overlaps in eeschema for final polish.
 
 ## How it fits together
 
