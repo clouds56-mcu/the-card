@@ -42,8 +42,10 @@ Open the schematic:
 
 > `gen_schematic.py` **overwrites** `the-card.kicad_sch`. Run it to regenerate
 > from `circuit.py`; once you start hand-editing in eeschema, stop regenerating
-> (or your edits are lost). The v1 layout is functional, not pretty — connections
-> are via net labels at each pin; tidy into wires / sheets as desired.
+> (or your edits are lost). v2 layout groups parts by subsystem (POWER/MCU/DISPLAY/
+> SENSORS/UI bands), uses real KiCad power symbols + PWR_FLAGs for rails, and net
+> labels for signals — ERC-clean (0 errors). It isn't wire-routed; tidy into wires /
+> hierarchical sheets in eeschema for final polish.
 
 ## How it fits together
 
