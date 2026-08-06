@@ -43,28 +43,29 @@ def snap(v):
 # POWER chain top-left · MCU centre · sensors left (I2C) · e-ink/LED below ·
 # buttons bottom · IMU/vbat/gates right. Decoupling caps hug their ICs.
 RAW_PLACE = {
-    # power input & charging
-    "J1": (50, 70), "U10": (108, 70), "U6": (50, 135), "U9": (125, 135),
-    "C_vbus": (90, 110), "C_bat": (90, 160), "R_prog": (78, 168), "R_chrg": (108, 96),
-    "C_ldoi": (155, 120), "C_ldoo": (155, 152),
-    # battery protection + fuel gauge + gates
-    "U7": (50, 205), "U8": (120, 205), "U5": (195, 205),
-    "R_dvcc": (78, 188), "R_dvm": (158, 222), "C_dprot": (90, 225),
-    "C_fg": (225, 188), "Q1": (270, 135), "Q2": (270, 205),
-    "R_q1g": (298, 116), "R_q2g": (298, 188),
-    # MCU + local support
-    "U1": (372, 158), "C_mcu1": (332, 96), "C_mcu2": (354, 96),
-    "C_en": (410, 96), "R_en": (410, 76), "R_io0": (414, 212),
-    "R_vbh": (446, 124), "R_vbl": (470, 146), "C_vb": (446, 146),
-    # sensors / NFC (left, near MCU I2C pins)
-    "U2": (250, 150), "U3": (250, 220), "U4": (305, 220),
-    "C_nfc": (218, 150), "C_imu1": (218, 220), "C_imu2": (250, 250),
-    "C_sht": (305, 250), "R_scl": (218, 178), "R_sda": (235, 178),
+    # power chain top-left (USB moved to MCU side; only charger/prot/LDO/FG/gates here)
+    "U6": (50, 75), "U9": (125, 75),
+    "C_vbus": (90, 50), "C_bat": (90, 100), "R_prog": (78, 108), "R_chrg": (108, 50),
+    "C_ldoi": (155, 60), "C_ldoo": (155, 92),
+    "U7": (50, 160), "U8": (120, 160), "U5": (195, 160),
+    "R_dvcc": (78, 143), "R_dvm": (158, 178), "C_dprot": (90, 180),
+    "C_fg": (225, 143), "Q1": (270, 75), "Q2": (270, 160),
+    "R_q1g": (298, 56), "R_q2g": (298, 143),
+    # USB-C + ESD (moved to MCU left side, near USB_DM/DP pins)
+    "J1": (265, 115), "U10": (310, 115),
+    # MCU centre + local support (decoupling caps hugging the module)
+    "U1": (420, 220), "C_mcu1": (390, 152), "C_mcu2": (400, 152),
+    "C_en": (450, 152), "R_en": (450, 132), "R_io0": (454, 270),
+    "R_vbh": (486, 185), "R_vbl": (510, 207), "C_vb": (486, 207),
+    # sensors / NFC (right of USB, near MCU I2C pins on the left edge)
+    "U2": (310, 170), "U3": (310, 245), "U4": (355, 245),
+    "C_nfc": (280, 170), "C_imu1": (280, 245), "C_imu2": (310, 275),
+    "C_sht": (355, 275), "R_scl": (280, 198), "R_sda": (295, 198),
     # e-ink + LED (below MCU, near SPI/LED pins)
-    "J2": (360, 258), "C_epdvdd": (360, 232), "D1": (430, 258), "C_led": (430, 232),
-    # buttons (bottom)
-    "SW1": (300, 320), "SW2": (340, 320), "SW3": (380, 320), "SW4": (420, 320),
-    "C_btn1": (300, 344), "C_btn2": (340, 344), "C_btn3": (380, 344), "C_btn4": (420, 344),
+    "J2": (370, 320), "C_epdvdd": (370, 292), "D1": (465, 320), "C_led": (465, 292),
+    # buttons (below J2/LED area, near MCU left-side BTN pins)
+    "SW1": (290, 385), "SW2": (330, 385), "SW3": (370, 385), "SW4": (410, 385),
+    "C_btn1": (290, 408), "C_btn2": (330, 408), "C_btn3": (370, 408), "C_btn4": (410, 408),
 }
 
 
@@ -96,6 +97,18 @@ for p in parts:
     p["x"], p["y"], p["rot"] = snap(x), snap(y), 0
 PAPER = "A1"
 
+# ── collision avoidance: nudge parts whose pin endpoints collide cross-net ───
+occupied = {}
+for p in parts:
+    for pin in p["pins"]:
+        if not pin["net"]: continue
+        ax = p["x"] + (pin["x"] or 0)
+        ay = p["y"] - (pin["y"] or 0)
+        c = (round(ax, 3), round(ay, 3))
+        if c in occupied and occupied[c] != pin["net"]:
+            p["x"] += 2.54
+        else:
+            occupied[c] = pin["net"]
 
 # ── symbol-block extraction ──────────────────────────────────────────────────
 def extract_symbols(path):
