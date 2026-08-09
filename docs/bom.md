@@ -4,6 +4,7 @@
 > **Reference quantity: @100 units** (small-batch / DIY group buy); @1 (prototype) and @1k (production trend) also listed.
 
 📌 Price columns show **line totals** (unit price × "Qty"), not unit prices.
+An em dash means the distributor quote has not yet been captured.
 
 ---
 
@@ -13,7 +14,7 @@
 |---|---|---|---|---|---|---|---|---|
 | 1 | MCU | WiFi+BLE module | ESP32-S3-WROOM-1-N8R2 | C2913204 | 1 | 5.08 | **4.03** | 3.84 |
 | 2 | Display | 2.9" e-paper 296×128 SSD1680 | GDEY029T94 (Good Display) | distributor¹ | 1 | 7.60 | **7.00** | 5.50 |
-| 3 | Display aux | FPC connector 24P 0.5 mm flip | FPC0.5-24P | C6081230 | 1 | 0.25 | 0.10 | 0.06 |
+| 3 | Display aux | FPC connector 24P 0.5 mm ZIF | FH12-24S-0.5SH(55) | distributor | 1 | — | — | — |
 | 4 | NFC | Dynamic tag IC with GPO wake | ST25DV04KC-IE8S3 | C5221752 | 1 | 0.91 | **0.55** | 0.44 |
 | 5 | IMU | 6-axis accel + gyro | LSM6DSOTR | C2655100 | 1 | 3.50 | **2.50** | 2.20 |
 | 6 | Temp/Humidity | Digital T/RH | SHT40-BD1B-R2 | C7461849 | 1 | 1.93 | **1.32** | 1.21 |

@@ -72,8 +72,10 @@ PCB-layout items are:
 
 - **DW01A+FS8205A** — topology confirmed; final eyeball of the FS8205A app circuit.
 - **ST25DV04KC antenna** — route one continuous 13.56 MHz PCB loop between AC0/AC1.
-- **C6081230 FPC footprint** is *staggered* in EasyEDA — verify it fits the panel's
-  flat 24-pin FFC, or pick a non-staggered alternative.
+- **Display FPC** — J2 is now the verified single-row Hirose
+  FH12-24S-0.5SH(55): 24 positions, 0.5 mm pitch, bottom contact, for a 0.30 mm
+  FPC. The project footprint numbers its two hold-down tabs 25 and 26 so both
+  are tied to ground by the schematic.
 - **JST-PH battery polarity** — verify the selected pack's cable before plugging it in.
 
 ## Gotchas

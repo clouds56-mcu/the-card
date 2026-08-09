@@ -76,10 +76,10 @@ lcsc_parts:
     role: Tactile button (watch-style)
     qty: 4                     # SW1 UP, SW2 DOWN, SW3 SEL, SW4 MENU
   - ref: J2
-    name: FPC 0.5-24P flip-lock (e-ink panel)
-    lcsc: C6081230
+    name: Hirose FH12-24S-0.5SH(55)
+    lcsc: distributor
     role: E-ink panel FPC connector (24 signal + 2 mount pads)
-    note: footprint is STAGGERED in EasyEDA — verify against GDEY029T94 flat FFC at layout
+    note: bottom-contact ZIF, 0.5 mm pitch, for 0.30 mm FPC
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Passive templates — fetched into libraries/passives.kicad_sym (symbol only;
@@ -241,7 +241,6 @@ rails:
 # TODO at layout time
 # ─────────────────────────────────────────────────────────────────────────────
 todo:
-  - Verify the J2 footprint against the GDEY029T94 flat 24-pin FFC
   - NFC antenna geometry (continuous PCB loop on NFC_ANTENNA, about 13.56MHz)
   - Antenna keepout under ESP32-S3-WROOM-1 PCB antenna
   - Lanyard hole / CG placement

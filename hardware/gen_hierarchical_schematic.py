@@ -650,7 +650,9 @@ def build_parts() -> tuple[list[dict], dict[str, set[str]]]:
     footprint = getattr(skidl_part, "footprint", None) or symbol_field(
       skidl_part.name, "Footprint"
     )
-    datasheet = symbol_field(skidl_part.name, "Datasheet")
+    datasheet = getattr(skidl_part, "datasheet", None) or symbol_field(
+      skidl_part.name, "Datasheet"
+    )
     parts.append({
       "ref": skidl_part.ref,
       "name": skidl_part.name,

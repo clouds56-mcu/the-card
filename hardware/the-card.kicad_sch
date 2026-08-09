@@ -9079,15 +9079,15 @@
 			(at 558.8 275.59 0)
 			(effects (font (size 1.2 1.2) (bold yes)))
 		)
-		(property "Value" "FPC 0.5-24P LTH2.0"
+		(property "Value" "FH12-24S-0.5SH(55)"
 			(at 576.58 323.85 0)
 			(effects (font (size 1 1)))
 		)
-		(property "Footprint" "the-card:FPC-SMD_FPC-0.5-24P-LTH2.0"
+		(property "Footprint" "the-card:Hirose_FH12-24S-0.5SH_1x24-2MP_P0.50mm_Horizontal"
 			(at 558.8 298.45 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/C6081230.pdf"
+		(property "Datasheet" "https://www.hirose.com/product/p/CL0586-0521-0-55"
 			(at 558.8 298.45 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
