@@ -10,10 +10,12 @@ hardware/
 ├── pyproject.toml + uv.lock# uv project: skidl + easyeda2kicad (+ pypdf dev)
 ├── circuit.py              # the design in SKiDL (connectivity) -> the-card.net
 ├── gen_hierarchical_schematic.py # current deterministic A2 layout generator
+├── gen_pcb.py              # deterministic board outline, keepouts, and placement
 ├── verify_schematic.py     # compare every KiCad pin's peers with circuit.py
 ├── gen_schematic.py        # legacy flat-layout generator; not used currently
 ├── the-card.kicad_pro      # KiCad 10 project
 ├── the-card.kicad_sch      # GENERATED single-page A2 schematic
+├── the-card.kicad_pcb      # GENERATED four-layer PCB layout
 ├── sym-lib-table / fp-lib-table  # register our the-card + passives libraries
 ├── SCHEMATIC-GUIDE.md      # functional-region drawing and review notes
 ├── datasheets/             # archived datasheet PDFs + index
@@ -42,6 +44,20 @@ The verifier exports the complete KiCad schematic and compares the peer set of
 every component pin with the canonicalized SKiDL circuit. The expected result is
 75 components and 286 component pins with identical connectivity. KiCad ERC has
 0 violations.
+
+Generate the PCB placement with KiCad's bundled Python:
+
+```bash
+/Applications/KiCad/KiCad.app/Contents/Frameworks/\
+Python.framework/Versions/3.9/bin/python3 gen_pcb.py
+kicad-cli pcb drc --output /tmp/pcb-drc.json --format json the-card.kicad_pcb
+```
+
+The board is a portrait ID-1 outline (53.98 × 85.60 mm), four layers, and
+0.8 mm thick. The display and controls are on the front; the ESP32, battery,
+sensors, power circuitry, USB-C, and display connector are on the rear. The
+generator encodes display, 603048 battery, and ESP32 antenna keepouts. The
+current placement baseline is DRC-clean apart from intentionally unrouted nets.
 
 Open the schematic:
 ```bash
