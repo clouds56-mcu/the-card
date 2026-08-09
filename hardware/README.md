@@ -9,11 +9,13 @@ hardware/
 ├── parts.yaml              # SOURCE OF TRUTH: parts, LCSC#s, nets, passives
 ├── pyproject.toml + uv.lock# uv project: skidl + easyeda2kicad (+ pypdf dev)
 ├── circuit.py              # the design in SKiDL (connectivity) -> the-card.net
-├── gen_schematic.py        # circuit.py + libs -> the-card.kicad_sch (placed)
+├── gen_hierarchical_schematic.py # current deterministic A2 layout generator
+├── verify_schematic.py     # compare every KiCad pin's peers with circuit.py
+├── gen_schematic.py        # legacy flat-layout generator; not used currently
 ├── the-card.kicad_pro      # KiCad 10 project
-├── the-card.kicad_sch      # GENERATED schematic (53 parts, ERC 0 errors)
+├── the-card.kicad_sch      # GENERATED single-page A2 schematic
 ├── sym-lib-table / fp-lib-table  # register our the-card + passives libraries
-├── SCHEMATIC-GUIDE.md      # per-sheet drawing notes (if hand-tidying in eeschema)
+├── SCHEMATIC-GUIDE.md      # functional-region drawing and review notes
 ├── datasheets/             # archived datasheet PDFs + index
 ├── scripts/fetch_libs.sh   # regenerate libraries/ from LCSC#s in parts.yaml
 └── libraries/              # GENERATED (gitignored): symbols / footprints / 3D
@@ -27,33 +29,40 @@ uv sync                     # create .venv, install skidl + easyeda2kicad
 ./scripts/fetch_libs.sh     # fetch symbol/footprint/3D for every LCSC part
 ```
 
-## Generate the schematic + netlist
+## Generate and verify
 
 ```bash
-uv run python circuit.py        # SKiDL: build circuit, ERC, write the-card.net
-uv run python gen_schematic.py  # place parts + net-label every pin -> the-card.kicad_sch
-kicad-cli sch erc the-card.kicad_sch -o /tmp/erc.txt   # 0 errors expected
+uv run python circuit.py
+uv run python gen_hierarchical_schematic.py
+uv run python verify_schematic.py
+kicad-cli sch erc --severity-all the-card.kicad_sch -o /tmp/erc.txt
 ```
+
+The verifier exports the complete KiCad schematic and compares the peer set of
+every component pin with the canonicalized SKiDL circuit. The expected result is
+53 components and 247 component pins with identical connectivity. KiCad ERC has
+0 errors and 17 intentional `isolated_pin_label` warnings for one-ended test,
+antenna, motor, and e-paper panel nets.
 
 Open the schematic:
 ```bash
 /Applications/KiCad/KiCad.app/Contents/MacOS/eeschema the-card.kicad_sch
 ```
 
-> `gen_schematic.py` **overwrites** `the-card.kicad_sch`. Run it to regenerate
-> from `circuit.py`; once you start hand-editing in eeschema, stop regenerating.
-> v3.1 uses **hand-crafted placement** (signal-flow layout: power top-left, MCU
-> centre, sensors left, e-ink/LED below, buttons bottom) + real KiCad power symbols
-> + PWR_FLAGs + net labels for shared buses (I²C). Point-to-point signal nets
-> (SPI bus, buttons, USB, LED, etc.) that land close become direct L-wires.
-> ERC: 0 errors, 13 wires. Tidy wire-label overlaps in eeschema for final polish.
+> `gen_hierarchical_schematic.py` is retained under its original filename, but it
+> now emits one A2 sheet. It overwrites `the-card.kicad_sch`; put durable layout
+> changes into its placement and region-offset tables so regeneration stays
+> deterministic. `gen_schematic.py` is the previous flat A1 generator and is
+> retained only as a reference.
 
 ## How it fits together
 
-`parts.yaml` is the single source of truth. `fetch_libs.sh` builds the two KiCad
-libraries; `circuit.py` wires the circuit (ERC-verified, datasheet-cross-checked);
-`gen_schematic.py` places the parts and emits the `.kicad_sch`. Change the design
-→ edit `circuit.py` → re-run both generators.
+`parts.yaml` holds procurement and part data. `fetch_libs.sh` builds the two KiCad
+libraries, while `circuit.py` defines electrical connectivity and emits
+`the-card.net`. The layout generator imports that circuit and changes only its
+presentation: one A2 page containing Power/USB, MCU, NFC/sensors, e-paper, and UI
+regions. For an electrical change, update `circuit.py`, regenerate the netlist and
+schematic, then run `verify_schematic.py` before accepting the result.
 
 ## Verification status (done)
 
@@ -72,9 +81,10 @@ Residual layout-time items (non-blocking):
 - **easyeda2kicad 1.0.1:** `--output` must be **absolute** with
   `--project-relative` (relative paths crash). `fetch_libs.sh` handles this.
 - **EasyEDA API 403:** rate-limits after a big batch — re-run in a few minutes.
-- **skidl reports pin Y inverted** vs KiCad (math y-up vs KiCad y-down);
-  `gen_schematic.py` negates Y when placing labels.
+- **SKiDL reports pin Y inverted** vs KiCad (math y-up vs KiCad y-down); the
+  layout generator handles KiCad's screen-coordinate rotations explicitly.
 - **ESP32-S3-WROOM-1** does **not** break out GPIO33/34 (reserved by internal
   SPI); `circuit.py` uses GPIO16 for `EPD_PWR_EN`.
-- `gen_schematic.py` sets all embedded pins to `passive` type (EasyEDA mistypes
-  them) so KiCad ERC is clean; real connectivity is verified in `circuit.py`.
+- The generator sets embedded part pins to `passive` because several EasyEDA
+  symbols have incorrect electrical types. `verify_schematic.py` independently
+  checks actual connectivity rather than relying on those types.
