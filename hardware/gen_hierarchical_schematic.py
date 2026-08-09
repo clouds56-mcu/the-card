@@ -491,7 +491,7 @@ def power_symbol(
   point: tuple[float, float],
   direction: str,
 ) -> str:
-  intrinsic = 270 if net_name == "GND" else 90
+  intrinsic = 90
   label_angle = {"right": 180, "left": 0, "up": 270, "down": 90}[direction]
   angle = (label_angle - intrinsic) % 360
   dx, dy = direction_vector(direction, g(2.5))
