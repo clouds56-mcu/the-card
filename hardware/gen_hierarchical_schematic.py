@@ -29,6 +29,9 @@ LIBS = HERE / "libraries"
 POWER_LIB = Path(
   "/Applications/KiCad/KiCad.app/Contents/SharedSupport/symbols/power.kicad_sym"
 )
+STANDARD_SYMBOL_DIR = Path(
+  "/Applications/KiCad/KiCad.app/Contents/SharedSupport/symbols"
+)
 PROJECT = "the-card"
 TITLE = "the-card - ESP32-S3 e-paper smart badge"
 DATE = "2026-08-09"
@@ -36,8 +39,15 @@ GRID = 1.27
 NAMESPACE = uuid.UUID("fc4df8d7-161d-494c-8bdb-f31f5ce3a8c0")
 
 PASSIVE_SYMS = {"0402WGF1002TCE", "CL05B104KO5NNNC", "CL10A106KP8NNNC"}
+STANDARD_SYMBOL_LIBS = {
+  "Conn_01x02": "Connector_Generic",
+  "D": "Device",
+  "L": "Device",
+  "Q_NMOS_GSD": "Transistor_FET",
+  "TestPoint": "Connector",
+}
 SYMBOL_POWER_NETS = {"GND", "+3V3", "VBUS"}
-CUSTOM_POWER_NETS = {"+BAT", "AUX_3V3", "EPD_VDD"}
+CUSTOM_POWER_NETS = {"+BAT", "AUX_3V3", "EPD_VCI"}
 
 
 def uid(*parts: object) -> str:
@@ -85,14 +95,16 @@ SHEETS = (
   SheetSpec(
     key="power_usb",
     refs=frozenset({
-      "J1", "U10", "R_cc1", "R_cc2", "C_vbus",
+      "J1", "J3", "U10", "R_cc1", "R_cc2", "C_vbus",
       "U6", "R_prog", "R_chrg", "C_bat",
       "U7", "U8", "R_dvcc", "R_dvm", "C_dprot",
       "U9", "C_ldoi", "C_ldoo", "U5", "C_fg",
       "Q1", "R_q1g", "Q2", "R_q2g",
+      "TP1", "TP2", "TP3", "TP4",
     }),
     placements={
       "J1": p(65, 50),
+      "J3": p(20, 140),
       "U10": p(25, 50, 180),
       "R_cc1": p(47, 37),
       "R_cc2": p(47, 65),
@@ -115,6 +127,10 @@ SHEETS = (
       "R_q1g": p(187, 116, 270),
       "Q2": p(245, 130),
       "R_q2g": p(242, 116, 270),
+      "TP1": p(18, 152),
+      "TP2": p(30, 152),
+      "TP3": p(205, 152),
+      "TP4": p(217, 152),
     },
     notes=(
       ("USB-C input, ESD, and charger", g(12), g(12), 1.8),
@@ -127,18 +143,20 @@ SHEETS = (
     key="mcu",
     refs=frozenset({
       "U1", "C_mcu1", "C_mcu2", "R_en", "C_en", "R_io0",
-      "R_vbh", "R_vbl", "C_vb",
+      "R_vbh", "R_vbl", "C_vb", "TP5", "TP6",
     }),
     placements={
       "U1": p(115, 70),
-      "C_mcu1": p(80, 43, 270),
-      "C_mcu2": p(92, 43, 270),
+      "C_mcu1": p(72, 43),
+      "C_mcu2": p(96, 43),
       "R_en": p(87, 58, 270),
       "C_en": p(67, 70, 270),
-      "R_io0": p(145, 88, 180),
+      "R_io0": p(148, 82, 270),
       "R_vbh": p(145, 60, 270),
       "R_vbl": p(145, 68, 270),
       "C_vb": p(158, 68, 270),
+      "TP5": p(70, 102),
+      "TP6": p(158, 102),
     },
     notes=(
       ("Controller, boot straps, decoupling, and battery ADC", g(12), g(12), 1.8),
@@ -170,14 +188,34 @@ SHEETS = (
   ),
   SheetSpec(
     key="epaper",
-    refs=frozenset({"J2", "C_epdvdd"}),
+    refs=frozenset({
+      "J2", "L1", "Q3", "D2", "D3", "D4", "R_epdg", "R_epds",
+      "C_epd_in", "C_epd_pump", "C_epdvdd", "C_epd_vsh2",
+      "C_epd_vsh1", "C_epd_vgh", "C_epd_vsl", "C_epd_vgl",
+      "C_epd_vcom",
+    }),
     placements={
-      "J2": p(115, 70),
-      "C_epdvdd": p(140, 75),
+      "J2": p(170, 70),
+      "L1": p(45, 55),
+      "Q3": p(75, 70),
+      "D2": p(95, 25),
+      "D3": p(95, 38),
+      "D4": p(105, 55),
+      "R_epdg": p(65, 95, 270),
+      "R_epds": p(85, 95, 270),
+      "C_epd_in": p(25, 85),
+      "C_epd_pump": p(58, 30),
+      "C_epd_vsh2": p(130, 25),
+      "C_epd_vgh": p(130, 43),
+      "C_epd_vsh1": p(130, 61),
+      "C_epdvdd": p(130, 79),
+      "C_epd_vsl": p(130, 97),
+      "C_epd_vgl": p(130, 115),
+      "C_epd_vcom": p(130, 122),
     },
     notes=(
       ("GDEY029T94 24-pin FPC interface", g(12), g(12), 1.8),
-      ("Panel booster and high-voltage pins remain named for PCB review.", g(12), g(20), 1.1),
+      ("Panel-specific SSD1680 booster and 25 V rail capacitors", g(12), g(20), 1.1),
     ),
   ),
   SheetSpec(
@@ -205,6 +243,21 @@ SHEETS = (
   ),
 )
 
+# Placement tables remain readable through circuit.py's semantic passive names,
+# while generated KiCad references use conventional R1/C1 designators.
+SHEETS = tuple(
+  SheetSpec(
+    key=sheet.key,
+    refs=frozenset(circuit.physical_ref(ref) for ref in sheet.refs),
+    placements={
+      circuit.physical_ref(ref): placement
+      for ref, placement in sheet.placements.items()
+    },
+    notes=sheet.notes,
+  )
+  for sheet in SHEETS
+)
+
 SHEET_BY_REF = {ref: sheet for sheet in SHEETS for ref in sheet.refs}
 
 # Preserve each functional block's local placement and tile the blocks onto A2.
@@ -220,8 +273,20 @@ SINGLE_PAGE_OFFSETS = {
 
 # These shared buses are clearer as repeated named stubs than as long wires.
 LABEL_EACH_NETS = {
+  ("mcu", "MCU_BOOT"),
+  ("mcu", "MCU_EN"),
+  ("sensors_nfc", "NFC_ANTENNA"),
   ("sensors_nfc", "I2C_SCL"),
   ("sensors_nfc", "I2C_SDA"),
+  ("epaper", "EPD_VCOM"),
+  ("epaper", "EPD_GDR"),
+  ("epaper", "EPD_RESE"),
+  ("epaper", "EPD_VDD_CORE"),
+  ("epaper", "EPD_VGH"),
+  ("epaper", "EPD_VGL"),
+  ("epaper", "EPD_VSH1"),
+  ("epaper", "EPD_VSH2"),
+  ("epaper", "EPD_VSL"),
 }
 
 # The FS8205A exposes its common drain on two opposite pins. Repeated labels
@@ -276,6 +341,8 @@ def extract_symbols(path: Path) -> dict[str, str]:
 SYMBOLS: dict[str, str] = {}
 for library_filename in ("passives.kicad_sym", "the-card.kicad_sym"):
   SYMBOLS.update(extract_symbols(LIBS / library_filename))
+for library_name in sorted(set(STANDARD_SYMBOL_LIBS.values())):
+  SYMBOLS.update(extract_symbols(STANDARD_SYMBOL_DIR / f"{library_name}.kicad_sym"))
 POWER_SYMBOLS = extract_symbols(POWER_LIB)
 
 
@@ -445,7 +512,9 @@ def global_label(
 ) -> list[str]:
   pin_number = pin["number"]
   direction = outward_direction(part, point, pin)
-  distance = g(5) if part["ref"] == "U1" else g(4)
+  is_mcu = part["ref"] == "U1"
+  distance = g(5) if is_mcu else g(4)
+  font_size = 0.8 if is_mcu else 1
   dx, dy = direction_vector(direction, distance)
   anchor = snap(point[0] + dx), snap(point[1] + dy)
   angle, justify = {
@@ -458,7 +527,7 @@ def global_label(
     f"\t(global_label \"{esc(net_name)}\"\n"
     "\t\t(shape bidirectional)\n"
     f"\t\t(at {fmt(anchor[0])} {fmt(anchor[1])} {angle})\n"
-    "\t\t(effects (font (size 1 1)) "
+    f"\t\t(effects (font (size {fmt(font_size)} {fmt(font_size)})) "
     f"(justify {justify}))\n"
     f"\t\t(uuid \"{uid('label', sheet_key, net_name, part['ref'], pin_number)}\")\n"
     "\t)"
@@ -561,7 +630,10 @@ def build_parts() -> tuple[list[dict], dict[str, set[str]]]:
     sheet = SHEET_BY_REF[skidl_part.ref]
     placement = sheet.placements[skidl_part.ref]
     offset_x, offset_y = SINGLE_PAGE_OFFSETS[sheet.key]
-    library = "passives" if skidl_part.name in PASSIVE_SYMS else "the-card"
+    if skidl_part.name in PASSIVE_SYMS:
+      library = "passives"
+    else:
+      library = STANDARD_SYMBOL_LIBS.get(skidl_part.name, "the-card")
     pins = []
     for skidl_pin in skidl_part.pins:
       net_name = skidl_pin.nets[0].name if skidl_pin.nets else ""

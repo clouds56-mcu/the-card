@@ -6,7 +6,7 @@ installed; the schematic opens in eeschema and is ERC-clean (0 errors).
 
 ```
 hardware/
-├── parts.yaml              # SOURCE OF TRUTH: parts, LCSC#s, nets, passives
+├── parts.yaml              # parts/procurement manifest, kept in sync with circuit.py
 ├── pyproject.toml + uv.lock# uv project: skidl + easyeda2kicad (+ pypdf dev)
 ├── circuit.py              # the design in SKiDL (connectivity) -> the-card.net
 ├── gen_hierarchical_schematic.py # current deterministic A2 layout generator
@@ -35,14 +35,13 @@ uv sync                     # create .venv, install skidl + easyeda2kicad
 uv run python circuit.py
 uv run python gen_hierarchical_schematic.py
 uv run python verify_schematic.py
-kicad-cli sch erc --severity-all the-card.kicad_sch -o /tmp/erc.txt
+kicad-cli sch erc --severity-all --output /tmp/erc.json --format json the-card.kicad_sch
 ```
 
 The verifier exports the complete KiCad schematic and compares the peer set of
 every component pin with the canonicalized SKiDL circuit. The expected result is
-53 components and 247 component pins with identical connectivity. KiCad ERC has
-0 errors and 17 intentional `isolated_pin_label` warnings for one-ended test,
-antenna, motor, and e-paper panel nets.
+75 components and 286 component pins with identical connectivity. KiCad ERC has
+0 violations.
 
 Open the schematic:
 ```bash
@@ -66,15 +65,16 @@ schematic, then run `verify_schematic.py` before accepting the result.
 
 ## Verification status (done)
 
-All three originally-flagged sections were checked against datasheets (see
-`../PROGRESS.md` §7 and the full pinout cross-check). No wiring errors found.
-Residual layout-time items (non-blocking):
+The originally flagged sections were checked against datasheets (see
+`../PROGRESS.md` §7 and the full pinout cross-check). The bare panel's required
+SSD1680 booster and 25 V bypass network are now present on the host PCB. Residual
+PCB-layout items are:
 
 - **DW01A+FS8205A** — topology confirmed; final eyeball of the FS8205A app circuit.
-- **GDEY029T94 booster/HV caps** — confirm host-side need vs DESPI reference.
-- **ST25DV04KC antenna** — design the 13.56 MHz PCB trace coil on AC0/AC1.
+- **ST25DV04KC antenna** — route one continuous 13.56 MHz PCB loop between AC0/AC1.
 - **C6081230 FPC footprint** is *staggered* in EasyEDA — verify it fits the panel's
   flat 24-pin FFC, or pick a non-staggered alternative.
+- **JST-PH battery polarity** — verify the selected pack's cable before plugging it in.
 
 ## Gotchas
 

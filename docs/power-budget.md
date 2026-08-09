@@ -24,7 +24,7 @@ Sources: ESP32-S3 datasheet + Espressif official power-measurement guide + commu
 
 | Peripheral | Standby / active current | Notes |
 |---|---|---|
-| E-paper SSD1680 | static **0 µA** (bistable) / ~3 mA during refresh (on-panel boost) | during refresh the ESP is also Active, total ~30 mA |
+| E-paper SSD1680 | static **0 µA** (bistable) / ~3 mA during refresh (host boost stage) | during refresh the ESP is also Active, total ~30 mA |
 | ST25DV04KC NFC | ~1 µA (standby, no RF field) | under RF field, powered by the phone |
 | LSM6DSO IMU | LP 0.012 mA / shutdown 3 µA | |
 | SHT40 T/RH | 0.0004 mA standby / 1.2 mA × 2 ms | negligible at 1/min sampling |
@@ -32,7 +32,7 @@ Sources: ESP32-S3 datasheet + Espressif official power-measurement guide + commu
 | ME6211 LDO | 0.003 mA | always resident |
 | TP4056 (not charging) | ~0.005 mA (BAT side) | |
 | WS2812 (**~0.6 mA even when off**) | **must be MOSFET-gated** | ⚠️ the biggest leakage killer |
-| Branch rail after MOSFET cut | 0 µA | sensors/LED/motor all cut |
+| AUX branch rail after MOSFET cut | 0 µA | status LED fully cut; sensors remain on +3V3 |
 
 > **Critical:** WS2812 still draws ~0.6 mA when "off" due to internal latching. Ungated, a 1000 mAh cell **lasts only ~60 days on leakage alone**. This project gates the branch rail via `PWR_AUX` (GPIO47) → P-MOSFET.
 
@@ -134,6 +134,6 @@ baseline total       ~36 µA  →  0.86 mAh/day
 
 ## 7. Charge Time
 
-- TP4056 set to 1 A charge current (`PROG` pin = 1.2 kΩ)
-- 1000 mAh cell: CC phase ~1 h + CV phase ~1 h ≈ **full charge ~2 h**
+- TP4056 set to approximately 500 mA charge current (`PROG` pin = 2.2 kΩ)
+- 1000 mAh cell: CC phase ~2 h plus CV taper ≈ **full charge ~3 h**
 - USB-C 5 V/1 A input is enough — no fast-charge needed

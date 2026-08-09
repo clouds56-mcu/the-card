@@ -1,12 +1,12 @@
 # Progress — the-card
 
-> Living status log for the ESP32-S3 e-paper smart badge. Last updated 2026-08-06.
+> Living status log for the ESP32-S3 e-paper smart badge. Last updated 2026-08-09.
 
 ## Status
 
-🟢 **Schematic generated as a real `.kicad_sch` (KiCad 10, 53 parts, ERC 0 errors) —
-   not just a netlist.** All pinouts cross-checked against datasheets. Ready for
-   hand-tidying in eeschema, then PCB layout.
+🟢 **Single-page schematic generated as a real `.kicad_sch` (KiCad 10, 75 parts,
+   ERC 0 violations).** Connectivity is verified against the SKiDL circuit. The
+   design is ready to move into PCB placement after the FPC footprint check.
 
 ---
 
@@ -22,8 +22,8 @@ watch-style buttons, on-board sensors, lanyard form factor. Open-source, MIT.
 - `docs/bom.md` — full BOM (LCSC #s / prices) + landed-cost analysis
 - `docs/power-budget.md` — state-based power model + battery-life scenarios
 
-Headline numbers: component BOM ~$21 (@100), landed ~$27/unit; daily-use battery
-life ~3–6 months on a 1000 mAh cell.
+Headline numbers: component BOM ~$21.5 (@100), landed ~$28/unit; daily-use battery
+life ~6–9 months on a 1000 mAh cell.
 
 ### 3. Repository
 Local git repo, MIT license, `main` branch.
@@ -52,13 +52,16 @@ internal SPI) → `EPD_PWR_EN` moved to GPIO16.
 `hardware/circuit.py` captures the full electrical design:
 ESP32-S3 MCU · USB-C + ESD · TP4056 charger · DW01A + FS8205A protection ·
 ME6211 LDO · MAX17048 fuel gauge · ST25DV04KC NFC · LSM6DSO IMU · SHT40 ·
-WS2812 LED · 2× SI2301 power gates · 4× buttons · e-ink FPC connector.
+WS2812 LED · 2× SI2301 power gates · 4× buttons · battery connector · e-ink FPC
+connector and complete host-side SSD1680 boost network.
 
-Power muxing: switchable AUX branch rail (Q1, sensors/LED cut in deep sleep) and
-a gated e-ink VDD (Q2) for zero-idle current.
+Power muxing: switchable AUX branch rail (Q1, status LED only) and a gated e-ink
+VCI/booster input (Q2). The I²C sensors remain on +3V3 with the bus pullups to
+avoid back-powering an unpowered device.
 
-**ERC: 0 errors · 53 components · clean designators** (U1–U10, Q1–Q2, D1, J1–J2,
-SW1–4, 14× R, 19× C). Output: `the-card.net` (imports into KiCad PCBNEW).
+**ERC: 0 violations · 75 components · 286 component pins.** EN, IO0, battery,
+3.3 V, and ground test points are included for first-board bring-up. Output:
+`the-card.net` plus the generated single-page `the-card.kicad_sch`.
 
 Reproducible pipeline: `parts.yaml → fetch_libs.sh → libraries/ → circuit.py → the-card.net`.
 
@@ -73,10 +76,11 @@ Using Exa web search + the Good Display datasheet PDF:
   28.5 pF** means the antenna connects directly to AC0/AC1 with **no external
   cap**. Only the PCB antenna geometry remains (a layout task).
 - **GDEY029T94** ✓ — the assumed 8-signal pinout was **wrong**; the real 24-pin
-  FFC brings out raw SSD1680 pins (datasheet §5). Rewired: SPI on pins 9–14,
-  VCI/VDDIO/VSS on 15–17, BS1=GND (4-wire SPI), VDD core bypass added. Booster +
-  HV rails (GDR/RESE/VSH*/VGH/VSL/VGL/VCOM) are panel-side — passed through as
-  named nets.
+  FFC brings out raw SSD1680 pins. Rewired: SPI on pins 9–14, VCI/VDDIO/VSS on
+  15–17, BS1=GND (4-wire SPI), and intentionally unused pins marked NC. The
+  panel-specific reference design confirms that the 47 µH boost stage, 30 V
+  MOSFET/diodes, pump capacitors, and HV rail bypass capacitors are host-side;
+  all are now included.
 
 ---
 
@@ -87,18 +91,21 @@ Using Exa web search + the Good Display datasheet PDF:
 | Ref | Part | LCSC | Role |
 |---|---|---|---|
 | U1 | ESP32-S3-WROOM-1-N8R2 | C2913204 | MCU (WiFi+BLE, 8 MB Flash, 2 MB PSRAM) |
-| U2 | ST25DV04KC-IE8S3 | C5221752 | NFC dynamic tag (Energy Harvesting + GPO) |
+| U2 | ST25DV04KC-IE8S3 | C5221752 | NFC dynamic tag with GPO wake |
 | U3 | LSM6DSOTR | C2655100 | 6-axis IMU |
 | U4 | SHT40-BD1B-R2 | C7461849 | Temp / Humidity |
 | U5 | MAX17048G+T10 | C2682616 | Li-ion fuel gauge (ModelGauge) |
-| U6 | TP4056 | C382139 | 1 A Li-ion charger |
+| U6 | TP4056 | C382139 | Li-ion charger, configured for ~500 mA |
 | U7 | DW01A | C18164398 | Battery protection IC |
 | U8 | FS8205A | C16052 | Dual N-MOSFET (protection) |
 | U9 | ME6211C33M5G | C82942 | LDO 3.3 V / 500 mA |
 | U10 | USBLC6-2SC6 | C7519 | USB ESD protection |
-| Q1, Q2 | SI2301 | C10487 | P-MOSFET ×2 (AUX rail + e-ink VDD gates) |
+| Q1, Q2 | SI2301 | C10487 | P-MOSFET ×2 (AUX rail + e-ink VCI gates) |
+| Q3 | Si1304BDL | stock KiCad | 30 V N-MOSFET for e-paper boost stage |
 | D1 | WS2812B-Mini | C527089 | RGB status LED |
+| D2–D4 | MBR0530 | stock KiCad | 30 V / 500 mA e-paper Schottky diodes |
 | J1 | TYPE-C-31-M-12 | C165948 | USB-C receptacle |
+| J3 | JST-PH 2-pin horizontal | stock KiCad | 1S battery connector |
 | SW1–4 | TS-1187A | C318884 | Tactile button ×4 |
 | J2 | FPC 0.5-24P flip-lock | C6081230 | E-ink panel FPC (24 sig + 2 mount) |
 
@@ -126,26 +133,26 @@ USBLC6-2 (D±/VBUS/GND), TP4056 (TEMP/CE/PROG), MAX17048 (CTG/QSTRT/CELL),
 LSM6DSO (CS=high→I²C, addr), ME6211 (CE active-high), SI2301 (1=G/2=S/3=D),
 SHT40 (1=SDA/2=SCL/3=VDD/4=VSS). **No wiring errors found.**
 
-One non-blocking note: TP4056 RPROG=1.2 kΩ yields ~0.83 A on this TPOWER chip
-(datasheet: 1.0 kΩ → 1 A) — a healthy 0.83 C for the 1000 mAh cell.
+TP4056 RPROG is 2.2 kΩ, limiting charge current to approximately 500 mA. This is
+a more conservative first-board setting for the planned 1000 mAh cell and gives
+the linear charger more thermal margin.
 
 Remaining items are layout refinements, not blockers:
 
 - **DW01A+FS8205A** — topology confirmed; do a final eyeball of the Fortune
   FS8205A app circuit before routing the negative-path FETs.
-- **GDEY029T94 booster/HV caps** — confirm whether any must be host-side by
-  cross-checking the DESPI reference schematic (currently assumed panel-side).
-- **ST25DV04KC antenna** — design the 13.56 MHz PCB trace coil on AC0/AC1.
+- **ST25DV04KC antenna** — route the continuous 13.56 MHz PCB loop between AC0/AC1.
 - **C6081230 FPC footprint** is *staggered* in EasyEDA — verify it fits the
   panel's flat 24-pin FFC, or pick a non-staggered alternative.
+- **JST-PH battery polarity** — confirm the selected cell's cable orientation.
 
 ---
 
 ## Next steps (roadmap)
 
 - [x] Confirm the 3 VERIFY items against datasheets
-- [ ] Install KiCad (`brew install --cask kicad`) → import `the-card.net` → PCB layout
+- [x] Generate and verify a single-page `.kicad_sch` from `circuit.py`
+- [ ] Start PCB layout from `the-card.kicad_sch`
   (antenna keepout, FPC placement, lanyard CG, battery clearance)
-- [ ] Optional: auto-generate a `.kicad_sch` from `circuit.py` for a reviewable schematic
 - [ ] ESP-IDF firmware scaffold: display / button / NFC / BLE modules + deep-sleep wake flow
 - [ ] Mechanical: case + lanyard CAD

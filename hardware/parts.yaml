@@ -2,14 +2,15 @@
 # Source-of-truth for schematic generation.
 #   - actives/ICs/connectors with an `lcsc` id are fetched via `easyeda2kicad`
 #     into hardware/libraries/ (symbol + footprint + 3D).
-#   - passives use KiCad stock `Device:` symbols (no fetch); value + footprint given.
-#   - The e-ink panel is represented as a 24-pin FPC connector (panel-level passives
-#     live on the panel FPC, not on our PCB).
+#   - common passives reuse fetched project templates; the booster and bring-up
+#     parts use KiCad stock symbols and footprints.
+#   - The bare e-ink panel is represented by a 24-pin FPC connector; its required
+#     SSD1680 booster and high-voltage capacitors are populated on our PCB.
 # Refdes follow the schematic. Update here = update the schematic.
 
 project: the-card
 eda: kicad
-kicad_version: "8.0"
+kicad_version: "10.0"
 libs_output: hardware/libraries/
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -23,7 +24,7 @@ lcsc_parts:
   - ref: U2
     name: ST25DV04KC-IE8S3
     lcsc: C5221752
-    role: NFC dynamic tag (Energy Harvesting + GPO)
+    role: NFC dynamic tag with GPO wake (V_EH left unconnected)
   - ref: U3
     name: LSM6DSOTR
     lcsc: C2655100
@@ -39,7 +40,7 @@ lcsc_parts:
   - ref: U6
     name: TP4056
     lcsc: C382139
-    role: 1A Li-ion charger
+    role: Li-ion charger (configured for approximately 500mA)
   - ref: U7
     name: DW01A
     lcsc: C18164398
@@ -59,7 +60,7 @@ lcsc_parts:
   - ref: Q1
     name: SI2301
     lcsc: C10487
-    role: P-MOSFET — AUX branch-rail gate (sensors/LED/motor)  # also in Transistor_FET
+    role: P-MOSFET — AUX LED rail and e-paper VCI gates  # also in Transistor_FET
     qty: 2                     # Q1, Q2
   - ref: D1
     name: WS2812B-Mini
@@ -95,9 +96,33 @@ passive_templates:
     symbol: CL10A106KP8NNNC
     role: 0603 capacitor (reused for all 0603 C)
 
+# Stock KiCad symbols and footprints; verify availability before fabrication.
+standard_parts:
+  - ref: J3
+    name: JST-PH 2-pin horizontal
+    role: 1S battery connector (pin 1 +BAT, pin 2 BAT_NEG)
+    footprint: "Connector_JST:JST_PH_S2B-PH-K_1x02_P2.00mm_Horizontal"
+    note: Battery cable polarity is not standardized; inspect the actual pack.
+  - ref: L1
+    name: SRU5016-470Y
+    role: E-paper boost inductor, 47uH
+    footprint: "Inductor_SMD:L_Bourns_SRU5016_5.2x5.2mm"
+  - ref: Q3
+    name: Si1304BDL
+    role: E-paper booster 30V N-MOSFET
+    footprint: "Package_TO_SOT_SMD:SOT-323_SC-70"
+  - ref: D2-D4
+    name: MBR0530
+    role: E-paper booster Schottky diodes, 30V 500mA
+    footprint: "Diode_SMD:D_SOD-123"
+  - ref: TP1-TP6
+    name: TestPoint
+    role: Battery, 3.3V, ground, reset, and boot bring-up access
+    footprint: "TestPoint:TestPoint_Pad_D1.0mm"
+
 # ─────────────────────────────────────────────────────────────────────────────
 # E-ink panel — represented as connector netlist (no LCSC fetch)
-# GDEY029T94, 296x128, SSD1680. Panel passives are onboard the FPC.
+# GDEY029T94, 296x128, SSD1680. Booster parts are host-side.
 # ─────────────────────────────────────────────────────────────────────────────
 eink_panel:
   model: GDEY029T94
@@ -106,33 +131,34 @@ eink_panel:
   source: Good Display datasheet §5 (verified 2026-08)
   pins:                       # J2 connector (FPC 1-24 signal, 25-26 shell)
     1:  NC            # keep open
-    2:  EPD_GDR       # booster gate drive (panel-side FET)
-    3:  EPD_RESE      # booster current sense (panel-side)
+    2:  EPD_GDR       # host-side booster MOSFET gate drive
+    3:  EPD_RESE      # host-side booster current sense
     4:  NC            # keep open
-    5:  EPD_VSH2      # +source drive (cap, panel-side)
-    6:  EPD_TSCL      # temp-sensor I2C clock (panel-side)
-    7:  EPD_TSDA      # temp-sensor I2C data (panel-side)
+    5:  EPD_VSH2      # +source drive, host-side 1uF/25V bypass
+    6:  NC            # keep open
+    7:  NC            # keep open
     8:  GND           # BS1 = L  -> 4-wire SPI
-    9:  EPA_BUSY      # BUSY     (GPIO11)
-    10: EPA_RST       # RES#     (GPIO14)
-    11: EPA_DC        # D/C#     (GPIO13)
-    12: EPA_CS        # CS#      (GPIO12)
-    13: EPA_SCLK      # SCL      (GPIO10)
-    14: EPA_SDA       # SDA/MOSI (GPIO9)
+    9:  EPD_BUSY      # BUSY     (GPIO11)
+    10: EPD_RST       # RES#     (GPIO14)
+    11: EPD_DC        # D/C#     (GPIO13)
+    12: EPD_CS        # CS#      (GPIO12)
+    13: EPD_SCLK      # SCL      (GPIO10)
+    14: EPD_SDA       # SDA/MOSI (GPIO9)
     15: EPD_VDDIO     # tie to VCI
     16: EPD_VCI       # +3V3 (switched via Q2)
     17: GND           # VSS
-    18: EPD_VDD       # core 1.8V (internal reg); 1uF to VSS
-    19: EPD_VPP       # test - leave open
-    20: EPD_VSH1      # +source drive (cap, panel-side)
-    21: EPD_VGH       # +gate drive (cap, panel-side)
-    22: EPD_VSL       # -source drive (cap, panel-side)
-    23: EPD_VGL       # -gate drive (cap, panel-side)
-    24: EPD_VCOM      # VCOM (cap, panel-side)
+    18: EPD_VDD_CORE  # core 1.8V (internal regulator); 1uF/25V to VSS
+    19: NC            # VPP test pin; keep open
+    20: EPD_VSH1      # +source drive, host-side 1uF/25V bypass
+    21: EPD_VGH       # +gate drive, host-side 1uF/25V bypass
+    22: EPD_VSL       # -source drive, host-side 1uF/25V bypass
+    23: EPD_VGL       # -gate drive, host-side 1uF/25V bypass
+    24: EPD_VCOM      # VCOM, host-side 1uF/25V bypass
   note: |
-    Booster (GDR/RESE) and HV rail caps (VSH1/2, VGH, VSL, VGL, VCOM) live on the
-    panel FFC tab — host passes them through. Confirm against the DESPI reference
-    schematic at layout (whether any caps must also be host-side).
+    Host-side support follows the Good Display GDEY029T94 reference circuit:
+    47uH boost inductor, 30V N-MOSF, three MBR0530 diodes, 1M gate pulldown,
+    2.2ohm current sense, two 4.7uF/25V pump capacitors, and 1uF/25V bypass
+    capacitors on VDD_CORE and each high-voltage output.
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Passives — KiCad stock Device:R / Device:C (0402 unless noted)
@@ -155,35 +181,35 @@ passives:
     footprint: "Capacitor_SMD:C_0603_1608Metric"
     net: "VBAT"
   tp4056_vcc_cap:
-    ref: C_vcc
+    ref: C5
     value: 10µF                # TP4056 VCC per datasheet
     footprint: "Capacitor_SMD:C_0603_1608Metric"
   tp4056_bat_cap:
-    ref: C_bat
+    ref: C6
     value: 10µF                # TP4056 BAT per datasheet
     footprint: "Capacitor_SMD:C_0603_1608Metric"
   tp4056_prog:
-    ref: R_prog
-    value: 1.2kΩ               # sets I_chg = 1000mA (PROG pin)
+    ref: R7
+    value: 2.2kΩ               # about 500mA, from RPROG=1100V/IBAT
     footprint: "Resistor_SMD:R_0402_1005Metric"
   imu_vdd_bulk:
-    ref: C_imu
+    ref: C13
     value: 10µF                # LSM6DSO VDD bulk
     footprint: "Capacitor_SMD:C_0603_1608Metric"
   fg_cap:
-    ref: C_fg
+    ref: C10
     value: 1µF                 # MAX17048 VDD decoupling
     footprint: "Capacitor_SMD:C_0402_1005Metric"
   ldo_in_cap:
-    ref: C_ldoi
+    ref: C8
     value: 1µF                 # ME6211 VIN
     footprint: "Capacitor_SMD:C_0402_1005Metric"
   ldo_out_cap:
-    ref: C_ldoo
+    ref: C9
     value: 1µF                 # ME6211 VOUT
     footprint: "Capacitor_SMD:C_0402_1005Metric"
   led_cap:
-    ref: C_led
+    ref: C15
     value: 100nF               # WS2812 VDD
     footprint: "Capacitor_SMD:C_0402_1005Metric"
   cc_pulldowns:                # USB-C UFP (we are sink/device): 5.1k on each CC
@@ -205,15 +231,17 @@ passives:
 # ─────────────────────────────────────────────────────────────────────────────
 rails:
   VBUS:   "+5V from USB-C"
-  VBAT:   "Battery 3.0–4.2V (post DW01/FS8205A protection)"
+  "+BAT": "Battery cell positive, 3.0–4.2V"
+  BAT_NEG: "Battery cell negative before the protection FETs; not system ground"
   "+3V3": "System rail from ME6211 LDO (always on)"
-  AUX_3V3: "Switchable branch rail via Q1 (P-MOSFET, PWR_AUX=GPIO47) — sensors/LED/motor"
+  AUX_3V3: "Switchable branch rail via Q1 (P-MOSFET, PWR_AUX=GPIO47) — status LED only"
+  EPD_VCI: "Switchable e-paper VCI/VDDIO and booster input via Q2"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # TODO at layout time
 # ─────────────────────────────────────────────────────────────────────────────
 todo:
-  - Verify GDEY029T94 FPC pin 9..24 mapping (GND/NC) against latest datasheet
-  - NFC antenna geometry (PCB trace, ~13.56MHz, ST25DV LP0/LP1)
+  - Verify the J2 footprint against the GDEY029T94 flat 24-pin FFC
+  - NFC antenna geometry (continuous PCB loop on NFC_ANTENNA, about 13.56MHz)
   - Antenna keepout under ESP32-S3-WROOM-1 PCB antenna
   - Lanyard hole / CG placement
