@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate the-card's initial four-layer PCB placement from the schematic.
+"""Generate the-card's four-layer PCB layout from the schematic.
 
 Run this script with KiCad's bundled Python so the ``pcbnew`` module is
 available:
@@ -8,8 +8,8 @@ available:
 Python.framework/Versions/3.9/bin/python3 gen_pcb.py
 
 The schematic remains authoritative for components and connectivity. This file
-owns only board mechanics, placement, layer assignment, keepouts, and net-class
-defaults. Routing is added in subsequent layout passes.
+owns board mechanics, placement, layer assignment, keepouts, routing, and
+net-class defaults.
 """
 
 from __future__ import annotations
@@ -21,6 +21,8 @@ import tempfile
 import xml.etree.ElementTree as ET
 
 import pcbnew
+
+from pcb_router import route_board
 
 
 HERE = Path(__file__).resolve().parent
@@ -327,6 +329,10 @@ def add_footprints(
       net_name = pad_nets.get((ref, pad.GetNumber()))
       if net_name:
         pad.SetNet(nets[net_name])
+      if ref in {"U3", "U5", "U9"}:
+        # These fine-pitch packages need a manufacturer-standard 0.10 mm local
+        # escape clearance before tracks widen into the board defaults.
+        pad.SetLocalClearance(mm(0.10))
       if ref == "J1":
         if not pad.GetNumber():
           pad.SetAttribute(pcbnew.PAD_ATTRIB_NPTH)
@@ -492,6 +498,51 @@ def add_ground_zone(board: pcbnew.BOARD, gnd: pcbnew.NETINFO_ITEM, layer: int) -
   board.Add(zone)
 
 
+def add_zone_fill_keepout(
+  board: pcbnew.BOARD,
+  name: str,
+  x: float,
+  y: float,
+  width: float,
+  height: float,
+) -> None:
+  """Keep plane pours out while allowing the intentional antenna tracks."""
+  for layer in [pcbnew.F_Cu, pcbnew.In1_Cu, pcbnew.In2_Cu]:
+    zone = pcbnew.ZONE(board)
+    zone.SetZoneName(name)
+    zone.SetIsRuleArea(True)
+    zone.SetLayer(layer)
+    zone.SetDoNotAllowFootprints(False)
+    zone.SetDoNotAllowPads(False)
+    zone.SetDoNotAllowTracks(False)
+    zone.SetDoNotAllowVias(False)
+    zone.SetDoNotAllowZoneFills(True)
+    outline = zone.Outline()
+    outline.NewOutline()
+    outline.Append(point(x, y))
+    outline.Append(point(x + width, y))
+    outline.Append(point(x + width, y + height))
+    outline.Append(point(x, y + height))
+    board.Add(zone)
+
+
+def add_power_zone(board: pcbnew.BOARD, power: pcbnew.NETINFO_ITEM) -> None:
+  inset = 0.55
+  zone = pcbnew.ZONE(board)
+  zone.SetNet(power)
+  zone.SetLayer(pcbnew.In2_Cu)
+  zone.SetLocalClearance(mm(0.20))
+  zone.SetMinThickness(mm(0.20))
+  zone.SetPadConnection(pcbnew.ZONE_CONNECTION_FULL)
+  outline = zone.Outline()
+  outline.NewOutline()
+  outline.Append(point(inset, inset))
+  outline.Append(point(BOARD_W - inset, inset))
+  outline.Append(point(BOARD_W - inset, BOARD_H - inset))
+  outline.Append(point(inset, BOARD_H - inset))
+  board.Add(zone)
+
+
 def add_mechanics(board: pcbnew.BOARD) -> None:
   add_outline(board)
   add_rectangle(
@@ -562,6 +613,14 @@ def add_mechanics(board: pcbnew.BOARD) -> None:
     block_footprints=False,
     block_copper=True,
   )
+  add_zone_fill_keepout(
+    board,
+    "NFC_ANTENNA_PLANE_KEEPOUT",
+    0.50,
+    8.00,
+    7.80,
+    51.50,
+  )
 
 
 def generate() -> None:
@@ -576,8 +635,11 @@ def generate() -> None:
   add_footprints(board, netlist, nets, pad_nets)
   add_mechanics(board)
 
-  for layer in [pcbnew.F_Cu, pcbnew.In1_Cu, pcbnew.In2_Cu, pcbnew.B_Cu]:
+  route_board(board)
+
+  for layer in [pcbnew.F_Cu, pcbnew.In1_Cu, pcbnew.B_Cu]:
     add_ground_zone(board, nets["GND"], layer)
+  add_power_zone(board, nets["+3V3"])
 
   board.BuildListOfNets()
   pcbnew.ZONE_FILLER(board).Fill(board.Zones())

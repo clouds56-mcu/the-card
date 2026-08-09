@@ -10,7 +10,8 @@ hardware/
 ├── pyproject.toml + uv.lock# uv project: skidl + easyeda2kicad (+ pypdf dev)
 ├── circuit.py              # the design in SKiDL (connectivity) -> the-card.net
 ├── gen_hierarchical_schematic.py # current deterministic A2 layout generator
-├── gen_pcb.py              # deterministic board outline, keepouts, and placement
+├── gen_pcb.py              # deterministic placement, routing, planes, and keepouts
+├── pcb_router.py           # board-specific fanout and deterministic maze routing
 ├── verify_schematic.py     # compare every KiCad pin's peers with circuit.py
 ├── gen_schematic.py        # legacy flat-layout generator; not used currently
 ├── the-card.kicad_pro      # KiCad 10 project
@@ -45,7 +46,7 @@ every component pin with the canonicalized SKiDL circuit. The expected result is
 75 components and 286 component pins with identical connectivity. KiCad ERC has
 0 violations.
 
-Generate the PCB placement with KiCad's bundled Python:
+Generate the PCB layout with KiCad's bundled Python:
 
 ```bash
 /Applications/KiCad/KiCad.app/Contents/Frameworks/\
@@ -56,8 +57,11 @@ kicad-cli pcb drc --output /tmp/pcb-drc.json --format json the-card.kicad_pcb
 The board is a portrait ID-1 outline (53.98 × 85.60 mm), four layers, and
 0.8 mm thick. The display and controls are on the front; the ESP32, battery,
 sensors, power circuitry, USB-C, and display connector are on the rear. The
-generator encodes display, 603048 battery, and ESP32 antenna keepouts. The
-current placement baseline is DRC-clean apart from intentionally unrouted nets.
+generator encodes display, 603048 battery, ESP32 antenna, and NFC plane
+keepouts. F.Cu and B.Cu carry local signals over ground pours, In1.Cu is the
+primary ground plane, and In2.Cu is the primary 3V3 plane plus longer signal
+routes. Ground stitching ties the pours together. The generated board is fully
+routed and passes KiCad DRC with 0 violations and 0 unconnected items.
 
 Open the schematic:
 ```bash
@@ -87,7 +91,11 @@ SSD1680 booster and 25 V bypass network are now present on the host PCB. Residua
 PCB-layout items are:
 
 - **DW01A+FS8205A** — topology confirmed; final eyeball of the FS8205A app circuit.
-- **ST25DV04KC antenna** — route one continuous 13.56 MHz PCB loop between AC0/AC1.
+- **ST25DV04KC antenna** — the routed two-turn loop uses the available front-left
+  strip and is connectivity/DRC complete. The approved placement constrains its
+  area and keeps rear-side sensors and ground beneath part of the loop, so tune
+  resonance and verify read range on the first prototype. A revised coil or
+  matching network may be needed after measurement.
 - **Display FPC** — J2 is now the verified single-row Hirose
   FH12-24S-0.5SH(55): 24 positions, 0.5 mm pitch, bottom contact, for a 0.30 mm
   FPC. The project footprint numbers its two hold-down tabs 25 and 26 so both
