@@ -32,8 +32,8 @@ An em dash means the distributor quote has not yet been captured.
 | 14 | Connector | USB-C receptacle 6P | TYPE-C-31-M-12 | C165948 | 1 | 0.25 | 0.15 | 0.12 |
 | 15 | ESD | USB bidirectional TVS | USBLC6-2SC6 | C7519 | 1 | 0.18 | 0.12 | 0.10 |
 | 16 | Button | Tactile switch 6×6×5 SMD | TS-1187A | C318884 | 4 | 0.24 | **0.16** | 0.12 |
-| 17 | Display aux | 47 µH boost network, 30 V MOSFET/diodes | SRU5016-470Y / Si1304BDL / MBR0530 | distributor | 1 set | 0.80 | 0.45 | 0.30 |
-| 18 | Connector | 1S battery connector, 2-pin horizontal | JST-PH S2B-PH-K | distributor | 1 | 0.15 | 0.10 | 0.07 |
+| 17 | Display aux | 47 µH boost network, 30 V MOSFET/diodes | XRNR5020-47uH/M / Si1304BDL / MBR0530 | C5339697 + distributor | 1 set | 0.80 | 0.45 | 0.30 |
+| 18 | Connector | 1S battery connector, 2-pin right-angle SMT | JST S2B-PH-SM4-TB(LF)(SN) | C295747 | 1 | 0.22 | 0.17 | 0.13 |
 | 19 | Passives | R/C/bead assortment, including 25 V e-paper capacitors | 0402/0603/0805 kit | — | 1 kit | 0.60 | 0.35 | 0.25 |
 | 20 | Hardware | Lanyard / clip hardware | — | distributor | 1 kit | 1.00 | 0.50 | 0.35 |
 | 21 | Battery | Li-Po 3.7 V 1000 mAh | 603048 | distributor | 1 | 4.00 | **2.50** | 2.00 |

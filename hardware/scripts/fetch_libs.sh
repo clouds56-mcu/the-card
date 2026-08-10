@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Regenerate KiCad libraries from LCSC/EasyEDA for every part in parts.yaml.
-#   - libraries/the-card.kicad_sym  : actives/ICs/connectors (symbol+footprint+3D)
+#   - libraries/the-card.kicad_sym  : supplier-specific parts (symbol+footprint+3D)
 #   - libraries/passives.kicad_sym  : generic R/C templates (symbol only)
 # Output is gitignored — fully reproducible from this script + parts.yaml.
 #
@@ -37,7 +37,7 @@ print(' '.join(ids))
 
 mkdir -p libraries
 
-echo ">> [1/2] actives: $(echo "$ACTIVE_IDS" | wc -w | tr -d ' ') parts (symbol+footprint+3D)"
+echo ">> [1/2] supplier parts: $(echo "$ACTIVE_IDS" | wc -w | tr -d ' ') parts (symbol+footprint+3D)"
 # --output MUST be absolute for easyeda2kicad 1.0.1 + --project-relative.
 uv run easyeda2kicad --lcsc_id $ACTIVE_IDS --full \
   --output "$(pwd)/libraries/the-card.kicad_sym" --project-relative --overwrite

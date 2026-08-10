@@ -106,7 +106,7 @@ Using Exa web search + the Good Display datasheet PDF:
 | D1 | WS2812B-Mini | C527089 | RGB status LED |
 | D2–D4 | MBR0530 | stock KiCad | 30 V / 500 mA e-paper Schottky diodes |
 | J1 | TYPE-C-31-M-12 | C165948 | USB-C receptacle |
-| J3 | JST-PH 2-pin horizontal | stock KiCad | 1S battery connector |
+| J3 | JST S2B-PH-SM4-TB(LF)(SN) | C295747 | 1S battery connector, right-angle SMT |
 | SW1–4 | TS-1187A | C318884 | Tactile button ×4 |
 | J2 | FPC 0.5-24P flip-lock | C6081230 | E-ink panel FPC (24 sig + 2 mount) |
 

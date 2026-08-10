@@ -17,6 +17,12 @@ USB_C_FOOTPRINT = (
   / "the-card.pretty"
   / "USB-C_SMD-TYPE-C-31-M-12_1.kicad_mod"
 )
+BOOST_INDUCTOR_FOOTPRINT = (
+  HARDWARE
+  / "libraries"
+  / "the-card.pretty"
+  / "IND-SMD_L5.0-W5.0_XRNR5020.kicad_mod"
+)
 TRACKED_CUSTOM_FOOTPRINTS = {
   "Hirose_FH12-24S-0.5SH_1x24-2MP_P0.50mm_Horizontal.kicad_mod",
 }
@@ -37,23 +43,37 @@ def normalize_with_pcbnew() -> None:
   import pcbnew
 
   footprint_io = pcbnew.PCB_IO_KICAD_SEXPR()
-  footprint = footprint_io.FootprintLoad(
+  usb_c = footprint_io.FootprintLoad(
     str(USB_C_FOOTPRINT.parent),
     USB_C_FOOTPRINT.stem,
   )
-  if footprint is None:
+  if usb_c is None:
     raise FileNotFoundError(f"unable to load {USB_C_FOOTPRINT}")
 
-  footprint.SetAttributes(pcbnew.FP_THROUGH_HOLE)
-  for pad in footprint.Pads():
+  usb_c.SetAttributes(pcbnew.FP_THROUGH_HOLE)
+  for pad in usb_c.Pads():
     if pad.GetNumber():
       pad.SetLocalClearance(pcbnew.FromMM(0.10))
     else:
       pad.SetAttribute(pcbnew.PAD_ATTRIB_NPTH)
-  footprint_io.FootprintSave(str(USB_C_FOOTPRINT.parent), footprint)
+  footprint_io.FootprintSave(str(USB_C_FOOTPRINT.parent), usb_c)
+
+  boost_inductor = footprint_io.FootprintLoad(
+    str(BOOST_INDUCTOR_FOOTPRINT.parent),
+    BOOST_INDUCTOR_FOOTPRINT.stem,
+  )
+  if boost_inductor is None:
+    raise FileNotFoundError(f"unable to load {BOOST_INDUCTOR_FOOTPRINT}")
+
+  # easyeda2kicad 1.0.1 incorrectly marks this two-pad SMD footprint as THT.
+  boost_inductor.SetAttributes(pcbnew.FP_SMD)
+  footprint_io.FootprintSave(
+    str(BOOST_INDUCTOR_FOOTPRINT.parent),
+    boost_inductor,
+  )
 
 
-def normalize_usb_c() -> None:
+def normalize_footprints() -> None:
   with tempfile.TemporaryDirectory(prefix="the-card-footprints-") as temp:
     upgraded = Path(temp) / "the-card.pretty"
     subprocess.run([
@@ -78,5 +98,5 @@ if __name__ == "__main__":
   elif sys.argv[1:]:
     raise SystemExit(f"unexpected arguments: {sys.argv[1:]}")
   else:
-    normalize_usb_c()
-    print(f"normalized {USB_C_FOOTPRINT.relative_to(HARDWARE)}")
+    normalize_footprints()
+    print("normalized project footprints")

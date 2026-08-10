@@ -1,6 +1,6 @@
 # the-card — Schematic Parts Manifest
 # Source-of-truth for schematic generation.
-#   - actives/ICs/connectors with an `lcsc` id are fetched via `easyeda2kicad`
+#   - supplier-specific parts with an `lcsc` id are fetched via `easyeda2kicad`
 #     into hardware/libraries/ (symbol + footprint + 3D).
 #   - common passives reuse fetched project templates; the booster and bring-up
 #     parts use KiCad stock symbols and footprints.
@@ -14,7 +14,7 @@ kicad_version: "10.0"
 libs_output: hardware/libraries/
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Active parts / ICs / connectors  (fetch from LCSC via easyeda2kicad)
+# Supplier-specific parts  (fetch from LCSC via easyeda2kicad)
 # ─────────────────────────────────────────────────────────────────────────────
 lcsc_parts:
   - ref: U1
@@ -80,6 +80,17 @@ lcsc_parts:
     lcsc: distributor
     role: E-ink panel FPC connector (24 signal + 2 mount pads)
     note: bottom-contact ZIF, 0.5 mm pitch, for 0.30 mm FPC
+  - ref: J3
+    name: S2B-PH-SM4-TB(LF)(SN)
+    lcsc: C295747
+    role: 1S battery connector (pin 1 +BAT, pin 2 BAT_NEG)
+    footprint: "Connector_JST:JST_PH_S2B-PH-SM4-TB_1x02-1MP_P2.00mm_Horizontal"
+    note: Right-angle SMT JST-PH. Battery cable polarity is not standardized; inspect the actual pack.
+  - ref: L1
+    name: XRNR5020-47uH/M
+    lcsc: C5339697
+    role: E-paper boost inductor, 47uH, 750mA rated / 770mA saturation
+    footprint: "the-card:IND-SMD_L5.0-W5.0_XRNR5020"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Passive templates — fetched into libraries/passives.kicad_sym (symbol only;
@@ -98,15 +109,6 @@ passive_templates:
 
 # Stock KiCad symbols and footprints; verify availability before fabrication.
 standard_parts:
-  - ref: J3
-    name: JST-PH 2-pin horizontal
-    role: 1S battery connector (pin 1 +BAT, pin 2 BAT_NEG)
-    footprint: "Connector_JST:JST_PH_S2B-PH-K_1x02_P2.00mm_Horizontal"
-    note: Battery cable polarity is not standardized; inspect the actual pack.
-  - ref: L1
-    name: SRU5016-470Y
-    role: E-paper boost inductor, 47uH
-    footprint: "Inductor_SMD:L_Bourns_SRU5016_5.2x5.2mm"
   - ref: Q3
     name: Si1304BDL
     role: E-paper booster 30V N-MOSFET

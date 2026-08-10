@@ -123,7 +123,7 @@ PLACEMENTS = {
   "R7": p(11.50, 69.50),
   "R8": p(11.50, 71.50),
   "C6": p(11.50, 73.50),
-  "J3": p(52.10, 24.00, 90),
+  "J3": p(48.75, 24.00, 90),
   "U7": p(48.00, 73.50, 90),
   "U8": p(48.00, 79.00, 90),
   "R9": p(44.50, 72.00, 90),
@@ -318,6 +318,19 @@ def add_footprints(
     footprint = pcbnew.FootprintLoad(str(library_path), footprint_name)
     if footprint is None:
       raise FileNotFoundError(f"unable to load footprint {identifier}")
+    if ref == "J3":
+      # KiCad 10 ships this exact JST footprint but not its matching 3D model.
+      # Reuse the supplier model fetched from LCSC so 3D assembly review still
+      # shows the connector while retaining KiCad's reviewed land pattern.
+      models = footprint.Models()
+      if len(models) != 1:
+        raise ValueError(f"expected one 3D model for {identifier}")
+      model = models[0]
+      model.m_Filename = (
+        "${KIPRJMOD}/libraries/the-card.3dshapes/"
+        "CONN-SMD_P2.00_S2B-PH-SM4-TB-LF-SN.step"
+      )
+      models[0] = model
     # Library footprints carry stable UUIDs. Each board instance needs fresh
     # UUIDs or KiCad's connectivity and DRC engines cannot distinguish copies.
     footprint.FixUuids()
