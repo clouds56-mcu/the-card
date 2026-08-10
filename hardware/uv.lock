@@ -766,6 +766,7 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "easyeda2kicad" },
+    { name = "pyyaml" },
     { name = "skidl" },
 ]
 
@@ -777,6 +778,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "easyeda2kicad", specifier = ">=1.0.1" },
+    { name = "pyyaml", specifier = ">=6.0" },
     { name = "skidl", specifier = ">=2.3.0" },
 ]
 

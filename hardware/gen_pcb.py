@@ -321,12 +321,24 @@ def add_footprints(
     # Library footprints carry stable UUIDs. Each board instance needs fresh
     # UUIDs or KiCad's connectivity and DRC engines cannot distinguish copies.
     footprint.FixUuids()
+    footprint.SetFPIDAsString(identifier)
 
     placement = PLACEMENTS[ref]
     board.Add(footprint)
     footprint.SetReference(ref)
     footprint.SetValue(value)
+    for xml_field in component.findall("./fields/field"):
+      field_name = xml_field.attrib["name"]
+      if field_name != "Footprint" and footprint.HasField(field_name):
+        footprint.GetField(field_name).SetText(xml_field.text or "")
+    if ref.startswith("TP"):
+      footprint.SetExcludedFromBOM(True)
+      footprint.SetExcludedFromPosFiles(True)
     footprint.SetPosition(point(placement.x, placement.y))
+    if ref == "J1":
+      # The USB-C receptacle mixes SMD contacts with plated through-hole shell
+      # tabs. KiCad classifies mixed footprints by their through-hole pads.
+      footprint.SetAttributes(pcbnew.FP_THROUGH_HOLE)
     if placement.side == "B":
       footprint.Flip(footprint.GetPosition(), False)
     footprint.SetOrientationDegrees(placement.rotation)

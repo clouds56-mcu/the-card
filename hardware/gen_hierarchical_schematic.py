@@ -694,13 +694,14 @@ def part_instance(part: dict, sheet: SheetSpec) -> str:
     value_y = snap(part["y"] + half_height + g(5))
     value_angle = 0
   path = f"/{ROOT_UUID}"
+  in_bom = "no" if part["ref"].startswith("TP") else "yes"
   lines = [
     "\t(symbol",
     f"\t\t(lib_id \"{part['library']}:{part['name']}\")",
     f"\t\t(at {fmt(part['x'])} {fmt(part['y'])} {part['rotation']})",
     "\t\t(unit 1)",
     "\t\t(exclude_from_sim no)",
-    "\t\t(in_bom yes)",
+    f"\t\t(in_bom {in_bom})",
     "\t\t(on_board yes)",
     "\t\t(dnp no)",
     f"\t\t(uuid \"{uid('part', part['ref'])}\")",

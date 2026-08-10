@@ -27,6 +27,7 @@ echo ">> [1/2] actives: $(echo "$ACTIVE_IDS" | wc -w | tr -d ' ') parts (symbol+
 # --output MUST be absolute for easyeda2kicad 1.0.1 + --project-relative.
 uv run easyeda2kicad --lcsc_id $ACTIVE_IDS --full \
   --output "$(pwd)/libraries/the-card.kicad_sym" --project-relative --overwrite
+uv run python scripts/normalize_libraries.py
 
 echo ">> [2/2] passives: $(echo "$PASSIVE_IDS" | wc -w | tr -d ' ') templates (symbol only)"
 uv run easyeda2kicad --lcsc_id $PASSIVE_IDS --symbol \

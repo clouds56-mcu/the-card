@@ -53,5 +53,25 @@ though it is not the 480 Mb/s high-speed USB mode.
 
 Regenerate the schematic and PCB, then require all of the following from the
 same revision: connectivity verifier passes, KiCad ERC has zero violations,
-KiCad DRC has zero violations and zero unconnected items, and the Gerber/drill
-preview matches the 53.98 x 85.60 mm outline.
+KiCad DRC has zero violations, zero unconnected items, and zero schematic parity
+issues, and the Gerber/drill preview matches the 53.98 x 85.60 mm outline.
+
+Build the handoff into a new directory from `hardware/`:
+
+```bash
+uv run python scripts/release_fabrication.py \
+  --revision rev-a \
+  --output ../outputs/the-card-rev-a
+```
+
+`the-card-rev-a-fabrication.zip` contains only the Gerbers and separate PTH/NPTH
+drill files intended for the board house. Assembly CSVs, DRC/ERC reports,
+checksums, manifests, 3D renders, and layer previews remain beside the ZIP for
+review. Do not upload the whole release directory as a fabrication archive.
+
+The generated assembly BOM is intentionally conservative. Rows without an
+exact purchasable code are marked `needs_sourcing`; the current manifest assigns
+LCSC codes to 18 of 69 placed components, identifies one distributor-sourced
+connector, and leaves 50 passives or standard parts for exact sourcing. The PCB
+files are fabrication-ready, but the BOM is not yet a one-click turnkey assembly
+order.

@@ -2,6 +2,10 @@
 
 > Prices reflect **2026-08** LCSC / JLCPCB / Good Display market data. Unit prices are reference values — confirm live at order time.
 > **Reference quantity: @100 units** (small-batch / DIY group buy); @1 (prototype) and @1k (production trend) also listed.
+> The cost table is planning data, not the assembly-house upload BOM. Exact
+> purchasable codes are still unassigned for many passives and standard parts;
+> resolve every `needs_sourcing` row in the manufacturing workbook before
+> requesting turnkey assembly.
 
 📌 Price columns show **line totals** (unit price × "Qty"), not unit prices.
 An em dash means the distributor quote has not yet been captured.
@@ -96,13 +100,13 @@ Rest      █████                     11%  ← NFC / power / connectors 
 ## 4. Sourcing & Ordering
 
 ### 4.1 Channel split
-- **Main ICs + passives** → LCSC, bundled with JLCPCB for **one-stop SMT** (BOM with LCSC #s = one-click order)
+- **Main ICs with assigned codes** → LCSC; passives still need value-, voltage-, tolerance-, and package-specific order codes before one-stop SMT is possible
 - **E-paper panel** → Good Display / buy-lcd.com / Waveshare (note: **bare FPC panel** vs **module with driver board** — this project uses a bare panel on the PCB)
 - **Battery** → a Li-Po specialist (mind protection/ Certification; air freight restricted)
 - **Case** → 3D print (FDM/SLA) DIY, or injection molding at volume
 
 ### 4.2 BOM-kit strategy
-- LCSC lets you load the full BOM (with LCSC #s) into the cart; selecting "JLCPCB assembly" auto-checks stock and SMT feasibility
+- Once every assembly row has an exact LCSC code, the finished BOM can be loaded into the cart and checked for current stock and SMT feasibility
 - **Basic-part** components incur no setup fee — preferring Basic parts saves ~$1/board
 - Extended parts (e.g. MAX17048, LSM6DSO) add a small changeover fee, negligible at small batch
 

@@ -21,6 +21,9 @@ hardware/
 ├── SCHEMATIC-GUIDE.md      # functional-region drawing and review notes
 ├── datasheets/             # archived datasheet PDFs + index
 ├── scripts/fetch_libs.sh   # regenerate libraries/ from LCSC#s in parts.yaml
+├── scripts/normalize_libraries.py # reviewed corrections to fetched footprints
+├── scripts/release_fabrication.py # checked Gerber/drill/BOM/placement release
+├── scripts/rasterize_svg.py # review PNGs from KiCad SVG plots
 └── libraries/              # GENERATED (gitignored): symbols / footprints / 3D
 ```
 
@@ -64,6 +67,21 @@ routes. Ground stitching ties the pours together. The generated board is fully
 routed and passes KiCad DRC with 0 violations and 0 unconnected items. Four
 non-fabrication reference images are embedded beside the board in PCB Editor,
 showing F.Cu, In1.Cu, In2.Cu, and B.Cu simultaneously without affecting plots.
+
+Build a manufacturing handoff into a new directory after generation:
+
+```bash
+uv run python scripts/release_fabrication.py \
+  --revision rev-a \
+  --output ../outputs/the-card-rev-a
+```
+
+The release command refuses to overwrite an existing directory. It requires a
+clean full DRC, schematic parity check, and ERC before it emits the fabrication
+ZIP, separate PTH/NPTH drills, assembly BOM, position file, checksums, 3D
+renders, and per-layer SVG/PNG review plots. The assembly BOM reports unresolved
+sourcing explicitly; a clean board does not imply that every row is ready for a
+turnkey PCBA order.
 
 Open the schematic:
 ```bash
