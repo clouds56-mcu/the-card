@@ -9338,7 +9338,7 @@
 				(justify mirror)
 			)
 		)
-		(property "Value" "ESP32-S3-WROOM-1-N8R2"
+		(property "Value" "ESP32-S3-WROOM-1-N16R8"
 			(at 0 -12.895 0)
 			(layer "B.Fab")
 			(hide yes)
@@ -9351,7 +9351,7 @@
 				(justify mirror)
 			)
 		)
-		(property "Datasheet" "https://www.lcsc.com/datasheet/C2913204.pdf"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C2913202.pdf"
 			(at 0 0 0)
 			(layer "B.Fab")
 			(hide yes)
@@ -9375,7 +9375,7 @@
 				(justify mirror)
 			)
 		)
-		(property "LCSC Part" "C2913204"
+		(property "LCSC Part" "C2913202"
 			(at 0 0 0)
 			(layer "B.Fab")
 			(hide yes)

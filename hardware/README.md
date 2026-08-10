@@ -135,8 +135,8 @@ G2 on the pack-negative side.
 - **EasyEDA API 403:** rate-limits after a big batch — re-run in a few minutes.
 - **SKiDL reports pin Y inverted** vs KiCad (math y-up vs KiCad y-down); the
   layout generator handles KiCad's screen-coordinate rotations explicitly.
-- **ESP32-S3-WROOM-1** does **not** break out GPIO33/34 (reserved by internal
-  SPI); `circuit.py` uses GPIO16 for `EPD_PWR_EN`.
+- **ESP32-S3-WROOM-1-N16R8** uses GPIO33–37 for its Octal PSRAM;
+  `circuit.py` leaves GPIO35–37 unconnected and uses GPIO16 for `EPD_PWR_EN`.
 - The generator sets embedded part pins to `passive` because several EasyEDA
   symbols have incorrect electrical types. `verify_schematic.py` independently
   checks actual connectivity rather than relying on those types.

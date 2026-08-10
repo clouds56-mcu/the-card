@@ -61,7 +61,8 @@ TP1–TP4 · power passives.
 - 3V3→`+3V3`; 3× GND→GND; 100 nF + 10 µF on 3V3.
 - EN: 10 k pullup to +3V3 + 1 µF to GND; TP5 permits a temporary reset-to-GND jumper.
 - IO0: 10 k pullup to +3V3; TP6 permits a temporary boot-to-GND jumper.
-  **IO33/IO34 are not on the module — don't use.**
+  **IO33/IO34 are not on the module, and N16R8 reserves IO35–37 for Octal
+  PSRAM — don't use them.**
 - USB: IO19=`USB_DM`, IO20=`USB_DP` (from the power region).
 - E-ink SPI: IO9=MOSI, IO10=SCLK, IO11=BUSY, IO12=CS, IO13=DC, IO14=RST.
 - I²C: IO8=SCL, IO18=SDA (+ 4.7 k pullups to +3V3 in the sensor region).
@@ -69,7 +70,8 @@ TP1–TP4 · power passives.
 - Buttons: IO4=UP, IO5=DOWN, IO6=SEL, IO7=MENU.
 - Controls: IO47=`PWR_AUX`, IO16=`EPD_PWR_EN`, IO48=`LED_DIN`.
 - Vbat divider: IO1 ← midpoint of 1 M / 300 k from +BAT to GND (+ 100 nF).
-- Spare (IO21, IO35–42, IO45/46, RXD0/TXD0): left unconnected for future revisions.
+- Spare (IO21, IO38–42, IO45/46, RXD0/TXD0): left unconnected for future revisions.
+  IO35–37 are reserved by the N16R8 module's Octal PSRAM.
 
 ## Region 3 — E-ink panel (J2, 24-pin FPC)
 

@@ -225,7 +225,7 @@ bat_neg += battery["2"]
 # ─────────────────────────────────────────────────────────────────────────────
 # U1 — ESP32-S3-WROOM-1 (MCU)
 # ─────────────────────────────────────────────────────────────────────────────
-mcu = part("U1_MCU", value="ESP32-S3-WROOM-1-N8R2")
+mcu = part("U1_MCU", value="ESP32-S3-WROOM-1-N16R8")
 p3v3 += mcu["3V3"]
 gnd   += mcu["GND"]
 decouple(p3v3, "C_mcu1"); decouple(p3v3, "C_mcu2", "0603")  # 100nF + 10µF on 3V3
@@ -274,7 +274,7 @@ for net, ref in [(btn_up, "C_btn1"), (btn_dn, "C_btn2"),
     c = C("100nF", ref); net += c[1]; c[2] += gnd
 
 # Power-rail gate controls
-# (GPIO33/34 are NOT broken out on WROOM-1 — reserved by internal SPI.)
+# GPIO33–37 are occupied by the N16R8 module's Octal PSRAM.
 pwr_aux = Net("PWR_AUX"); epd_pwr = Net("EPD_PWR_EN")
 pwr_aux += mcu["IO47"]; epd_pwr += mcu["IO16"]
 

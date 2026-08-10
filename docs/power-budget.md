@@ -5,7 +5,7 @@
 
 ---
 
-## 1. Per-state Current Model (ESP32-S3-WROOM-1-N8R2)
+## 1. Per-state Current Model (ESP32-S3-WROOM-1-N16R8)
 
 Sources: ESP32-S3 datasheet + Espressif official power-measurement guide + community measurements.
 

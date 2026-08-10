@@ -4,8 +4,8 @@
 
 ```
                            ┌─────────────────────────────────────────────┐
-                           │              ESP32-S3-WROOM-1-N8R2          │
-                           │   (Dual-core 240MHz · 8MB Flash · 2MB PSRAM)│
+                           │              ESP32-S3-WROOM-1-N16R8         │
+                           │  (Dual-core 240MHz · 16MB Flash · 8MB PSRAM)│
                            │                                             │
    USB-C ──┬─ ESD ── D+/D-─┤  USB-Serial-JTAG (native USB, no CH340)     │
    5V  ────┤               │                                             │
@@ -26,12 +26,19 @@
 
 | Candidate | Trade-off | Verdict |
 |---|---|---|
-| **ESP32-S3-WROOM-1-N8R2** ✅ | 8 MB Flash for wallpaper library + 2 MB PSRAM for frame buffer, native USB (no downloader chip), richest ecosystem | **Selected** |
+| **ESP32-S3-WROOM-1-N16R8** ✅ | 16 MB Flash for OTA and assets + 8 MB Octal PSRAM for image/UI headroom, native USB, strong availability | **Selected** |
+| N8R2 (8 MB Flash, 2 MB Quad PSRAM) | Sufficient for the current framebuffer, but offers less OTA/image headroom without a consistent sourcing advantage | Alt (minimum memory) |
 | N4 (4 MB, no PSRAM) | Frame buffer squeezes SRAM, large-image refresh struggles | Alt (max savings) |
 | S3-MINI-1 | Smaller but dense routing, less DIY-friendly | No |
 | Bare die S3FN8 | Requires own RF + Flash routing, not for a learning platform | No |
 
-- **N8R2 over N8R8:** wallpaper library fits in Flash; 2 MB PSRAM is plenty for double buffering (296×128×2 = 76 KB), and saves money.
+- **N16R8 over N8R2:** the footprint is identical, current sourcing is at least
+  as strong, and the extra memory simplifies dual-slot OTA, image decoding,
+  fonts, and future UI work. Firmware must select 16 MB Quad flash and 8 MB
+  Octal PSRAM.
+- N16R8's recommended ambient range is −40 to +65 °C, versus +85 °C for N8R2;
+  +65 °C is acceptable for this consumer wearable, but not an industrial-hot
+  environment.
 - On-module PCB antenna → **no RF design required**, DIY-friendly.
 
 ### 2.2 Display Subsystem
@@ -103,9 +110,11 @@ in this first revision to keep the power architecture simple.
 
 ---
 
-## 3. GPIO Pin Map (ESP32-S3-WROOM-1-N8R2)
+## 3. GPIO Pin Map (ESP32-S3-WROOM-1-N16R8)
 
-> Module internally uses: GPIO26–32 (Flash/PSRAM SPI, not pinned out), GPIO19/20 (USB), GPIO0/45/46 (strapping — use carefully).
+> Module memory occupies GPIO26–37; GPIO33–37 are specifically unavailable
+> because N16R8 uses Octal PSRAM. GPIO19/20 carry USB, and GPIO0/45/46 are
+> strapping pins that must be used carefully.
 
 | GPIO | Function | Dir | Notes |
 |---|---|---|---|
@@ -138,7 +147,7 @@ in this first revision to keep the power architecture simple.
 | **—— Battery monitor ——** | | | |
 | GPIO1  | VBATT_DIV | IN(ADC1_CH0) | Divider sample (backup; MAX17048 is primary) |
 | **—— Reserved expansion ——** | | | |
-| GPIO17/21/35–46 | Expansion | — | Unconnected; GPIO18 is used by I2C |
+| GPIO17/21/38–46 | Expansion | — | Unconnected; GPIO18 is used by I2C and GPIO35–37 by Octal PSRAM |
 
 > ⚠️ On ESP32-S3, ADC2 is unavailable while WiFi is on, so battery-voltage sampling must use **ADC1 (GPIO1–10)**. The table above already respects this.
 
@@ -149,7 +158,7 @@ in this first revision to keep the power architecture simple.
 | # | Decision | Rationale |
 |---|---|---|
 | 1 | WROOM module, not bare die | No RF design, DIY-friendly, easier certification |
-| 2 | N8R2 (8 MB Flash + 2 MB PSRAM) | Wallpaper library + frame buffer both satisfied; best value |
+| 2 | N16R8 (16 MB Flash + 8 MB Octal PSRAM) | Better OTA/image headroom and current sourcing with no PCB change |
 | 3 | NFC uses dynamic tag ST25DV04KC | MCU rewrite + GPO wake; `V_EH` is deferred |
 | 4 | Native USB, no CH340 | Saves a chip, space, and cost |
 | 5 | Gate the WS2812, keep I²C sensors on +3V3 | Removes LED leakage without I²C back-power paths |

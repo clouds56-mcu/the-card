@@ -7,7 +7,7 @@
 | Item | Spec |
 |---|---|
 | **Positioning** | DIY / open learning platform (open-source, flashable, well-documented) |
-| **MCU** | ESP32-S3-WROOM-1-N8R2 (8 MB Flash + 2 MB PSRAM) |
+| **MCU** | ESP32-S3-WROOM-1-N16R8 (16 MB Flash + 8 MB Octal PSRAM) |
 | **Display** | 2.9" e-paper 296×128 (SSD1680, partial refresh / 4-gray) |
 | **Wireless** | Bluetooth 5 LE (on-module) + NFC (ST25DV04KC dynamic tag) |
 | **Input** | 4× tactile buttons (up/down/select/menu, watch-style) |
@@ -25,9 +25,9 @@
 
 ## 💰 Key Takeaways
 
-- **Component BOM (incl. panel + battery, excl. PCB/case):** ~$28 (1-off) / ~$21 (@100) / ~$18 (@1k)
-- **Landed cost (incl. PCBA + case + assembly):** ~$39 (1-off) / ~$27 (@100) / ~$21 (@1k)
-- **Cost driver:** e-paper panel (~$7, 33%) + MCU (~$4, 19%) + battery/IMU (~$2.5 each)
+- **Component BOM (incl. panel + battery, excl. PCB/case):** ~$29 (1-off) / ~$21 (@100) / ~$18 (@1k)
+- **Landed cost (incl. PCBA + case + assembly):** ~$40 (1-off) / ~$28 (@100) / ~$21 (@1k)
+- **Cost driver:** e-paper panel (~$7, 33%) + MCU (~$4, 18%) + battery/IMU (~$2.5 each)
 - **Battery life:** ~3–6 months daily use (1000 mAh); ~2 days heavy wireless debug; months→1 year standby
 - **#1 gotcha:** WS2812 / sensors **must** be power-gated via a MOSFET, otherwise standby leakage kills battery life
 

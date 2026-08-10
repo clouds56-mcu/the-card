@@ -45,8 +45,9 @@ netlist — only for later PCB layout.
 | WS2812B-Mini | C5275773 | C527089 |
 | E-ink FPC connector | C262682 (16-pin) | C6081230 (24-pin) |
 
-Also caught: **ESP32-S3-WROOM-1 does not break out GPIO33/34** (reserved by
-internal SPI) → `EPD_PWR_EN` moved to GPIO16.
+Also caught: **ESP32-S3-WROOM-1 does not break out GPIO33/34**, and the selected
+N16R8 variant also reserves GPIO35–37 for Octal PSRAM. `EPD_PWR_EN` therefore
+uses GPIO16.
 
 ### 6. Schematic in code
 `hardware/circuit.py` captures the full electrical design:
@@ -90,7 +91,7 @@ Using Exa web search + the Good Display datasheet PDF:
 
 | Ref | Part | LCSC | Role |
 |---|---|---|---|
-| U1 | ESP32-S3-WROOM-1-N8R2 | C2913204 | MCU (WiFi+BLE, 8 MB Flash, 2 MB PSRAM) |
+| U1 | ESP32-S3-WROOM-1-N16R8 | C2913202 | MCU (WiFi+BLE, 16 MB Flash, 8 MB Octal PSRAM) |
 | U2 | ST25DV04KC-IE8S3 | C5221752 | NFC dynamic tag with GPO wake |
 | U3 | LSM6DSOTR | C2655100 | 6-axis IMU |
 | U4 | SHT40-BD1B-R2 | C7461849 | Temp / Humidity |

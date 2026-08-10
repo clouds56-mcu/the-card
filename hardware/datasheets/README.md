@@ -9,7 +9,7 @@ project an archived datasheet is part of the design record.
 
 | Ref | Part | LCSC | File | Source |
 |---|---|---|---|---|
-| U1 | ESP32-S3-WROOM-1 (module) | C2913204 | `ESP32-S3-WROOM-1_Espressif.pdf` | Espressif |
+| U1 | ESP32-S3-WROOM-1 (module) | C2913202 | `ESP32-S3-WROOM-1_Espressif.pdf` | Espressif |
 | U1 | ESP32-S3 (chip) | — | `ESP32-S3_Espressif.pdf` | Espressif |
 | U2 | ST25DV04KC | C5221752 | `ST25DV04KC_ST.pdf` | ST (Farnell mirror) |
 | U3 | LSM6DSO | C2655100 | `LSM6DSO_ST.pdf` | ST (LCSC) |

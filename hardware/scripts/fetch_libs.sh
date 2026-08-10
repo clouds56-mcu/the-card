@@ -13,12 +13,26 @@ cd "$(dirname "$0")/.."   # -> hardware/
 ACTIVE_IDS=$(uv run python -c "
 import yaml
 d = yaml.safe_load(open('parts.yaml'))
-print(' '.join(p['lcsc'] for p in d['lcsc_parts']))
+parts = d['lcsc_parts']
+ids = [
+  str(p['lcsc'])
+  for p in parts
+  if str(p.get('lcsc', '')).startswith('C')
+  and str(p['lcsc'])[1:].isdigit()
+]
+print(' '.join(ids))
 ")
 PASSIVE_IDS=$(uv run python -c "
 import yaml
 d = yaml.safe_load(open('parts.yaml'))
-print(' '.join(p['lcsc'] for p in d.get('passive_templates', [])))
+parts = d.get('passive_templates', [])
+ids = [
+  str(p['lcsc'])
+  for p in parts
+  if str(p.get('lcsc', '')).startswith('C')
+  and str(p['lcsc'])[1:].isdigit()
+]
+print(' '.join(ids))
 ")
 
 mkdir -p libraries

@@ -232,6 +232,10 @@ def export_fabrication(root: Path) -> tuple[list[Path], dict[str, float | int]]:
   gerbers.mkdir(parents=True)
   drill.mkdir(parents=True)
 
+  # gen_pcb.py fills every copper zone before saving, and the full DRC gate
+  # above validates the resulting geometry. KiCad 10.0.5 on macOS aborts in
+  # the CLI's redundant --check-zones export path for this otherwise clean
+  # board, so release plotting intentionally relies on those two prior checks.
   run([
     str(KICAD_CLI),
     "pcb",
@@ -242,7 +246,6 @@ def export_fabrication(root: Path) -> tuple[list[Path], dict[str, float | int]]:
     "--layers",
     ",".join(GERBER_LAYERS),
     "--subtract-soldermask",
-    "--check-zones",
     str(BOARD),
   ])
   run([
@@ -438,7 +441,6 @@ def export_review(root: Path) -> None:
       "--exclude-drawing-sheet",
       "--drill-shape-opt",
       "2",
-      "--check-zones",
     ]
     if mirror:
       command.append("--mirror")

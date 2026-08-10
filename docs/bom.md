@@ -16,7 +16,7 @@ An em dash means the distributor quote has not yet been captured.
 
 | # | Category | Part | MPN | LCSC | Qty | @1 (USD) | @100 (USD) | @1k (USD) |
 |---|---|---|---|---|---|---|---|---|
-| 1 | MCU | WiFi+BLE module | ESP32-S3-WROOM-1-N8R2 | C2913204 | 1 | 5.08 | **4.03** | 3.84 |
+| 1 | MCU | WiFi+BLE module | ESP32-S3-WROOM-1-N16R8 | C2913202 | 1 | 5.48 | **3.94** | 3.72 |
 | 2 | Display | 2.9" e-paper 296×128 SSD1680 | GDEY029T94 (Good Display) | distributor¹ | 1 | 7.60 | **7.00** | 5.50 |
 | 3 | Display aux | FPC connector 24P 0.5 mm ZIF | FH12-24S-0.5SH(55) | distributor | 1 | — | — | — |
 | 4 | NFC | Dynamic tag IC with GPO wake | ST25DV04KC-IE8S3 | C5221752 | 1 | 0.91 | **0.55** | 0.44 |
@@ -45,9 +45,9 @@ An em dash means the distributor quote has not yet been captured.
 
 | Tier | Subtotal |
 |---|---|
-| **@1 (prototype)** | ≈ $29.0 |
-| **@100 (small batch)** | ≈ **$21.5** |
-| **@1k (production)** | ≈ $18.1 |
+| **@1 (prototype)** | ≈ $29.4 |
+| **@100 (small batch)** | ≈ **$21.4** |
+| **@1k (production)** | ≈ $18.0 |
 
 ---
 
@@ -55,13 +55,13 @@ An em dash means the distributor quote has not yet been captured.
 
 | Item | @1 | @100 | @1k |
 |---|---|---|---|
-| Components (incl. panel/battery) | 29.0 | 21.5 | 18.1 |
+| Components (incl. panel/battery) | 29.4 | 21.4 | 18.0 |
 | PCB (4-layer, 0.8 mm) | 5.0 | 1.5 | 0.8 |
 | SMT assembly + stencil | —² | 1.5 | 0.9 |
 | Case (3D print / DIY) | 3.0 | 2.0 | 0.8 (injection) |
 | Lanyard hardware | 1.0 | 0.5 | 0.35 |
 | Assembly labor / test | 2.0 | 1.0 | 0.4 |
-| **Per-unit total** | **~$40** | **~$28** | **~$22** |
+| **Per-unit total** | **~$40** | **~$28** | **~$21** |
 
 ² A single prototype is usually hand-soldered or run as a 1-off PCBA order (adds ~$15–30 NRE, high when amortized to one board).
 
@@ -72,14 +72,14 @@ An em dash means the distributor quote has not yet been captured.
 ## 3. Cost-Structure Breakdown
 
 ```
-@100 unit component breakdown (base $21.5)
+@100 unit component breakdown (base $21.4)
 E-paper   █████████████████        33%   ← biggest line item
-MCU       █████████                19%
+MCU       █████████                18%
 IMU       ██████                   12%
 Battery   ██████                   12%
 Fuel gauge███                       7%
 T/RH      ███                       6%
-Rest      █████                     11%  ← NFC / power / connectors / passives
+Rest      ██████                    12%  ← NFC / power / connectors / passives
 ```
 
 ### Cost-reduction Levers (ranked by savings)
@@ -87,7 +87,7 @@ Rest      █████                     11%  ← NFC / power / connectors 
 | Measure | Saving | Trade-off |
 |---|---|---|
 | Swap panel to 2.13" GDEY0213B74 (250×122) | -$3 | 30% less display area |
-| Drop MCU to N4 (4 MB, no PSRAM) | -$1 | Large-image refresh needs frame-buffer tuning |
+| Drop MCU to N8R2 (8 MB + 2 MB PSRAM) | No consistent current saving | Less OTA/image headroom |
 | Drop MAX17048 fuel gauge, use divider only | -$1.5 | Inaccurate battery % (non-linear Li-ion curve) |
 | Drop IMU (only T/RH + motion?) | -$2.5 | Loses flip-wake / step count |
 | NFC → passive NTAG216 sticker | -$0.3 | Loses MCU dynamic rewrite / GPO wake |
@@ -112,7 +112,7 @@ Rest      █████                     11%  ← NFC / power / connectors 
 
 ### 4.3 Risk / long lead-time parts
 - **E-paper panel:** in peak season (Q4) lead time can stretch to 2–4 weeks; over-order the first batch by ~20%
-- **ESP32-S3-WROOM-1-N8R2:** 24k+ in stock normally, low risk
+- **ESP32-S3-WROOM-1-N16R8:** broadly stocked; confirm C2913202 inventory and price at order time
 - **ST25DV04KC:** 2k+ in stock; the SO-8 package (C5221752) hand-solders better than UFDFPN — prefer SO-8
 - **Battery:** air freight restricted (domestic ground for China); overseas buyers need a local Li-Po vendor
 

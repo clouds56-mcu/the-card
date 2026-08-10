@@ -18,9 +18,9 @@ libs_output: hardware/libraries/
 # ─────────────────────────────────────────────────────────────────────────────
 lcsc_parts:
   - ref: U1
-    name: ESP32-S3-WROOM-1-N8R2
-    lcsc: C2913204
-    role: MCU (WiFi+BLE, 8MB Flash, 2MB PSRAM)
+    name: ESP32-S3-WROOM-1-N16R8
+    lcsc: C2913202
+    role: MCU (WiFi+BLE, 16MB Flash, 8MB Octal PSRAM)
   - ref: U2
     name: ST25DV04KC-IE8S3
     lcsc: C5221752
