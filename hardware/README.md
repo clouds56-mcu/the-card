@@ -81,7 +81,8 @@ libraries, while `circuit.py` defines electrical connectivity and emits
 `the-card.net`. The layout generator imports that circuit and changes only its
 presentation: one A2 page containing Power/USB, MCU, NFC/sensors, e-paper, and UI
 regions. For an electrical change, update `circuit.py`, regenerate the netlist and
-schematic, then run `verify_schematic.py` before accepting the result.
+schematic, then run `verify_schematic.py` before accepting the result. See
+[`FABRICATION.md`](FABRICATION.md) for stackup, ordering, and assembly checks.
 
 ## Verification status (done)
 
@@ -90,7 +91,6 @@ The originally flagged sections were checked against datasheets (see
 SSD1680 booster and 25 V bypass network are now present on the host PCB. Residual
 PCB-layout items are:
 
-- **DW01A+FS8205A** — topology confirmed; final eyeball of the FS8205A app circuit.
 - **ST25DV04KC antenna** — the routed two-turn loop uses the available front-left
   strip and is connectivity/DRC complete. The approved placement constrains its
   area and keeps rear-side sensors and ground beneath part of the loop, so tune
@@ -99,8 +99,14 @@ PCB-layout items are:
 - **Display FPC** — J2 is now the verified single-row Hirose
   FH12-24S-0.5SH(55): 24 positions, 0.5 mm pitch, bottom contact, for a 0.30 mm
   FPC. The project footprint numbers its two hold-down tabs 25 and 26 so both
-  are tied to ground by the schematic.
-- **JST-PH battery polarity** — verify the selected pack's cable before plugging it in.
+  are tied to ground by the schematic. Rear silkscreen marks pin 1; confirm the
+  folded panel orientation with a paper or physical mock-up before ordering.
+- **JST-PH battery polarity** — rear silkscreen marks `BAT+` and `BAT-`, but the
+  selected pack's cable must still be verified before plugging it in.
+
+The DW01A/FS8205A protection stage has been checked against both datasheets:
+R9=100 Ω, R10=1 kΩ, DOUT drives G1 on the cell-negative side, and COUT drives
+G2 on the pack-negative side.
 
 ## Gotchas
 

@@ -323,21 +323,23 @@ decouple(bat, "C_bat", "0603")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Battery protection DW01A (U7) + FS8205A (U8)   ✓ VERIFIED vs Fortune/HMSEMI datasheets
+# Battery protection DW01A (U7) + FS8205A (U8)   ✓ VERIFIED vs datasheets
 # DW01A pins (EasyEDA = HMSEMI naming): 1=DOUT(DO, discharge gate), 2=VM(CS, sense),
 # 3=COUT(CO, charge gate), 4=NC, 5=VDD(VCC, +supply via R1), 6=VSS(B-).
 # Protection on the NEGATIVE path: +BAT is common; cell- (BAT_NEG) and P- (GND)
-# are separated by the back-to-back FETs. REQUIRED externals: R1 (470Ω VCC<-B+),
-# R2 (2kΩ VM<-P-), C1 (100nF VCC-VSS) — were missing before this verify pass.
+# are separated by the back-to-back FETs. The selected DW01A recommends
+# R1=100Ω (VCC<-B+), R2=1kΩ (VM<-P-), and C1=100nF (VCC-VSS).
+# FS8205A G1 controls the cell-negative/discharge FET; G2 controls the
+# pack-negative/charge FET.
 # ─────────────────────────────────────────────────────────────────────────────
 prot = part("U7_PROT")
 fet = part("U8_FET")
-r_dvcc = R("470", "R_dvcc"); bat += r_dvcc[1]; r_dvcc[2] += prot["VDD"]          # R1
-r_dvm  = R("2k",  "R_dvm");  gnd += r_dvm[1]; r_dvm[2] += prot["VM"]            # R2 (P- sense)
+r_dvcc = R("100", "R_dvcc"); bat += r_dvcc[1]; r_dvcc[2] += prot["VDD"]          # R1
+r_dvm  = R("1k",  "R_dvm");  gnd += r_dvm[1]; r_dvm[2] += prot["VM"]             # R2 (P- sense)
 bat_neg += prot["VSS"]                                                       # B-
 c_dprot = C("100nF", "C_dprot"); prot["VDD"] += c_dprot[1]; c_dprot[2] += bat_neg  # C1
-prot["COUT"] += fet["G1"]   # charge  gate -> FET A (S1=B-)
-prot["DOUT"] += fet["G2"]   # discharge gate -> FET B (S2=P-)
+prot["DOUT"] += fet["G1"]   # discharge gate -> cell-negative FET (S1=B-)
+prot["COUT"] += fet["G2"]   # charge gate -> pack-negative FET (S2=P-)
 bat_neg += fet["S1"]; gnd += fet["S2"]
 fet_drain = Net("FET_DRAIN"); fet_drain += fet["D12"]   # internal common-drain node
 

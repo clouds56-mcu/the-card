@@ -45,8 +45,8 @@ TP1–TP4 · power passives.
   pin2=GND, pin5=VBUS. → `USB_DM`/`USB_DP` to MCU.
 - U6 (TP4056): VCC←VBUS, BAT→`+BAT`, PROG→2.2 k→GND (~500 mA), TEMP→GND (no NTC), CE→VBUS,
   ~CHRG→10 k pullup to +3V3 → net `~CHRG` (to MCU). Add 10 µF on VBUS and on +BAT.
-- U7+U8 protection: VDD(pin5)←470 Ω←+BAT, VSS(pin6)→`BAT_NEG`, VM(pin2)←2 k←GND,
-  COUT(pin3)→FS8205A G1, DOUT(pin1)→G2; 100 nF VDD-VSS. FS8205A: S1→BAT_NEG,
+- U7+U8 protection: VDD(pin5)←100 Ω←+BAT, VSS(pin6)→`BAT_NEG`, VM(pin2)←1 k←GND,
+  DOUT(pin1)→FS8205A G1, COUT(pin3)→G2; 100 nF VDD-VSS. FS8205A: S1→BAT_NEG,
   S2→GND, D12=floating internal node.
 - U9 (ME6211): VIN←+BAT, VOUT→`+3V3`, CE←+BAT (always on), 1 µF in/out.
 - U5 (MAX17048): CELL+VDD←+BAT, CTG+QSTRT→GND, SCL/SDA→I²C, ~ALRT NC, 100 nF on VDD.

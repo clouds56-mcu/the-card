@@ -579,6 +579,12 @@ def add_mechanics(board: pcbnew.BOARD) -> None:
   )
   add_text(board, "THE CARD", 27.0, 84.0, pcbnew.F_SilkS, 1.0)
   add_text(board, "REV A - 4L / 0.8 mm", 27.0, 28.5, pcbnew.B_SilkS, 0.80)
+  # These assembly-critical marks are intentionally explicit instead of relying
+  # on connector conventions: battery leads are not polarity-standardized, and
+  # the bottom-contact FPC connector otherwise has no visible pin-1 cue.
+  add_text(board, "BAT+", 42.0, 24.0, pcbnew.B_SilkS, 0.80)
+  add_text(board, "BAT-", 42.0, 22.0, pcbnew.B_SilkS, 0.80)
+  add_text(board, "J2 PIN 1", 21.0, 73.5, pcbnew.B_SilkS, 0.80)
 
   add_rule_area(
     board,
@@ -642,6 +648,10 @@ def generate() -> None:
   add_power_zone(board, nets["+3V3"])
 
   board.BuildListOfNets()
+  # Zone island removal depends on current pad/track connectivity. Building it
+  # explicitly keeps headless generation deterministic; otherwise pcbnew can
+  # serialize floating fill fragments depending on internal cache state.
+  board.BuildConnectivity()
   pcbnew.ZONE_FILLER(board).Fill(board.Zones())
   pcbnew.SaveBoard(str(OUTPUT), board)
   print(f"wrote {OUTPUT.name}")
