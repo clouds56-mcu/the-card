@@ -14,10 +14,12 @@ net-class defaults.
 
 from __future__ import annotations
 
+import base64
 from dataclasses import dataclass
 from pathlib import Path
 import subprocess
 import tempfile
+import textwrap
 import xml.etree.ElementTree as ET
 
 import pcbnew
@@ -51,6 +53,18 @@ BATTERY_X = 13.50
 BATTERY_Y = 27.00
 BATTERY_W = 30.00
 BATTERY_H = 48.00
+
+# Non-fabrication copper-layer thumbnails displayed beside the real board in
+# PCB Editor. Coordinates are absolute because the images are injected into the
+# saved board file after KiCad exports and rasterizes each SVG layer plot.
+LAYER_REFERENCE_VIEWS = (
+  ("F.Cu", "L1  F.Cu", 92.60, 40.00, "73b59665-b9b6-4dd7-8a24-028f7ae36dda"),
+  ("In1.Cu", "L2  In1.Cu", 122.75, 40.00, "eb349994-862d-4d0d-bfd6-fdb6ac2aec24"),
+  ("In2.Cu", "L3  In2.Cu", 92.60, 84.90, "b62a3980-d435-4a87-b44d-4af47b18a15e"),
+  ("B.Cu", "L4  B.Cu", 122.75, 84.90, "6752edb1-510d-4e52-9044-e5f8bbcc7f34"),
+)
+LAYER_REFERENCE_RASTER_WIDTH = 540
+LAYER_REFERENCE_SCALE = 0.55
 
 
 @dataclass(frozen=True)
@@ -585,6 +599,17 @@ def add_mechanics(board: pcbnew.BOARD) -> None:
   add_text(board, "BAT+", 42.0, 24.0, pcbnew.B_SilkS, 0.80)
   add_text(board, "BAT-", 42.0, 22.0, pcbnew.B_SilkS, 0.80)
   add_text(board, "J2 PIN 1", 21.0, 73.5, pcbnew.B_SilkS, 0.80)
+  add_text(
+    board,
+    "COPPER LAYER REFERENCE VIEWS - NON-FABRICATION",
+    87.70,
+    -7.50,
+    pcbnew.Cmts_User,
+    1.20,
+  )
+  for _, label, x, y, _ in LAYER_REFERENCE_VIEWS:
+    label_y = y - 22.20
+    add_text(board, label, x - BOARD_X, label_y - BOARD_Y, pcbnew.Cmts_User, 1.00)
 
   add_rule_area(
     board,
@@ -654,11 +679,84 @@ def generate() -> None:
   board.BuildConnectivity()
   pcbnew.ZONE_FILLER(board).Fill(board.Zones())
   pcbnew.SaveBoard(str(OUTPUT), board)
+  add_layer_reference_views(OUTPUT)
   print(f"wrote {OUTPUT.name}")
   print(
     f"footprints={len(list(board.GetFootprints()))} "
     f"nets={board.GetNetCount()} layers={board.GetCopperLayerCount()}"
   )
+
+
+def _rasterize_svg(svg_path: Path, png_path: Path) -> None:
+  """Rasterize a KiCad SVG plot without starting a GUI application."""
+  import wx
+  import wx.svg
+
+  svg = wx.svg.SVGimage.CreateFromFile(str(svg_path))
+  scale = LAYER_REFERENCE_RASTER_WIDTH / svg.width
+  height = round(svg.height * scale)
+  bitmap = svg.ConvertToBitmap(
+    scale=scale,
+    width=LAYER_REFERENCE_RASTER_WIDTH,
+    height=height,
+  )
+  if not bitmap.SaveFile(str(png_path), wx.BITMAP_TYPE_PNG):
+    raise RuntimeError(f"unable to rasterize {svg_path.name}")
+
+
+def _reference_image_block(
+  png_path: Path,
+  x: float,
+  y: float,
+  image_uuid: str,
+) -> str:
+  encoded = base64.b64encode(png_path.read_bytes()).decode("ascii")
+  data_lines = "\n".join(f'\t\t\t"{chunk}"' for chunk in textwrap.wrap(encoded, 76))
+  return (
+    "\t(image\n"
+    f"\t\t(at {x:.2f} {y:.2f})\n"
+    f"\t\t(scale {LAYER_REFERENCE_SCALE:.2f})\n"
+    "\t\t(layer \"Cmts.User\")\n"
+    f"\t\t(data\n{data_lines}\n\t\t)\n"
+    f"\t\t(uuid \"{image_uuid}\")\n"
+    "\t)\n"
+  )
+
+
+def add_layer_reference_views(board_path: Path) -> None:
+  """Embed four non-physical copper-layer views beside the generated board."""
+  with tempfile.TemporaryDirectory(prefix="the-card-layer-views-") as directory:
+    output_dir = Path(directory)
+    blocks: list[str] = []
+    for layer, _, x, y, image_uuid in LAYER_REFERENCE_VIEWS:
+      svg_path = output_dir / f"{layer.lower().replace('.', '-')}.svg"
+      png_path = svg_path.with_suffix(".png")
+      subprocess.run(
+        [
+          str(KICAD_CLI),
+          "pcb",
+          "export",
+          "svg",
+          "--mode-single",
+          "--layers",
+          f"{layer},Edge.Cuts",
+          "--page-size-mode",
+          "2",
+          "--exclude-drawing-sheet",
+          "--output",
+          str(svg_path),
+          str(board_path),
+        ],
+        check=True,
+      )
+      _rasterize_svg(svg_path, png_path)
+      blocks.append(_reference_image_block(png_path, x, y, image_uuid))
+
+  contents = board_path.read_text()
+  closing = contents.rfind("\n)")
+  if closing < 0:
+    raise RuntimeError(f"invalid KiCad board file: {board_path}")
+  board_path.write_text(contents[:closing] + "\n" + "".join(blocks) + contents[closing:])
 
 
 if __name__ == "__main__":

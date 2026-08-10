@@ -61,7 +61,9 @@ generator encodes display, 603048 battery, ESP32 antenna, and NFC plane
 keepouts. F.Cu and B.Cu carry local signals over ground pours, In1.Cu is the
 primary ground plane, and In2.Cu is the primary 3V3 plane plus longer signal
 routes. Ground stitching ties the pours together. The generated board is fully
-routed and passes KiCad DRC with 0 violations and 0 unconnected items.
+routed and passes KiCad DRC with 0 violations and 0 unconnected items. Four
+non-fabrication reference images are embedded beside the board in PCB Editor,
+showing F.Cu, In1.Cu, In2.Cu, and B.Cu simultaneously without affecting plots.
 
 Open the schematic:
 ```bash
