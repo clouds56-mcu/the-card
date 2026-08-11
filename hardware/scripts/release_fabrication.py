@@ -406,9 +406,9 @@ def export_bom(root: Path) -> dict[str, int]:
       "--output",
       raw.name,
       "--fields",
-      "Reference,Value,Footprint,QUANTITY,DNP",
+      "Reference,Value,Footprint,QUANTITY,DNP,Related To,Function",
       "--labels",
-      "reference,value,footprint,quantity,dnp",
+      "reference,value,footprint,quantity,dnp,related_to,function",
       "--sort-field",
       "Reference",
       "--exclude-dnp",
@@ -419,6 +419,8 @@ def export_bom(root: Path) -> dict[str, int]:
 
   grouped: dict[tuple[str, ...], list[str]] = defaultdict(list)
   jlc_grouped: dict[tuple[str, ...], list[str]] = defaultdict(list)
+  relationships: dict[str, str] = {}
+  functions: dict[str, str] = {}
   component_counts: dict[str, int] = defaultdict(int)
   for row in rows:
     reference = row["reference"]
@@ -440,6 +442,8 @@ def export_bom(root: Path) -> dict[str, int]:
       metadata["notes"],
     )
     grouped[key].append(reference)
+    relationships[reference] = row.get("related_to", "")
+    functions[reference] = row.get("function", "")
     details = component_details[reference]
     jlc_key = (
       row["value"],
@@ -463,6 +467,8 @@ def export_bom(root: Path) -> dict[str, int]:
       "lcsc_part_number",
       "sourcing_status",
       "source_hint",
+      "related_to",
+      "functions",
       "notes",
     ])
     for key, references in sorted(
@@ -471,6 +477,16 @@ def export_bom(root: Path) -> dict[str, int]:
     ):
       value, footprint, lcsc, status, source_hint, notes = key
       references.sort(key=natural_reference_key)
+      related_to = "; ".join(
+        f"{reference}: {relationships[reference]}"
+        for reference in references
+        if relationships[reference]
+      )
+      component_functions = "; ".join(
+        f"{reference}: {functions[reference]}"
+        for reference in references
+        if functions[reference]
+      )
       writer.writerow([
         ",".join(references),
         len(references),
@@ -479,6 +495,8 @@ def export_bom(root: Path) -> dict[str, int]:
         lcsc,
         status,
         source_hint,
+        related_to,
+        component_functions,
         notes,
       ])
 

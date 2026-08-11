@@ -117,6 +117,11 @@ regions. For an electrical change, update `circuit.py`, regenerate the netlist a
 schematic, then run `verify_schematic.py` before accepting the result. See
 [`FABRICATION.md`](FABRICATION.md) for stackup, ordering, and assembly checks.
 
+Every resistor and capacitor also receives hidden `Related To` and `Function`
+properties from `circuit.py`. The single-page schematic shows compact functional
+callouts, while KiCad properties and the internal assembly BOM retain the exact
+per-reference annotations without crowding the drawing.
+
 ## Verification status (done)
 
 The originally flagged sections were checked against datasheets (see

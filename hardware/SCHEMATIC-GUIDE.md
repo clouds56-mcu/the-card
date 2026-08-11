@@ -33,6 +33,39 @@ and e-paper along the lower right. Named labels replace long cross-page wires.
 `AUX_3V3` (switched LED rail via Q1) · `EPD_VCI` (switched e-ink rail via Q2) ·
 `GND` · `BAT_NEG` (cell-, ⚠️ not GND).
 
+## Passive relationship and function annotations
+
+Every resistor and capacitor has two generated KiCad properties:
+
+- **Related To** identifies the owning IC, connector, switch, signal, rail, or
+  shared circuit block. A shared bus or rail is not forced under one arbitrary IC.
+- **Function** states why the component exists, such as decoupling, bulk storage,
+  pull-up, filtering, timing, debounce, or charge-pump energy storage.
+
+The properties remain hidden on the drawing to avoid text collisions, but are
+available in symbol properties and BOM export. Compact callouts on the schematic
+summarize the same relationships by functional block:
+
+| References | Related to | Function |
+|---|---|---|
+| C1, C2 | U1 / +3V3 | MCU high-frequency bypass and local bulk storage |
+| R1, C3 | U1 EN | Enable pull-up and startup/reset timing |
+| R2 | U1 IO0 | Boot-strap pull-up |
+| R3, R4, C4 | U1 IO1 / +BAT | Battery ADC divider and low-pass filter |
+| C5, R5, R6 | J1 / U10 / U6 | USB input bulk storage and CC pull-downs |
+| R7, R8, C6 | U6 / U1 | Charge-current setting, status pull-up, and BAT bulk storage |
+| R9, R10, C7 | U7 / U8 | Protection supply feed, pack-negative sense, and bypass |
+| C8, C9 | U9 | LDO input bypass and output stability |
+| C10 | U5 | Fuel-gauge supply bypass |
+| R11, R12 | Q1 / Q2 / U1 | Switched-rail gate pull-ups; both rails default off |
+| C11, R13, R14 | U2 / shared I2C bus | NFC bypass and I2C clock/data pull-ups |
+| C12, C13, C14 | U3 / U4 | IMU bypass and bulk storage; humidity-sensor bypass |
+| C15 | D1 / AUX_3V3 | Addressable-LED supply bypass |
+| C16-C19 | SW1-SW4 / U1 | Hardware button debounce |
+| C20, C21 | J2 / Q3 / e-paper boost | Switched-input bulk and boost pump storage |
+| R15, R16 | J2 / Q3 | Boost gate bias and current sensing |
+| C22-C28 | J2 panel rails | Core, source, gate, and VCOM rail reservoirs |
+
 ## Region 1 — Power & Charging
 
 Parts: J1 (USB-C) · U10 (USBLC6-2) · U6 (TP4056) · U7 (DW01A) · U8 (HXY 8205A) ·

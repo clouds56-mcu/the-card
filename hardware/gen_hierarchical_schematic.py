@@ -85,6 +85,7 @@ class SheetSpec:
   refs: frozenset[str]
   placements: dict[str, Placement]
   notes: tuple[tuple[str, float, float, float], ...]
+  passive_callouts: tuple[tuple[str, float, float, float], ...]
 
 
 def p(x: float, y: float, rotation: int = 0) -> Placement:
@@ -138,6 +139,32 @@ SHEETS = (
       ("Cell protection", g(12), g(100), 1.8),
       ("Switched peripheral rails", g(165), g(100), 1.8),
     ),
+    passive_callouts=(
+      (
+        "C5 -> J1/U10/U6: USB input bulk; "
+        "R5/R6 -> J1: CC1/CC2 sink pull-downs",
+        g(12), g(84), 1.0,
+      ),
+      (
+        "R7 -> U6: charge-current set; R8 -> U6/U1: CHRG pull-up; "
+        "C6 -> U6: BAT bulk",
+        g(88), g(84), 1.0,
+      ),
+      (
+        "C8/C9 -> U9: LDO input/output stability; "
+        "C10 -> U5: fuel-gauge bypass",
+        g(198), g(84), 1.0,
+      ),
+      (
+        "R9/R10/C7 -> U7/U8: protection supply, sense, and bypass",
+        g(12), g(158), 1.0,
+      ),
+      (
+        "R11 -> Q1/U1: AUX gate pull-up; "
+        "R12 -> Q2/U1: e-paper gate pull-up",
+        g(165), g(158), 1.0,
+      ),
+    ),
   ),
   SheetSpec(
     key="mcu",
@@ -162,6 +189,18 @@ SHEETS = (
       ("Controller, boot straps, decoupling, and battery ADC", g(12), g(12), 1.8),
       ("Named labels keep long inter-block connections readable.", g(12), g(20), 1.1),
     ),
+    passive_callouts=(
+      (
+        "C1/C2 -> U1: 3V3 bypass + bulk; "
+        "R1/C3 -> U1 EN: pull-up + startup timing",
+        g(12), g(28), 1.0,
+      ),
+      (
+        "R2 -> U1 IO0: boot pull-up; "
+        "R3/R4/C4 -> U1 IO1: battery divider + filter",
+        g(12), g(115), 1.0,
+      ),
+    ),
   ),
   SheetSpec(
     key="sensors_nfc",
@@ -184,6 +223,17 @@ SHEETS = (
       ("NFC dynamic tag", g(12), g(12), 1.8),
       ("Motion and environmental sensors", g(12), g(75), 1.8),
       ("I2C pull-ups", g(105), g(12), 1.8),
+    ),
+    passive_callouts=(
+      (
+        "C11 -> U2: NFC bypass; "
+        "R13/R14 -> I2C bus U1-U5: SCL/SDA pull-ups",
+        g(12), g(22), 1.0,
+      ),
+      (
+        "C12/C13 -> U3: IMU bypass + bulk; C14 -> U4: sensor bypass",
+        g(12), g(122), 1.0,
+      ),
     ),
   ),
   SheetSpec(
@@ -217,6 +267,22 @@ SHEETS = (
       ("GDEY029T94 24-pin FPC interface", g(12), g(12), 1.8),
       ("Panel-specific SSD1680 booster and 25 V rail capacitors", g(12), g(20), 1.1),
     ),
+    passive_callouts=(
+      (
+        "C20 -> J2 VCI: input bulk; "
+        "C21 -> J2/Q3: boost pump capacitor",
+        g(12), g(134), 1.0,
+      ),
+      (
+        "R15 -> J2/Q3: boost gate pull-down; "
+        "R16 -> J2/Q3: current sense",
+        g(12), g(142), 1.0,
+      ),
+      (
+        "C22-C28 -> J2: core, source, gate, and VCOM rail reservoirs",
+        g(12), g(150), 1.0,
+      ),
+    ),
   ),
   SheetSpec(
     key="ui",
@@ -240,6 +306,16 @@ SHEETS = (
       ("User buttons with hardware debounce", g(12), g(12), 1.8),
       ("Status LED", g(82), g(96), 1.8),
     ),
+    passive_callouts=(
+      (
+        "C16-C19 -> SW1-SW4/U1: button debounce",
+        g(12), g(22), 1.0,
+      ),
+      (
+        "C15 -> D1: LED supply bypass",
+        g(82), g(105), 1.0,
+      ),
+    ),
   ),
 )
 
@@ -254,6 +330,7 @@ SHEETS = tuple(
       for ref, placement in sheet.placements.items()
     },
     notes=sheet.notes,
+    passive_callouts=sheet.passive_callouts,
   )
   for sheet in SHEETS
 )
@@ -608,12 +685,21 @@ def no_connect(sheet_key: str, ref: str, pin_number: str, point: tuple[float, fl
   )
 
 
-def text_note(sheet_key: str, value: str, x: float, y: float, size: float) -> str:
+def text_note(
+  sheet_key: str,
+  value: str,
+  x: float,
+  y: float,
+  size: float,
+  *,
+  bold: bool = True,
+) -> str:
+  bold_clause = " (bold yes)" if bold else ""
   return (
     f"\t(text \"{esc(value)}\"\n"
     "\t\t(exclude_from_sim no)\n"
     f"\t\t(at {fmt(x)} {fmt(y)} 0)\n"
-    f"\t\t(effects (font (size {fmt(size)} {fmt(size)}) (bold yes)) "
+    f"\t\t(effects (font (size {fmt(size)} {fmt(size)}){bold_clause}) "
     "(justify left bottom))\n"
     f"\t\t(uuid \"{uid('text', sheet_key, value)}\")\n"
     "\t)"
@@ -759,6 +845,15 @@ def render_group(
   offset_x, offset_y = SINGLE_PAGE_OFFSETS[sheet.key]
   for note, x, y, size in sheet.notes:
     lines.append(text_note(sheet.key, note, x + offset_x, y + offset_y, size))
+  for note, x, y, size in sheet.passive_callouts:
+    lines.append(text_note(
+      sheet.key,
+      note,
+      x + offset_x,
+      y + offset_y,
+      size,
+      bold=False,
+    ))
 
   for part in parts:
     lines.append(part_instance(part, sheet))

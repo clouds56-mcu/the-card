@@ -150,6 +150,69 @@ SEMANTIC_REFS = {
     "C_epd_vcom": "C28",
 }
 
+# Every resistor and capacitor carries two documentation fields into KiCad and
+# BOM exports. `Related To` identifies the circuit owner (which may be an IC,
+# connector, switch, net, or shared functional block); `Function` explains why
+# the part exists. Keeping this map keyed by semantic references makes the
+# annotations readable and lets the completeness check catch new unclassified
+# passives before a schematic is generated.
+PASSIVE_METADATA = {
+    "R_en": ("U1 EN", "MCU enable pull-up to +3V3"),
+    "R_io0": ("U1 IO0", "MCU boot-strap pull-up to +3V3"),
+    "R_vbh": ("U1 IO1 / +BAT", "Battery ADC divider, upper leg"),
+    "R_vbl": ("U1 IO1 / GND", "Battery ADC divider, lower leg"),
+    "R_cc1": ("J1 CC1", "USB-C sink configuration pull-down"),
+    "R_cc2": ("J1 CC2", "USB-C sink configuration pull-down"),
+    "R_prog": ("U6 PROG", "TP4056 charge-current programming (~500mA)"),
+    "R_chrg": ("U6 CHRG / U1 IO15", "Open-drain charge-status pull-up"),
+    "R_dvcc": ("U7 VDD / +BAT", "Battery-protection supply feed resistor"),
+    "R_dvm": ("U7 VM / GND", "Battery-protection pack-negative sense resistor"),
+    "R_q1g": ("Q1 / U1 IO47", "AUX rail P-MOSFET gate pull-up (default off)"),
+    "R_q2g": ("Q2 / U1 IO16", "E-paper P-MOSFET gate pull-up (default off)"),
+    "R_scl": ("I2C_SCL / U1-U5", "Shared I2C clock pull-up"),
+    "R_sda": ("I2C_SDA / U1-U5", "Shared I2C data pull-up"),
+    "R_epdg": ("J2 GDR / Q3", "E-paper boost MOSFET gate pull-down"),
+    "R_epds": ("J2 RESE / Q3", "E-paper boost current-sense resistor"),
+    "C_mcu1": ("U1 3V3", "MCU high-frequency supply decoupling"),
+    "C_mcu2": ("U1 3V3 / +3V3", "MCU local bulk capacitance"),
+    "C_en": ("U1 EN", "MCU reset and startup timing"),
+    "C_vb": ("U1 IO1 / battery ADC", "Battery measurement low-pass filter"),
+    "C_vbus": ("J1 / U10 / U6 VBUS", "USB input bulk capacitance"),
+    "C_bat": ("U6 BAT / +BAT", "Charger output and battery-rail bulk capacitance"),
+    "C_dprot": ("U7 VDD / BAT_NEG", "Battery-protection supply decoupling"),
+    "C_ldoi": ("U9 VIN", "LDO input bypass and stability capacitance"),
+    "C_ldoo": ("U9 VOUT", "LDO output stability capacitance"),
+    "C_fg": ("U5 CELL/VDD", "Fuel-gauge supply decoupling"),
+    "C_nfc": ("U2 VCC", "NFC supply decoupling"),
+    "C_imu1": ("U3 VDD/VDDIO", "IMU high-frequency supply decoupling"),
+    "C_imu2": ("U3 VDD/VDDIO / +3V3", "IMU local bulk capacitance"),
+    "C_sht": ("U4 VDD", "Humidity-sensor supply decoupling"),
+    "C_led": ("D1 VDD / AUX_3V3", "Addressable-LED supply decoupling"),
+    "C_btn1": ("SW1 / U1 IO4", "UP-button hardware debounce"),
+    "C_btn2": ("SW2 / U1 IO5", "DOWN-button hardware debounce"),
+    "C_btn3": ("SW3 / U1 IO6", "SELECT-button hardware debounce"),
+    "C_btn4": ("SW4 / U1 IO7", "MENU-button hardware debounce"),
+    "C_epd_in": ("J2 VCI / e-paper boost", "E-paper switched-input bulk capacitance"),
+    "C_epd_pump": ("J2 / Q3 / EPD_PUMP", "E-paper boost charge-pump capacitor"),
+    "C_epdvdd": ("J2 VDD", "E-paper internal core-regulator bypass"),
+    "C_epd_vsh2": ("J2 VSH2", "E-paper positive source-rail reservoir"),
+    "C_epd_vsh1": ("J2 VSH1", "E-paper positive source-rail reservoir"),
+    "C_epd_vgh": ("J2 VGH", "E-paper positive gate-rail reservoir"),
+    "C_epd_vsl": ("J2 VSL", "E-paper negative source-rail reservoir"),
+    "C_epd_vgl": ("J2 VGL", "E-paper negative gate-rail reservoir"),
+    "C_epd_vcom": ("J2 VCOM", "E-paper common-electrode rail reservoir"),
+}
+
+_PASSIVE_REFS = {
+    ref for ref in SEMANTIC_REFS if ref.startswith(("R_", "C_"))
+}
+if set(PASSIVE_METADATA) != _PASSIVE_REFS:
+    missing = sorted(_PASSIVE_REFS - set(PASSIVE_METADATA))
+    extra = sorted(set(PASSIVE_METADATA) - _PASSIVE_REFS)
+    raise ValueError(
+        f"Passive metadata mismatch: missing={missing}, extra={extra}"
+    )
+
 
 def physical_ref(semantic_ref):
     """Translate a semantic passive name to its conventional designator."""
@@ -173,6 +236,8 @@ def part(key, value=None, footprint=None):
 def R(value, ref, size="0402"):
     r = Part(GEN, "0402WGF1002TCE", footprint=R_FP[size])
     r.ref, r.value = physical_ref(ref), value
+    related_to, function = PASSIVE_METADATA[ref]
+    r.fields.update({"Related To": related_to, "Function": function})
     return r
 
 
@@ -180,6 +245,8 @@ def C(value, ref, size="0402"):
     lib, name, _ = C0402 if size == "0402" else C0603
     c = Part(lib, name, footprint=C_FP[size])
     c.ref, c.value = physical_ref(ref), value
+    related_to, function = PASSIVE_METADATA[ref]
+    c.fields.update({"Related To": related_to, "Function": function})
     return c
 
 

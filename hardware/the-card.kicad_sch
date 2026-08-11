@@ -4069,6 +4069,36 @@
 		(effects (font (size 1.8 1.8) (bold yes)) (justify left bottom))
 		(uuid "cb00b085-7bb0-545d-9b6e-19f896d225af")
 	)
+	(text "C5 -> J1/U10/U6: USB input bulk; R5/R6 -> J1: CC1/CC2 sink pull-downs"
+		(exclude_from_sim no)
+		(at 15.24 106.68 0)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "283579d2-9ba6-5772-a5a0-436d9d4b6c01")
+	)
+	(text "R7 -> U6: charge-current set; R8 -> U6/U1: CHRG pull-up; C6 -> U6: BAT bulk"
+		(exclude_from_sim no)
+		(at 111.76 106.68 0)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "720d3284-a848-5aa6-8653-211961d898a4")
+	)
+	(text "C8/C9 -> U9: LDO input/output stability; C10 -> U5: fuel-gauge bypass"
+		(exclude_from_sim no)
+		(at 251.46 106.68 0)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "3629648c-3b6b-5635-8dba-045320eab600")
+	)
+	(text "R9/R10/C7 -> U7/U8: protection supply, sense, and bypass"
+		(exclude_from_sim no)
+		(at 15.24 200.66 0)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "296c52f0-b368-577d-842e-16ac86040276")
+	)
+	(text "R11 -> Q1/U1: AUX gate pull-up; R12 -> Q2/U1: e-paper gate pull-up"
+		(exclude_from_sim no)
+		(at 209.55 200.66 0)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "d4f013ac-5e60-5f90-ae3a-038e5af2b5c9")
+	)
 	(symbol
 		(lib_id "Connector_Generic:Conn_01x02")
 		(at 25.4 177.8 0)
@@ -4202,6 +4232,14 @@
 			(at 59.69 46.99 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
+		(property "Function" "USB-C sink configuration pull-down"
+			(at 59.69 46.99 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "J1 CC1"
+			(at 59.69 46.99 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
 		(pin "2" (uuid "97766c58-ae4d-50b9-85cd-6fbe7ba406af"))
 		(pin "1" (uuid "41e16eb0-5b9d-5a71-b5b9-50e71b3f5b7e"))
 		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943"
@@ -4232,6 +4270,14 @@
 			(at 59.69 82.55 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
+		(property "Function" "USB-C sink configuration pull-down"
+			(at 59.69 82.55 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "J1 CC2"
+			(at 59.69 82.55 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
 		(pin "2" (uuid "82a802f6-782d-5cc3-a303-75de11c0b62b"))
 		(pin "1" (uuid "df395c8f-c379-5ff9-8cc5-c3c43b38e08b"))
 		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943"
@@ -4259,6 +4305,14 @@
 			(effects (font (size 1 1)) (hide yes))
 		)
 		(property "Datasheet" "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL10A106KP8NNNC_10uF-106-10-10V_C19702.html"
+			(at 142.24 96.52 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Function" "USB input bulk capacitance"
+			(at 142.24 96.52 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "J1 / U10 / U6 VBUS"
 			(at 142.24 96.52 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
@@ -4329,6 +4383,14 @@
 			(at 130.81 63.5 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
+		(property "Function" "TP4056 charge-current programming (~500mA)"
+			(at 130.81 63.5 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "U6 PROG"
+			(at 130.81 63.5 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
 		(pin "2" (uuid "8a3b5ad6-1673-5345-8397-4fa7f365acc2"))
 		(pin "1" (uuid "b533f406-9cc5-555e-ba29-c489a90404f7"))
 		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943"
@@ -4359,6 +4421,14 @@
 			(at 171.45 48.26 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
+		(property "Function" "Open-drain charge-status pull-up"
+			(at 171.45 48.26 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "U6 CHRG / U1 IO15"
+			(at 171.45 48.26 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
 		(pin "2" (uuid "d75f1558-f3c1-558b-be60-3471ac774612"))
 		(pin "1" (uuid "01182265-a1b5-54a1-a0aa-934a837b3ece"))
 		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943"
@@ -4386,6 +4456,14 @@
 			(effects (font (size 1 1)) (hide yes))
 		)
 		(property "Datasheet" "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL10A106KP8NNNC_10uF-106-10-10V_C19702.html"
+			(at 180.34 96.52 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Function" "Charger output and battery-rail bulk capacitance"
+			(at 180.34 96.52 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "U6 BAT / +BAT"
 			(at 180.34 96.52 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
@@ -4501,6 +4579,14 @@
 			(at 60.96 149.86 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
+		(property "Function" "Battery-protection supply feed resistor"
+			(at 60.96 149.86 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "U7 VDD / +BAT"
+			(at 60.96 149.86 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
 		(pin "2" (uuid "f4114b4f-e486-5a3b-9f75-93304960349c"))
 		(pin "1" (uuid "5c8d7e35-a2d1-54af-9e1c-e38a76e9ce5b"))
 		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943"
@@ -4531,6 +4617,14 @@
 			(at 120.65 165.1 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
+		(property "Function" "Battery-protection pack-negative sense resistor"
+			(at 120.65 165.1 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "U7 VM / GND"
+			(at 120.65 165.1 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
 		(pin "2" (uuid "2e28bc4d-2f3b-58cc-839a-93f84782f723"))
 		(pin "1" (uuid "e9941d4f-3acc-592d-aa23-eab4a23196df"))
 		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943"
@@ -4558,6 +4652,14 @@
 			(effects (font (size 1 1)) (hide yes))
 		)
 		(property "Datasheet" "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL05B104KO5NNNC_100nF-104-10-16V_C1525.html"
+			(at 69.85 184.15 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Function" "Battery-protection supply decoupling"
+			(at 69.85 184.15 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "U7 VDD / BAT_NEG"
 			(at 69.85 184.15 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
@@ -4624,6 +4726,14 @@
 			(at 223.52 96.52 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
+		(property "Function" "LDO input bypass and stability capacitance"
+			(at 223.52 96.52 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "U9 VIN"
+			(at 223.52 96.52 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
 		(pin "1" (uuid "9fcae186-383b-5cb4-a2e4-850cbc897f3f"))
 		(pin "2" (uuid "6d0db281-4773-59bb-8d01-650288e60084"))
 		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943"
@@ -4651,6 +4761,14 @@
 			(effects (font (size 1 1)) (hide yes))
 		)
 		(property "Datasheet" "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL10A106KP8NNNC_10uF-106-10-10V_C19702.html"
+			(at 260.35 96.52 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Function" "LDO output stability capacitance"
+			(at 260.35 96.52 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "U9 VOUT"
 			(at 260.35 96.52 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
@@ -4721,6 +4839,14 @@
 			(at 304.8 96.52 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
+		(property "Function" "Fuel-gauge supply decoupling"
+			(at 304.8 96.52 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "U5 CELL/VDD"
+			(at 304.8 96.52 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
 		(pin "2" (uuid "2f65a156-78d2-5ef6-8f8c-036513a0e5aa"))
 		(pin "1" (uuid "5fabac55-cd45-5927-b31a-43a01d958b28"))
 		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943"
@@ -4782,6 +4908,14 @@
 			(at 237.49 147.32 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
+		(property "Function" "AUX rail P-MOSFET gate pull-up (default off)"
+			(at 237.49 147.32 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "Q1 / U1 IO47"
+			(at 237.49 147.32 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
 		(pin "2" (uuid "7f5466e3-435a-5c01-80c9-67c2ca398701"))
 		(pin "1" (uuid "c560f391-c7b5-5482-8fe6-5e7e82de1bf6"))
 		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943"
@@ -4840,6 +4974,14 @@
 			(effects (font (size 1 1)) (hide yes))
 		)
 		(property "Datasheet" "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount-UniOhm_10KR-1002-1_C25744.html"
+			(at 307.34 147.32 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Function" "E-paper P-MOSFET gate pull-up (default off)"
+			(at 307.34 147.32 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "Q2 / U1 IO16"
 			(at 307.34 147.32 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
@@ -6759,6 +6901,18 @@
 		(effects (font (size 1.1 1.1) (bold yes)) (justify left bottom))
 		(uuid "ccbffcc4-9a5c-58fd-a10e-8f443192479a")
 	)
+	(text "C1/C2 -> U1: 3V3 bypass + bulk; R1/C3 -> U1 EN: pull-up + startup timing"
+		(exclude_from_sim no)
+		(at 180.34 207.01 0)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "7fe589b0-08a0-5a7a-a7e5-cc0fe827e7e5")
+	)
+	(text "R2 -> U1 IO0: boot pull-up; R3/R4/C4 -> U1 IO1: battery divider + filter"
+		(exclude_from_sim no)
+		(at 180.34 317.5 0)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "edb29177-95b4-5a11-8644-3766736ba3a8")
+	)
 	(symbol
 		(lib_id "the-card:ESP32-S3-WROOM-1")
 		(at 311.15 260.35 0)
@@ -6853,6 +7007,14 @@
 			(at 256.54 226.06 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
+		(property "Function" "MCU high-frequency supply decoupling"
+			(at 256.54 226.06 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "U1 3V3"
+			(at 256.54 226.06 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
 		(pin "2" (uuid "a66b80b6-e403-5f06-a11e-70828a0e5ba8"))
 		(pin "1" (uuid "f487cc38-5d67-522b-8a12-1e75392a7fa5"))
 		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943"
@@ -6880,6 +7042,14 @@
 			(effects (font (size 1 1)) (hide yes))
 		)
 		(property "Datasheet" "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL10A106KP8NNNC_10uF-106-10-10V_C19702.html"
+			(at 287.02 226.06 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Function" "MCU local bulk capacitance"
+			(at 287.02 226.06 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "U1 3V3 / +3V3"
 			(at 287.02 226.06 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
@@ -6913,6 +7083,14 @@
 			(at 275.59 245.11 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
+		(property "Function" "MCU enable pull-up to +3V3"
+			(at 275.59 245.11 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "U1 EN"
+			(at 275.59 245.11 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
 		(pin "2" (uuid "2ad7a49c-deed-5391-a8b2-7a6853a309b7"))
 		(pin "1" (uuid "2235bb36-d676-5bf2-9b29-cd191cf98074"))
 		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943"
@@ -6940,6 +7118,14 @@
 			(effects (font (size 1 1)) (hide yes))
 		)
 		(property "Datasheet" "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL10A106KP8NNNC_10uF-106-10-10V_C19702.html"
+			(at 250.19 260.35 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Function" "MCU reset and startup timing"
+			(at 250.19 260.35 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "U1 EN"
 			(at 250.19 260.35 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
@@ -6973,6 +7159,14 @@
 			(at 353.06 275.59 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
+		(property "Function" "MCU boot-strap pull-up to +3V3"
+			(at 353.06 275.59 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "U1 IO0"
+			(at 353.06 275.59 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
 		(pin "2" (uuid "0690f97e-e8ef-5768-ae99-fd5e33effa1d"))
 		(pin "1" (uuid "9ec56ded-856c-5082-86ee-e577b176a6db"))
 		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943"
@@ -7000,6 +7194,14 @@
 			(effects (font (size 1 1)) (hide yes))
 		)
 		(property "Datasheet" "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount-UniOhm_10KR-1002-1_C25744.html"
+			(at 349.25 247.65 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Function" "Battery ADC divider, upper leg"
+			(at 349.25 247.65 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "U1 IO1 / +BAT"
 			(at 349.25 247.65 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
@@ -7033,6 +7235,14 @@
 			(at 349.25 257.81 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
+		(property "Function" "Battery ADC divider, lower leg"
+			(at 349.25 257.81 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "U1 IO1 / GND"
+			(at 349.25 257.81 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
 		(pin "2" (uuid "197b4b99-28e7-5319-a3b3-ac3dd802ad27"))
 		(pin "1" (uuid "ada598e9-d746-5693-b342-7fdb391472b3"))
 		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943"
@@ -7060,6 +7270,14 @@
 			(effects (font (size 1 1)) (hide yes))
 		)
 		(property "Datasheet" "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL05B104KO5NNNC_100nF-104-10-16V_C1525.html"
+			(at 365.76 257.81 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Function" "Battery measurement low-pass filter"
+			(at 365.76 257.81 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "U1 IO1 / battery ADC"
 			(at 365.76 257.81 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
@@ -7953,6 +8171,18 @@
 		(effects (font (size 1.8 1.8) (bold yes)) (justify left bottom))
 		(uuid "8597ffab-7fe9-5f9a-95ad-000219ea83ce")
 	)
+	(text "C11 -> U2: NFC bypass; R13/R14 -> I2C bus U1-U5: SCL/SDA pull-ups"
+		(exclude_from_sim no)
+		(at 351.79 27.94 0)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "d92817e9-f104-5f3c-bf4c-0e060b91c3dc")
+	)
+	(text "C12/C13 -> U3: IMU bypass + bulk; C14 -> U4: sensor bypass"
+		(exclude_from_sim no)
+		(at 351.79 154.94 0)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "9114b715-0359-5966-afc5-c6befafff25b")
+	)
 	(symbol
 		(lib_id "passives:0402WGF1002TCE")
 		(at 478.79 48.26 270)
@@ -7975,6 +8205,14 @@
 			(effects (font (size 1 1)) (hide yes))
 		)
 		(property "Datasheet" "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount-UniOhm_10KR-1002-1_C25744.html"
+			(at 478.79 48.26 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Function" "Shared I2C clock pull-up"
+			(at 478.79 48.26 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "I2C_SCL / U1-U5"
 			(at 478.79 48.26 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
@@ -8005,6 +8243,14 @@
 			(effects (font (size 1 1)) (hide yes))
 		)
 		(property "Datasheet" "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount-UniOhm_10KR-1002-1_C25744.html"
+			(at 499.11 48.26 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Function" "Shared I2C data pull-up"
+			(at 499.11 48.26 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "I2C_SDA / U1-U5"
 			(at 499.11 48.26 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
@@ -8071,6 +8317,14 @@
 			(effects (font (size 1 1)) (hide yes))
 		)
 		(property "Datasheet" "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL05B104KO5NNNC_100nF-104-10-16V_C1525.html"
+			(at 435.61 57.15 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Function" "NFC supply decoupling"
+			(at 435.61 57.15 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "U2 VCC"
 			(at 435.61 57.15 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
@@ -8146,6 +8400,14 @@
 			(at 443.23 114.3 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
+		(property "Function" "IMU high-frequency supply decoupling"
+			(at 443.23 114.3 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "U3 VDD/VDDIO"
+			(at 443.23 114.3 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
 		(pin "2" (uuid "849b8b15-84a4-5eed-ae7c-626d9063f063"))
 		(pin "1" (uuid "1cf42119-52f4-5bcc-99cc-14ea88534d7a"))
 		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943"
@@ -8173,6 +8435,14 @@
 			(effects (font (size 1 1)) (hide yes))
 		)
 		(property "Datasheet" "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL10A106KP8NNNC_10uF-106-10-10V_C19702.html"
+			(at 458.47 129.54 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Function" "IMU local bulk capacitance"
+			(at 458.47 129.54 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "U3 VDD/VDDIO / +3V3"
 			(at 458.47 129.54 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
@@ -8236,6 +8506,14 @@
 			(effects (font (size 1 1)) (hide yes))
 		)
 		(property "Datasheet" "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL05B104KO5NNNC_100nF-104-10-16V_C1525.html"
+			(at 568.96 63.5 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Function" "Humidity-sensor supply decoupling"
+			(at 568.96 63.5 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "U4 VDD"
 			(at 568.96 63.5 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
@@ -9076,6 +9354,24 @@
 		(effects (font (size 1.1 1.1) (bold yes)) (justify left bottom))
 		(uuid "3efb83d4-156f-5c8b-abad-e7fd8804ddbc")
 	)
+	(text "C20 -> J2 VCI: input bulk; C21 -> J2/Q3: boost pump capacitor"
+		(exclude_from_sim no)
+		(at 358.14 379.73 0)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "fb3ad574-0260-50dc-b76c-e3b0d3a3415d")
+	)
+	(text "R15 -> J2/Q3: boost gate pull-down; R16 -> J2/Q3: current sense"
+		(exclude_from_sim no)
+		(at 358.14 389.89 0)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "513060d5-d6f7-5d4f-9195-ec2b5a3fc0c9")
+	)
+	(text "C22-C28 -> J2: core, source, gate, and VCOM rail reservoirs"
+		(exclude_from_sim no)
+		(at 358.14 400.05 0)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "8c3871e6-2be2-5a48-b98c-cc7eda8f5208")
+	)
 	(symbol
 		(lib_id "the-card:FPC0.5-24PLTH2.0")
 		(at 558.8 298.45 0)
@@ -9216,6 +9512,14 @@
 			(at 425.45 330.2 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
+		(property "Function" "E-paper boost MOSFET gate pull-down"
+			(at 425.45 330.2 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "J2 GDR / Q3"
+			(at 425.45 330.2 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
 		(pin "2" (uuid "856169f6-304d-5b83-8c63-0c2b08f2b3f3"))
 		(pin "1" (uuid "bf5e5555-9a6a-503b-9ba5-f6b8aa649a97"))
 		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943"
@@ -9243,6 +9547,14 @@
 			(effects (font (size 1 1)) (hide yes))
 		)
 		(property "Datasheet" "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount-UniOhm_10KR-1002-1_C25744.html"
+			(at 450.85 330.2 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Function" "E-paper boost current-sense resistor"
+			(at 450.85 330.2 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "J2 RESE / Q3"
 			(at 450.85 330.2 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
@@ -9366,6 +9678,14 @@
 			(at 374.65 317.5 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
+		(property "Function" "E-paper switched-input bulk capacitance"
+			(at 374.65 317.5 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "J2 VCI / e-paper boost"
+			(at 374.65 317.5 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
 		(pin "1" (uuid "c47056b5-f089-54fe-8d9f-17ba162c3f88"))
 		(pin "2" (uuid "4f50982b-8c91-5e29-9d27-ad102b8380dc"))
 		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943"
@@ -9393,6 +9713,14 @@
 			(effects (font (size 1 1)) (hide yes))
 		)
 		(property "Datasheet" "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL10A106KP8NNNC_10uF-106-10-10V_C19702.html"
+			(at 416.56 247.65 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Function" "E-paper boost charge-pump capacitor"
+			(at 416.56 247.65 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "J2 / Q3 / EPD_PUMP"
 			(at 416.56 247.65 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
@@ -9426,6 +9754,14 @@
 			(at 508 309.88 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
+		(property "Function" "E-paper internal core-regulator bypass"
+			(at 508 309.88 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "J2 VDD"
+			(at 508 309.88 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
 		(pin "1" (uuid "d31152f6-ceb6-52d5-a4ef-2d41215a684e"))
 		(pin "2" (uuid "58511bd3-df48-5f96-9fc9-982d51678954"))
 		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943"
@@ -9453,6 +9789,14 @@
 			(effects (font (size 1 1)) (hide yes))
 		)
 		(property "Datasheet" "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL10A106KP8NNNC_10uF-106-10-10V_C19702.html"
+			(at 508 241.3 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Function" "E-paper positive source-rail reservoir"
+			(at 508 241.3 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "J2 VSH2"
 			(at 508 241.3 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
@@ -9486,6 +9830,14 @@
 			(at 508 287.02 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
+		(property "Function" "E-paper positive source-rail reservoir"
+			(at 508 287.02 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "J2 VSH1"
+			(at 508 287.02 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
 		(pin "1" (uuid "8e9286b1-cccf-550f-acaa-652aae344106"))
 		(pin "2" (uuid "1e9c6cd1-c427-585a-9ecf-4ee16f9c36d9"))
 		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943"
@@ -9513,6 +9865,14 @@
 			(effects (font (size 1 1)) (hide yes))
 		)
 		(property "Datasheet" "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL10A106KP8NNNC_10uF-106-10-10V_C19702.html"
+			(at 508 264.16 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Function" "E-paper positive gate-rail reservoir"
+			(at 508 264.16 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "J2 VGH"
 			(at 508 264.16 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
@@ -9546,6 +9906,14 @@
 			(at 508 332.74 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
+		(property "Function" "E-paper negative source-rail reservoir"
+			(at 508 332.74 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "J2 VSL"
+			(at 508 332.74 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
 		(pin "1" (uuid "45d4facc-c5ea-5863-b4c4-02992749ccc5"))
 		(pin "2" (uuid "8f06b518-a05e-52c1-a4a1-fd06f3616c06"))
 		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943"
@@ -9576,6 +9944,14 @@
 			(at 508 355.6 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
+		(property "Function" "E-paper negative gate-rail reservoir"
+			(at 508 355.6 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "J2 VGL"
+			(at 508 355.6 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
 		(pin "1" (uuid "8bc1e5d2-84de-5304-b6b6-c6c7ebe827f4"))
 		(pin "2" (uuid "5eb8c1dc-272e-5ef0-b0bb-bd7163db9854"))
 		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943"
@@ -9603,6 +9979,14 @@
 			(effects (font (size 1 1)) (hide yes))
 		)
 		(property "Datasheet" "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL10A106KP8NNNC_10uF-106-10-10V_C19702.html"
+			(at 508 364.49 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Function" "E-paper common-electrode rail reservoir"
+			(at 508 364.49 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "J2 VCOM"
 			(at 508 364.49 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
@@ -10543,6 +10927,18 @@
 		(effects (font (size 1.8 1.8) (bold yes)) (justify left bottom))
 		(uuid "ad3badab-c0a5-5534-bee3-3115d36fe88e")
 	)
+	(text "C16-C19 -> SW1-SW4/U1: button debounce"
+		(exclude_from_sim no)
+		(at 15.24 237.49 0)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "31f6a46d-5e29-5316-9402-06e10da65929")
+	)
+	(text "C15 -> D1: LED supply bypass"
+		(exclude_from_sim no)
+		(at 104.14 342.9 0)
+		(effects (font (size 1 1)) (justify left bottom))
+		(uuid "e0f7bd4a-0154-51b1-8f74-6cdcf88e9b5e")
+	)
 	(symbol
 		(lib_id "passives:CL05B104KO5NNNC")
 		(at 45.72 294.64 270)
@@ -10565,6 +10961,14 @@
 			(effects (font (size 1 1)) (hide yes))
 		)
 		(property "Datasheet" "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL05B104KO5NNNC_100nF-104-10-16V_C1525.html"
+			(at 45.72 294.64 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Function" "UP-button hardware debounce"
+			(at 45.72 294.64 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "SW1 / U1 IO4"
 			(at 45.72 294.64 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
@@ -10598,6 +11002,14 @@
 			(at 109.22 294.64 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
+		(property "Function" "DOWN-button hardware debounce"
+			(at 109.22 294.64 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "SW2 / U1 IO5"
+			(at 109.22 294.64 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
 		(pin "2" (uuid "b425cd69-9d86-50dd-89ff-833051087287"))
 		(pin "1" (uuid "2d5a799e-f9a8-5783-b4ad-e789c83fee95"))
 		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943"
@@ -10628,6 +11040,14 @@
 			(at 172.72 294.64 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
+		(property "Function" "SELECT-button hardware debounce"
+			(at 172.72 294.64 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "SW3 / U1 IO6"
+			(at 172.72 294.64 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
 		(pin "2" (uuid "fad4f6b5-78f3-5a3b-b194-a16b70c692ed"))
 		(pin "1" (uuid "85c5a835-e2a6-5ddc-a11e-ba48c1c96f10"))
 		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943"
@@ -10655,6 +11075,14 @@
 			(effects (font (size 1 1)) (hide yes))
 		)
 		(property "Datasheet" "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL05B104KO5NNNC_100nF-104-10-16V_C1525.html"
+			(at 236.22 294.64 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Function" "MENU-button hardware debounce"
+			(at 236.22 294.64 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "SW4 / U1 IO7"
 			(at 236.22 294.64 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
@@ -10717,6 +11145,14 @@
 			(effects (font (size 1 1)) (hide yes))
 		)
 		(property "Datasheet" "https://lcsc.com/product-detail/Multilayer-Ceramic-Capacitors-MLCC-SMD-SMT_SAMSUNG_CL05B104KO5NNNC_100nF-104-10-16V_C1525.html"
+			(at 111.76 359.41 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Function" "Addressable-LED supply decoupling"
+			(at 111.76 359.41 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "D1 VDD / AUX_3V3"
 			(at 111.76 359.41 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
