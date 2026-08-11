@@ -69,8 +69,13 @@ drill files intended for the board house. Assembly CSVs, DRC/ERC reports,
 checksums, manifests, 3D renders, and layer previews remain beside the ZIP for
 review. Do not upload the whole release directory as a fabrication archive.
 
-The generated assembly BOM assigns exact LCSC/JLCPCB codes to every board-placed
-electrical component except J2, the intentionally distributor-sourced Hirose FPC
-connector. Recheck stock, lifecycle status, package, and assembly-side rotation
-against the generated position file before placing an order; a closed BOM is not
-a substitute for the board house's live manufacturability review.
+The release includes the detailed internal sourcing BOM plus the upload-ready
+`assembly/the-card-jlc-bom.csv` and `assembly/the-card-jlc-positions.csv` pair.
+The JLC BOM follows the requested eight-column format and assigns exact
+LCSC/JLCPCB codes in `JLCPCB Part #` to every board-placed electrical component
+except J2, the intentionally distributor-sourced Hirose FPC connector. The JLC
+position file uses millimetres, `Top`/`Bottom` layer names, and KiCad's exported
+counter-clockwise rotations. Recheck stock, lifecycle status, package, and
+assembly-side rotation against the generated position file before placing an
+order; a closed BOM is not a substitute for the board house's live
+manufacturability review.

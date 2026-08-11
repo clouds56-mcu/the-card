@@ -78,10 +78,17 @@ uv run python scripts/release_fabrication.py \
 
 The release command refuses to overwrite an existing directory. It requires a
 clean full DRC, schematic parity check, and ERC before it emits the fabrication
-ZIP, separate PTH/NPTH drills, assembly BOM, position file, checksums, 3D
-renders, and per-layer SVG/PNG review plots. The assembly BOM reports unresolved
-sourcing explicitly; a clean board does not imply that every row is ready for a
-turnkey PCBA order.
+ZIP, separate PTH/NPTH drills, internal assembly BOM, JLC upload BOM, position
+file, checksums, 3D renders, and per-layer SVG/PNG review plots. The internal
+assembly BOM reports unresolved sourcing explicitly; a clean board does not
+imply that every row is ready for a turnkey PCBA order.
+
+`assembly/the-card-jlc-bom.csv` follows JLC's eight-column
+`Comment, Description, Designator, Footprint, LibRef, Pins, Quantity, JLCPCB Part #`
+format. Exact LCSC/JLC codes are written to `JLCPCB Part #` when assigned.
+`assembly/the-card-jlc-positions.csv` is the matching millimetre CPL with
+`Designator, Mid X, Mid Y, Rotation, Layer` and normalized `Top`/`Bottom`
+layer names.
 
 Open the schematic:
 ```bash

@@ -15,6 +15,7 @@ import shutil
 import subprocess
 import tempfile
 from typing import Any, Iterable
+import xml.etree.ElementTree as ET
 import zipfile
 
 import yaml
@@ -163,6 +164,7 @@ def load_sourcing() -> dict[str, dict[str, str]]:
     lcsc = str(part.get("lcsc", ""))
     assigned = bool(re.fullmatch(r"C\d+", lcsc))
     metadata = {
+      "description": str(part.get("role", "")),
       "lcsc_part_number": lcsc if assigned else "",
       "sourcing_status": "assigned" if assigned else "distributor",
       "source_hint": "LCSC" if assigned else lcsc or "distributor",
@@ -175,6 +177,7 @@ def load_sourcing() -> dict[str, dict[str, str]]:
     if not re.fullmatch(r"C\d+", lcsc):
       raise ValueError(f"assembly part has invalid LCSC number: {part}")
     metadata = {
+      "description": str(part.get("role", "")),
       "lcsc_part_number": lcsc,
       "sourcing_status": "assigned",
       "source_hint": str(part.get("source_hint", "JLCPCB/LCSC")),
@@ -189,6 +192,7 @@ def load_sourcing() -> dict[str, dict[str, str]]:
 
   for part in manifest.get("standard_parts", []):
     metadata = {
+      "description": str(part.get("role", "")),
       "lcsc_part_number": "",
       "sourcing_status": "needs_sourcing",
       "source_hint": "distributor",
@@ -349,10 +353,48 @@ def export_fabrication(root: Path) -> tuple[list[Path], dict[str, float | int]]:
   return gerber_files + drill_files, plot_checks
 
 
+def export_component_details() -> dict[str, dict[str, str | int]]:
+  with tempfile.NamedTemporaryFile(suffix=".xml") as raw:
+    run([
+      str(KICAD_CLI),
+      "sch",
+      "export",
+      "netlist",
+      "--format",
+      "kicadxml",
+      "--output",
+      raw.name,
+      str(SCHEMATIC),
+    ])
+    netlist = ET.parse(raw.name).getroot()
+
+  details: dict[str, dict[str, str | int]] = {}
+  for component in netlist.findall("./components/comp"):
+    libsource = component.find("libsource")
+    pin_numbers = {
+      pin.attrib["num"]
+      for pin in component.findall("./units/unit/pins/pin")
+    }
+    details[component.attrib["ref"]] = {
+      "description": (
+        "" if libsource is None else libsource.attrib.get("description", "")
+      ),
+      "lib_ref": "" if libsource is None else libsource.attrib.get("part", ""),
+      "pins": len(pin_numbers),
+    }
+  return details
+
+
+def jlc_footprint(identifier: str) -> str:
+  """Return the package name without KiCad's library prefix."""
+  return identifier.split(":", 1)[-1]
+
+
 def export_bom(root: Path) -> dict[str, int]:
   assembly = root / "assembly"
   assembly.mkdir(parents=True)
   sourcing = load_sourcing()
+  component_details = export_component_details()
 
   with tempfile.NamedTemporaryFile(suffix=".csv") as raw:
     run([
@@ -375,12 +417,14 @@ def export_bom(root: Path) -> dict[str, int]:
       rows = list(csv.DictReader(source))
 
   grouped: dict[tuple[str, ...], list[str]] = defaultdict(list)
+  jlc_grouped: dict[tuple[str, ...], list[str]] = defaultdict(list)
   component_counts: dict[str, int] = defaultdict(int)
   for row in rows:
     reference = row["reference"]
     if reference.startswith("TP"):
       continue
     metadata = sourcing.get(reference, {
+      "description": "",
       "lcsc_part_number": "",
       "sourcing_status": "needs_sourcing",
       "source_hint": "",
@@ -395,6 +439,16 @@ def export_bom(root: Path) -> dict[str, int]:
       metadata["notes"],
     )
     grouped[key].append(reference)
+    details = component_details[reference]
+    jlc_key = (
+      row["value"],
+      metadata["description"] or str(details["description"]),
+      jlc_footprint(row["footprint"]),
+      str(details["lib_ref"]),
+      str(details["pins"]),
+      metadata["lcsc_part_number"],
+    )
+    jlc_grouped[jlc_key].append(reference)
     component_counts[metadata["sourcing_status"]] += 1
 
   bom_path = assembly / "the-card-assembly-bom.csv"
@@ -427,8 +481,39 @@ def export_bom(root: Path) -> dict[str, int]:
         notes,
       ])
 
+  jlc_bom_path = assembly / "the-card-jlc-bom.csv"
+  with jlc_bom_path.open("w", newline="", encoding="utf-8") as output:
+    writer = csv.writer(output)
+    writer.writerow([
+      "Comment",
+      "Description",
+      "Designator",
+      "Footprint",
+      "LibRef",
+      "Pins",
+      "Quantity",
+      "JLCPCB Part #",
+    ])
+    for key, references in sorted(
+      jlc_grouped.items(),
+      key=lambda item: natural_reference_key(item[1][0]),
+    ):
+      comment, description, footprint, lib_ref, pins, lcsc = key
+      references.sort(key=natural_reference_key)
+      writer.writerow([
+        comment,
+        description,
+        ",".join(references),
+        footprint,
+        lib_ref,
+        pins,
+        len(references),
+        lcsc,
+      ])
+
   return {
     "bom_lines": len(grouped),
+    "jlc_bom_lines": len(jlc_grouped),
     "placed_components": sum(component_counts.values()),
     "components_with_assigned_lcsc": component_counts["assigned"],
     "distributor_components": component_counts["distributor"],
@@ -456,7 +541,42 @@ def export_positions(root: Path) -> int:
     str(BOARD),
   ])
   with position_path.open(newline="") as source:
-    return sum(1 for _row in csv.DictReader(source))
+    rows = list(csv.DictReader(source))
+
+  with (assembly / "the-card-jlc-bom.csv").open(newline="") as source:
+    bom_references = {
+      reference
+      for row in csv.DictReader(source)
+      for reference in row["Designator"].split(",")
+    }
+  position_references = {row["Ref"] for row in rows}
+  if len(position_references) != len(rows):
+    raise ValueError("JLC position export contains duplicate designators")
+  if position_references != bom_references:
+    raise ValueError(
+      "JLC BOM/position designator mismatch: "
+      f"missing={sorted(bom_references - position_references)}, "
+      f"extra={sorted(position_references - bom_references)}"
+    )
+
+  jlc_position_path = assembly / "the-card-jlc-positions.csv"
+  with jlc_position_path.open("w", newline="", encoding="utf-8") as output:
+    writer = csv.writer(output)
+    writer.writerow(["Designator", "Mid X", "Mid Y", "Rotation", "Layer"])
+    for row in rows:
+      side = row["Side"].capitalize()
+      if side not in {"Top", "Bottom"}:
+        raise ValueError(
+          f"unexpected placement side for {row['Ref']}: {row['Side']}"
+        )
+      writer.writerow([
+        row["Ref"],
+        row["PosX"],
+        row["PosY"],
+        row["Rot"],
+        side,
+      ])
+  return len(rows)
 
 
 def export_review(root: Path) -> None:
