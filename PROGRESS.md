@@ -1,12 +1,14 @@
 # Progress — the-card
 
-> Living status log for the ESP32-S3 e-paper smart badge. Last updated 2026-08-09.
+> Living status log for the ESP32-S3 e-paper smart badge. Last updated 2026-08-11.
 
 ## Status
 
-🟢 **Single-page schematic generated as a real `.kicad_sch` (KiCad 10, 75 parts,
-   ERC 0 violations).** Connectivity is verified against the SKiDL circuit. The
-   design is ready to move into PCB placement after the FPC footprint check.
+🟢 **Single-page schematic and routed four-layer PCB generated (KiCad 10,
+   75 parts, ERC/DRC 0 violations).** Connectivity is verified against the SKiDL
+   circuit; the assembly BOM has 68 exact LCSC/JLCPCB assignments and one
+   intentionally distributor-sourced connector. The design is ready for a
+   physical-fit review and first prototype order.
 
 ---
 
@@ -43,7 +45,7 @@ netlist — only for later PCB layout.
 | DW01A | C142001 | C18164398 |
 | FS8205A | C32253 | C16052 |
 | WS2812B-Mini | C5275773 | C527089 |
-| E-ink FPC connector | C262682 (16-pin) | C6081230 (24-pin) |
+| E-ink FPC connector | C262682 / C6081230 | FH12-24S-0.5SH(55), distributor |
 
 Also caught: **ESP32-S3-WROOM-1 does not break out GPIO33/34**, and the selected
 N16R8 variant also reserves GPIO35–37 for Octal PSRAM. `EPD_PWR_EN` therefore
@@ -102,24 +104,28 @@ Using Exa web search + the Good Display datasheet PDF:
 | U9 | ME6211C33M5G | C82942 | LDO 3.3 V / 500 mA |
 | U10 | USBLC6-2SC6 | C7519 | USB ESD protection |
 | Q1, Q2 | SI2301 | C10487 | P-MOSFET ×2 (AUX rail + e-ink VCI gates) |
-| Q3 | Si1304BDL | stock KiCad | 30 V N-MOSFET for e-paper boost stage |
+| Q3 | SI1308EDL-T1-GE3 | C469327 | 30 V N-MOSFET for e-paper boost stage |
 | D1 | WS2812B-Mini | C527089 | RGB status LED |
-| D2–D4 | MBR0530 | stock KiCad | 30 V / 500 mA e-paper Schottky diodes |
+| D2–D4 | LMBR0530T1G | C18863 | 30 V / 500 mA e-paper Schottky diodes |
 | J1 | TYPE-C-31-M-12 | C165948 | USB-C receptacle |
 | J3 | JST S2B-PH-SM4-TB(LF)(SN) | C295747 | 1S battery connector, right-angle SMT |
 | SW1–4 | TS-1187A | C318884 | Tactile button ×4 |
-| J2 | FPC 0.5-24P flip-lock | C6081230 | E-ink panel FPC (24 sig + 2 mount) |
+| J2 | FH12-24S-0.5SH(55) | distributor | E-ink panel FPC (24 sig + 2 mount) |
 
 ### Display (not LCSC — distributor)
 - **GDEY029T94** — 2.9" e-paper 296×128, SSD1680 (Good Display / buy-lcd / Waveshare)
 
-### Passive templates (LCSC, symbol reused; value set in `circuit.py`)
+### Assembly passives (exact LCSC/JLCPCB picks)
 
 | Part | LCSC | Used for |
 |---|---|---|
-| 0402 resistor (0402WGF1002TCE) | C25744 | all R (pullups/dividers/limit/DW01 R1/R2) |
-| 0402 capacitor (CL05B104KO5NNNC) | C1525 | all 0402 decouple/filter (incl. DW01 C1) |
-| 0603 capacitor (CL10A106KP8NNNC) | C19702 | all 0603 bulk (10 µF / e-ink VDD) |
+| 100 nF 16 V X7R 0402 (CL05B104KO5NNNC) | C1525 | C1/C4/C7/C10–C12/C14–C19 |
+| 10 µF 10 V X5R 0603 (CL10A106KP8NNNC) | C19702 | C2/C5/C6/C13 |
+| 1 µF 50 V X5R 0603 (CL10A105KB8NNNC) | C15849 | C3/C8/C9 |
+| 4.7 µF 25 V X5R 0805 (CL21A475KAQNNNE) | C1779 | C20/C21 |
+| 1 µF 50 V X7R 0805 (CL21B105KBFNNNE) | C28323 | C22–C28 |
+| 0402 resistors, value-specific MPNs | C11702/C25076/C25744/C25774/C25879/C25900/C25905/C26083 | R1–R15 |
+| 2.2 Ω 0.75 W pulse-rated 1206 (CRCW12062R20FKEAHP) | C1854860 | R16 |
 
 Battery (3.7 V 1000 mAh, 603048) and lanyard hardware are sourced from
 distributors (no LCSC number).
@@ -138,13 +144,14 @@ TP4056 RPROG is 2.2 kΩ, limiting charge current to approximately 500 mA. This i
 a more conservative first-board setting for the planned 1000 mAh cell and gives
 the linear charger more thermal margin.
 
-Remaining items are layout refinements, not blockers:
+Remaining items are first-prototype validation risks, not CAD blockers:
 
-- **DW01A+FS8205A** — topology confirmed; do a final eyeball of the Fortune
-  FS8205A app circuit before routing the negative-path FETs.
-- **ST25DV04KC antenna** — route the continuous 13.56 MHz PCB loop between AC0/AC1.
-- **C6081230 FPC footprint** is *staggered* in EasyEDA — verify it fits the
-  panel's flat 24-pin FFC, or pick a non-staggered alternative.
+- **DW01A+FS8205A** — topology and routing are complete; verify U8 orientation
+  and negative-path continuity before connecting a cell.
+- **ST25DV04KC antenna** — the continuous loop is routed; tune resonance and
+  measure read range on the first assembled board.
+- **FH12 FPC orientation** — verify the physical panel FPC reaches the
+  bottom-contact connector without twisting before ordering.
 - **JST-PH battery polarity** — confirm the selected cell's cable orientation.
 
 ---
@@ -153,7 +160,7 @@ Remaining items are layout refinements, not blockers:
 
 - [x] Confirm the 3 VERIFY items against datasheets
 - [x] Generate and verify a single-page `.kicad_sch` from `circuit.py`
-- [ ] Start PCB layout from `the-card.kicad_sch`
-  (antenna keepout, FPC placement, lanyard CG, battery clearance)
+- [x] Generate, route, and verify the four-layer PCB layout
+- [ ] Order and bring up the first prototype
 - [ ] ESP-IDF firmware scaffold: display / button / NFC / BLE modules + deep-sleep wake flow
 - [ ] Mechanical: case + lanyard CAD

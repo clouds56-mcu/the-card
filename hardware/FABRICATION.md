@@ -69,9 +69,8 @@ drill files intended for the board house. Assembly CSVs, DRC/ERC reports,
 checksums, manifests, 3D renders, and layer previews remain beside the ZIP for
 review. Do not upload the whole release directory as a fabrication archive.
 
-The generated assembly BOM is intentionally conservative. Rows without an
-exact purchasable code are marked `needs_sourcing`; the current manifest assigns
-LCSC codes to 18 of 69 placed components, identifies one distributor-sourced
-connector, and leaves 50 passives or standard parts for exact sourcing. The PCB
-files are fabrication-ready, but the BOM is not yet a one-click turnkey assembly
-order.
+The generated assembly BOM assigns exact LCSC/JLCPCB codes to every board-placed
+electrical component except J2, the intentionally distributor-sourced Hirose FPC
+connector. Recheck stock, lifecycle status, package, and assembly-side rotation
+against the generated position file before placing an order; a closed BOM is not
+a substitute for the board house's live manufacturability review.

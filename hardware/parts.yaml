@@ -2,8 +2,10 @@
 # Source-of-truth for schematic generation.
 #   - supplier-specific parts with an `lcsc` id are fetched via `easyeda2kicad`
 #     into hardware/libraries/ (symbol + footprint + 3D).
-#   - common passives reuse fetched project templates; the booster and bring-up
-#     parts use KiCad stock symbols and footprints.
+#   - `assembly_parts` assigns exact purchasable parts to stock/project symbols
+#     without fetching additional EasyEDA libraries.
+#   - common passives reuse fetched project templates; bring-up test points use
+#     KiCad stock symbols and footprints.
 #   - The bare e-ink panel is represented by a 24-pin FPC connector; its required
 #     SSD1680 booster and high-voltage capacitors are populated on our PCB.
 # Refdes follow the schematic. Update here = update the schematic.
@@ -107,16 +109,92 @@ passive_templates:
     symbol: CL10A106KP8NNNC
     role: 0603 capacitor (reused for all 0603 C)
 
-# Stock KiCad symbols and footprints; verify availability before fabrication.
-standard_parts:
+# Exact assembly picks that use existing project or KiCad symbols/footprints.
+assembly_parts:
+  - refs: [C1, C4, C7, C10-C12, C14-C19]
+    name: CL05B104KO5NNNC
+    lcsc: C1525
+    role: 100nF 16V X7R 0402 capacitor
+    source_hint: JLCPCB Basic
+  - refs: [C2, C5-C6, C13]
+    name: CL10A106KP8NNNC
+    lcsc: C19702
+    role: 10uF 10V X5R 0603 capacitor
+    source_hint: JLCPCB Basic
+  - refs: [C3, C8-C9]
+    name: CL10A105KB8NNNC
+    lcsc: C15849
+    role: 1uF 50V X5R 0603 capacitor
+    source_hint: JLCPCB Basic
+  - refs: [C20-C21]
+    name: CL21A475KAQNNNE
+    lcsc: C1779
+    role: 4.7uF 25V X5R 0805 capacitor
+    source_hint: JLCPCB Basic
+  - refs: [C22-C28]
+    name: CL21B105KBFNNNE
+    lcsc: C28323
+    role: 1uF 50V X7R 0805 e-paper rail capacitor
+    source_hint: JLCPCB Basic
+  - refs: [R1-R2, R8, R11-R12]
+    name: 0402WGF1002TCE
+    lcsc: C25744
+    role: 10k 1% 0402 resistor
+    source_hint: JLCPCB Basic
+  - refs: [R3, R15]
+    name: 0402WGF1004TCE
+    lcsc: C26083
+    role: 1M 1% 0402 resistor
+    source_hint: JLCPCB Basic
+  - ref: R4
+    name: 0402WGF3003TCE
+    lcsc: C25774
+    role: 300k 1% 0402 resistor
+    source_hint: JLCPCB Basic
+  - refs: [R5-R6]
+    name: 0402WGF5101TCE
+    lcsc: C25905
+    role: 5.1k 1% 0402 resistor
+    source_hint: JLCPCB Basic
+  - ref: R7
+    name: 0402WGF2201TCE
+    lcsc: C25879
+    role: 2.2k 1% 0402 resistor
+    source_hint: JLCPCB Basic
+  - ref: R9
+    name: 0402WGF1000TCE
+    lcsc: C25076
+    role: 100 ohm 1% 0402 resistor
+    source_hint: JLCPCB Basic
+  - ref: R10
+    name: 0402WGF1001TCE
+    lcsc: C11702
+    role: 1k 1% 0402 resistor
+    source_hint: JLCPCB Basic
+  - refs: [R13-R14]
+    name: 0402WGF4701TCE
+    lcsc: C25900
+    role: 4.7k 1% 0402 resistor
+    source_hint: JLCPCB Basic
+  - ref: R16
+    name: CRCW12062R20FKEAHP
+    lcsc: C1854860
+    role: 2.2 ohm 1% 0.75W pulse-rated 1206 current-sense resistor
+    source_hint: JLCPCB Extended
+    note: 1206 size provides pulse and power margin in the e-paper boost stage.
+  - refs: [D2-D4]
+    name: LMBR0530T1G
+    lcsc: C18863
+    role: 30V 500mA SOD-123 Schottky diode
+    source_hint: JLCPCB Extended
   - ref: Q3
-    name: Si1304BDL
-    role: E-paper booster 30V N-MOSFET
-    footprint: "Package_TO_SOT_SMD:SOT-323_SC-70"
-  - ref: D2-D4
-    name: MBR0530
-    role: E-paper booster Schottky diodes, 30V 500mA
-    footprint: "Diode_SMD:D_SOD-123"
+    name: SI1308EDL-T1-GE3
+    lcsc: C469327
+    role: 30V 1.5A SOT-323 N-MOSFET for e-paper boost stage
+    source_hint: JLCPCB Extended
+
+# Stock KiCad symbols and footprints with no assembly-house line item.
+standard_parts:
   - ref: TP1-TP6
     name: TestPoint
     role: Battery, 3.3V, ground, reset, and boot bring-up access
@@ -136,7 +214,7 @@ eink_panel:
     2:  EPD_GDR       # host-side booster MOSFET gate drive
     3:  EPD_RESE      # host-side booster current sense
     4:  NC            # keep open
-    5:  EPD_VSH2      # +source drive, host-side 1uF/25V bypass
+    5:  EPD_VSH2      # +source drive, host-side 1uF/50V bypass
     6:  NC            # keep open
     7:  NC            # keep open
     8:  GND           # BS1 = L  -> 4-wire SPI
@@ -149,17 +227,17 @@ eink_panel:
     15: EPD_VDDIO     # tie to VCI
     16: EPD_VCI       # +3V3 (switched via Q2)
     17: GND           # VSS
-    18: EPD_VDD_CORE  # core 1.8V (internal regulator); 1uF/25V to VSS
+    18: EPD_VDD_CORE  # core 1.8V (internal regulator); 1uF/50V to VSS
     19: NC            # VPP test pin; keep open
-    20: EPD_VSH1      # +source drive, host-side 1uF/25V bypass
-    21: EPD_VGH       # +gate drive, host-side 1uF/25V bypass
-    22: EPD_VSL       # -source drive, host-side 1uF/25V bypass
-    23: EPD_VGL       # -gate drive, host-side 1uF/25V bypass
-    24: EPD_VCOM      # VCOM, host-side 1uF/25V bypass
+    20: EPD_VSH1      # +source drive, host-side 1uF/50V bypass
+    21: EPD_VGH       # +gate drive, host-side 1uF/50V bypass
+    22: EPD_VSL       # -source drive, host-side 1uF/50V bypass
+    23: EPD_VGL       # -gate drive, host-side 1uF/50V bypass
+    24: EPD_VCOM      # VCOM, host-side 1uF/50V bypass
   note: |
     Host-side support follows the Good Display GDEY029T94 reference circuit:
-    47uH boost inductor, 30V N-MOSF, three MBR0530 diodes, 1M gate pulldown,
-    2.2ohm current sense, two 4.7uF/25V pump capacitors, and 1uF/25V bypass
+    47uH boost inductor, SI1308EDL N-MOSFET, three LMBR0530T1G diodes, 1M gate
+    pulldown, 2.2ohm current sense, two 4.7uF/25V pump capacitors, and 1uF/50V bypass
     capacitors on VDD_CORE and each high-voltage output.
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -167,10 +245,10 @@ eink_panel:
 # ─────────────────────────────────────────────────────────────────────────────
 passives:
   decoupling_100nF:            # one per IC VDD/VIN
-    count: 9
+    count: 8
     value: 100nF
     footprint: "Capacitor_SMD:C_0402_1005Metric"
-    on: [U1(3x VDD/3V3), U2, U3(VDD+VDDIO→use 2), U4, U5, U6(VCC), U9(VIN)]
+    refs: [C1, C4, C7, C10-C12, C14-C15]
     note: "U3 LSM6DSO also wants 10µF on VDD — see below"
   bulk_3v3:
     count: 1
@@ -205,16 +283,16 @@ passives:
     footprint: "Capacitor_SMD:C_0603_1608Metric"
   fg_cap:
     ref: C10
-    value: 1µF                 # MAX17048 VDD decoupling
+    value: 100nF               # MAX17048 VDD decoupling
     footprint: "Capacitor_SMD:C_0402_1005Metric"
   ldo_in_cap:
     ref: C8
     value: 1µF                 # ME6211 VIN
-    footprint: "Capacitor_SMD:C_0402_1005Metric"
+    footprint: "Capacitor_SMD:C_0603_1608Metric"
   ldo_out_cap:
     ref: C9
     value: 1µF                 # ME6211 VOUT
-    footprint: "Capacitor_SMD:C_0402_1005Metric"
+    footprint: "Capacitor_SMD:C_0603_1608Metric"
   led_cap:
     ref: C15
     value: 100nF               # WS2812 VDD

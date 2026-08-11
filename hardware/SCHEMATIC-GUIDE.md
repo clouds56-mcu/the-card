@@ -79,12 +79,12 @@ GDEY029T94 pinout and support circuit (verified against the Good Display referen
 design). Wire from the J2 connector:
 
 - 8 (BS1)→GND (4-wire SPI) · 15+16 (VDDIO+VCI)→`EPD_VCI` · 17 (VSS)→GND ·
-  18 (VDD core)→1 µF/25 V→GND.
+  18 (VDD core)→1 µF/50 V→GND.
 - 9=BUSY · 10=RES# · 11=D/C# · 12=CS# · 13=SCL · 14=SDA(MOSI)  ← from MCU SPI nets
-- GDR/RESE drive Q3 (Si1304BDL) through the 47 µH boost network; use a 1 MΩ
-  gate pulldown and 2.2 Ω RESE current-sense resistor.
-- D2–D4 are MBR0530 Schottky diodes. The boost input and pump use 4.7 µF/25 V;
-  VSH2, VSH1, VGH, VSL, VGL, and VCOM each use 1 µF/25 V to GND.
+- GDR/RESE drive Q3 (SI1308EDL-T1-GE3) through the 47 µH boost network; use a
+  1 MΩ gate pulldown and a 0.75 W pulse-rated 2.2 Ω RESE current-sense resistor.
+- D2–D4 are LMBR0530T1G Schottky diodes. The boost input and pump use
+  4.7 µF/25 V; VSH2, VSH1, VGH, VSL, VGL, and VCOM each use 1 µF/50 V to GND.
 - 1, 4, 6, 7, and 19 are intentionally NC; 25 and 26 (shell)→GND.
 
 ## Region 4 — NFC + IMU + Temp/Humidity (I²C bus)

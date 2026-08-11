@@ -96,10 +96,13 @@ Open the schematic:
 
 ## How it fits together
 
-`parts.yaml` holds procurement and part data. `fetch_libs.sh` builds the two KiCad
-libraries, while `circuit.py` defines electrical connectivity and emits
-`the-card.net`. The layout generator imports that circuit and changes only its
-presentation: one A2 page containing Power/USB, MCU, NFC/sensors, e-paper, and UI
+`parts.yaml` holds procurement and part data. Its `lcsc_parts` section drives
+EasyEDA library fetching, while `assembly_parts` records exact BOM selections
+that reuse existing project or KiCad symbols and footprints. `fetch_libs.sh`
+builds the two KiCad libraries, while `circuit.py` defines electrical
+connectivity and emits `the-card.net`. The layout generator imports that circuit
+and changes only its presentation: one A2 page containing Power/USB, MCU,
+NFC/sensors, e-paper, and UI
 regions. For an electrical change, update `circuit.py`, regenerate the netlist and
 schematic, then run `verify_schematic.py` before accepting the result. See
 [`FABRICATION.md`](FABRICATION.md) for stackup, ordering, and assembly checks.
@@ -108,7 +111,8 @@ schematic, then run `verify_schematic.py` before accepting the result. See
 
 The originally flagged sections were checked against datasheets (see
 `../PROGRESS.md` §7 and the full pinout cross-check). The bare panel's required
-SSD1680 booster and 25 V bypass network are now present on the host PCB. Residual
+SSD1680 booster, 25 V pump capacitors, and 50 V rail bypass network are now
+present on the host PCB. Residual
 PCB-layout items are:
 
 - **ST25DV04KC antenna** — the routed two-turn loop uses the available front-left

@@ -3,9 +3,8 @@
 > Prices reflect **2026-08** LCSC / JLCPCB / Good Display market data. Unit prices are reference values — confirm live at order time.
 > **Reference quantity: @100 units** (small-batch / DIY group buy); @1 (prototype) and @1k (production trend) also listed.
 > The cost table is planning data, not the assembly-house upload BOM. Exact
-> purchasable codes are still unassigned for many passives and standard parts;
-> resolve every `needs_sourcing` row in the manufacturing workbook before
-> requesting turnkey assembly.
+> purchasable codes are assigned in `hardware/parts.yaml`; recheck live stock,
+> lifecycle status, and assembly availability when the order is placed.
 
 📌 Price columns show **line totals** (unit price × "Qty"), not unit prices.
 An em dash means the distributor quote has not yet been captured.
@@ -32,9 +31,9 @@ An em dash means the distributor quote has not yet been captured.
 | 14 | Connector | USB-C receptacle 6P | TYPE-C-31-M-12 | C165948 | 1 | 0.25 | 0.15 | 0.12 |
 | 15 | ESD | USB bidirectional TVS | USBLC6-2SC6 | C7519 | 1 | 0.18 | 0.12 | 0.10 |
 | 16 | Button | Tactile switch 6×6×5 SMD | TS-1187A | C318884 | 4 | 0.24 | **0.16** | 0.12 |
-| 17 | Display aux | 47 µH boost network, 30 V MOSFET/diodes | XRNR5020-47uH/M / Si1304BDL / MBR0530 | C5339697 + distributor | 1 set | 0.80 | 0.45 | 0.30 |
+| 17 | Display aux | 47 µH boost network, 30 V MOSFET/diodes | XRNR5020-47uH/M / SI1308EDL-T1-GE3 / LMBR0530T1G | C5339697 / C469327 / C18863 | 1 set | 0.80 | 0.45 | 0.30 |
 | 18 | Connector | 1S battery connector, 2-pin right-angle SMT | JST S2B-PH-SM4-TB(LF)(SN) | C295747 | 1 | 0.22 | 0.17 | 0.13 |
-| 19 | Passives | R/C/bead assortment, including 25 V e-paper capacitors | 0402/0603/0805 kit | — | 1 kit | 0.60 | 0.35 | 0.25 |
+| 19 | Passives | Exact R/C set, including 50 V e-paper rail capacitors and pulse-rated R16 | 0402/0603/0805/1206 | see `hardware/parts.yaml` | 1 set | 0.60 | 0.35 | 0.25 |
 | 20 | Hardware | Lanyard / clip hardware | — | distributor | 1 kit | 1.00 | 0.50 | 0.35 |
 | 21 | Battery | Li-Po 3.7 V 1000 mAh | 603048 | distributor | 1 | 4.00 | **2.50** | 2.00 |
 | 22 | PCB | 4-layer, 0.8 mm | JLCPCB | — | 1 | 5.00 | **1.50** | 0.80 |
@@ -100,13 +99,13 @@ Rest      ██████                    12%  ← NFC / power / connector
 ## 4. Sourcing & Ordering
 
 ### 4.1 Channel split
-- **Main ICs with assigned codes** → LCSC; passives still need value-, voltage-, tolerance-, and package-specific order codes before one-stop SMT is possible
+- **Main ICs and passives** → exact LCSC/JLCPCB codes are assigned in `hardware/parts.yaml`; recheck assembly stock at order time
 - **E-paper panel** → Good Display / buy-lcd.com / Waveshare (note: **bare FPC panel** vs **module with driver board** — this project uses a bare panel on the PCB)
 - **Battery** → a Li-Po specialist (mind protection/ Certification; air freight restricted)
 - **Case** → 3D print (FDM/SLA) DIY, or injection molding at volume
 
 ### 4.2 BOM-kit strategy
-- Once every assembly row has an exact LCSC code, the finished BOM can be loaded into the cart and checked for current stock and SMT feasibility
+- Load the generated assembly BOM into the cart and check current stock and SMT feasibility before payment
 - **Basic-part** components incur no setup fee — preferring Basic parts saves ~$1/board
 - Extended parts (e.g. MAX17048, LSM6DSO) add a small changeover fee, negligible at small batch
 

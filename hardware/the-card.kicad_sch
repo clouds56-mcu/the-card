@@ -9161,7 +9161,7 @@
 			(at 438.15 289.56 0)
 			(effects (font (size 1.2 1.2) (bold yes)))
 		)
-		(property "Value" "Si1304BDL"
+		(property "Value" "SI1308EDL-T1-GE3"
 			(at 438.15 307.34 0)
 			(effects (font (size 1 1)))
 		)
@@ -9226,7 +9226,7 @@
 			(at 454.66 330.2 90)
 			(effects (font (size 1 1)))
 		)
-		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
+		(property "Footprint" "Resistor_SMD:R_1206_3216Metric"
 			(at 450.85 330.2 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
@@ -9252,7 +9252,7 @@
 			(at 463.55 238.76 0)
 			(effects (font (size 1.2 1.2) (bold yes)))
 		)
-		(property "Value" "MBR0530"
+		(property "Value" "LMBR0530T1G"
 			(at 463.55 245.11 0)
 			(effects (font (size 1 1)))
 		)
@@ -9282,7 +9282,7 @@
 			(at 463.55 254 0)
 			(effects (font (size 1.2 1.2) (bold yes)))
 		)
-		(property "Value" "MBR0530"
+		(property "Value" "LMBR0530T1G"
 			(at 463.55 261.62 0)
 			(effects (font (size 1 1)))
 		)
@@ -9312,7 +9312,7 @@
 			(at 476.25 275.59 0)
 			(effects (font (size 1.2 1.2) (bold yes)))
 		)
-		(property "Value" "MBR0530"
+		(property "Value" "LMBR0530T1G"
 			(at 476.25 281.94 0)
 			(effects (font (size 1 1)))
 		)
@@ -9402,7 +9402,7 @@
 			(at 508 306.07 0)
 			(effects (font (size 1.2 1.2) (bold yes)))
 		)
-		(property "Value" "1uF 25V"
+		(property "Value" "1uF 50V"
 			(at 508 312.42 0)
 			(effects (font (size 1 1)))
 		)
@@ -9432,7 +9432,7 @@
 			(at 508 238.76 0)
 			(effects (font (size 1.2 1.2) (bold yes)))
 		)
-		(property "Value" "1uF 25V"
+		(property "Value" "1uF 50V"
 			(at 508 245.11 0)
 			(effects (font (size 1 1)))
 		)
@@ -9462,7 +9462,7 @@
 			(at 508 283.21 0)
 			(effects (font (size 1.2 1.2) (bold yes)))
 		)
-		(property "Value" "1uF 25V"
+		(property "Value" "1uF 50V"
 			(at 508 289.56 0)
 			(effects (font (size 1 1)))
 		)
@@ -9492,7 +9492,7 @@
 			(at 508 261.62 0)
 			(effects (font (size 1.2 1.2) (bold yes)))
 		)
-		(property "Value" "1uF 25V"
+		(property "Value" "1uF 50V"
 			(at 508 267.97 0)
 			(effects (font (size 1 1)))
 		)
@@ -9522,7 +9522,7 @@
 			(at 508 330.2 0)
 			(effects (font (size 1.2 1.2) (bold yes)))
 		)
-		(property "Value" "1uF 25V"
+		(property "Value" "1uF 50V"
 			(at 508 335.28 0)
 			(effects (font (size 1 1)))
 		)
@@ -9552,7 +9552,7 @@
 			(at 508 353.06 0)
 			(effects (font (size 1.2 1.2) (bold yes)))
 		)
-		(property "Value" "1uF 25V"
+		(property "Value" "1uF 50V"
 			(at 508 358.14 0)
 			(effects (font (size 1 1)))
 		)
@@ -9582,7 +9582,7 @@
 			(at 508 360.68 0)
 			(effects (font (size 1.2 1.2) (bold yes)))
 		)
-		(property "Value" "1uF 25V"
+		(property "Value" "1uF 50V"
 			(at 508 368.3 0)
 			(effects (font (size 1 1)))
 		)

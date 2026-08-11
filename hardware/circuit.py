@@ -79,7 +79,10 @@ SYM = {
     "SW_MENU":  (ACT, "TS-1187A-B-A-B"),
     "J2_EPD":   (ACT, "FPC0.5-24PLTH2.0"),
 }
-R_FP = "Resistor_SMD:R_0402_1005Metric"
+R_FP = {
+    "0402": "Resistor_SMD:R_0402_1005Metric",
+    "1206": "Resistor_SMD:R_1206_3216Metric",
+}
 C0402 = (GEN, "CL05B104KO5NNNC", "Capacitor_SMD:C_0402_1005Metric")
 C0603 = (GEN, "CL10A106KP8NNNC", "Capacitor_SMD:C_0603_1608Metric")
 C_FP = {
@@ -167,8 +170,8 @@ def part(key, value=None, footprint=None):
     return p
 
 
-def R(value, ref):
-    r = Part(GEN, "0402WGF1002TCE", footprint=R_FP)
+def R(value, ref, size="0402"):
+    r = Part(GEN, "0402WGF1002TCE", footprint=R_FP[size])
     r.ref, r.value = physical_ref(ref), value
     return r
 
@@ -477,7 +480,7 @@ epd_p += l_epd["1"]
 epd_switch += l_epd["2"]
 
 q_epd = std_part(
-    "Transistor_FET", "Q_NMOS_GSD", "Si1304BDL", "Q3",
+    "Transistor_FET", "Q_NMOS_GSD", "SI1308EDL-T1-GE3", "Q3",
     "Package_TO_SOT_SMD:SOT-323_SC-70",
 )
 epd_gdr += q_epd["G"]
@@ -485,22 +488,22 @@ epd_rese += q_epd["S"]
 epd_switch += q_epd["D"]
 
 r_epdg = R("1M", "R_epdg"); epd_gdr += r_epdg[1]; r_epdg[2] += gnd
-r_epds = R("2.2", "R_epds"); epd_rese += r_epds[1]; r_epds[2] += gnd
+r_epds = R("2.2", "R_epds", "1206"); epd_rese += r_epds[1]; r_epds[2] += gnd
 
 d_epd_vgl = std_part(
-    "Device", "D", "MBR0530", "D2", "Diode_SMD:D_SOD-123"
+    "Device", "D", "LMBR0530T1G", "D2", "Diode_SMD:D_SOD-123"
 )
 epd_pump += d_epd_vgl["K"]
 epd_vgl += d_epd_vgl["A"]
 
 d_epd_clamp = std_part(
-    "Device", "D", "MBR0530", "D3", "Diode_SMD:D_SOD-123"
+    "Device", "D", "LMBR0530T1G", "D3", "Diode_SMD:D_SOD-123"
 )
 gnd += d_epd_clamp["K"]
 epd_pump += d_epd_clamp["A"]
 
 d_epd_vgh = std_part(
-    "Device", "D", "MBR0530", "D4", "Diode_SMD:D_SOD-123"
+    "Device", "D", "LMBR0530T1G", "D4", "Diode_SMD:D_SOD-123"
 )
 epd_vgh += d_epd_vgh["K"]
 epd_switch += d_epd_vgh["A"]
@@ -511,7 +514,7 @@ c_epd_pump = C("4.7uF 25V", "C_epd_pump", "0805")
 epd_pump += c_epd_pump[1]; c_epd_pump[2] += epd_switch
 
 epd_vdd_core = Net("EPD_VDD_CORE"); epd_vdd_core += epd["18"]
-c_epdvdd = C("1uF 25V", "C_epdvdd", "0805")
+c_epdvdd = C("1uF 50V", "C_epdvdd", "0805")
 epd_vdd_core += c_epdvdd[1]; c_epdvdd[2] += gnd
 for net, ref in [
     (epd_vsh2, "C_epd_vsh2"),
@@ -521,7 +524,7 @@ for net, ref in [
     (epd_vgl, "C_epd_vgl"),
     (epd_vcom, "C_epd_vcom"),
 ]:
-    capacitor = C("1uF 25V", ref, "0805")
+    capacitor = C("1uF 50V", ref, "0805")
     net += capacitor[1]
     capacitor[2] += gnd
 

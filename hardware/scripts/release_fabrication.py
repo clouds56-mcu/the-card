@@ -129,6 +129,31 @@ def expand_reference_expression(expression: str, quantity: int | None = None) ->
   return [expression]
 
 
+def expand_part_references(part: dict[str, Any]) -> list[str]:
+  expressions = part.get("refs", part.get("ref"))
+  if expressions is None:
+    raise ValueError(f"part has no ref or refs: {part}")
+  if isinstance(expressions, str):
+    expressions = [expressions]
+
+  references: list[str] = []
+  for expression in expressions:
+    quantity = part.get("qty") if len(expressions) == 1 else None
+    references.extend(expand_reference_expression(expression, quantity))
+  return references
+
+
+def assign_sourcing(
+  sourcing: dict[str, dict[str, str]],
+  references: Iterable[str],
+  metadata: dict[str, str],
+) -> None:
+  for reference in references:
+    if reference in sourcing:
+      raise ValueError(f"duplicate sourcing assignment for {reference}")
+    sourcing[reference] = metadata
+
+
 def load_sourcing() -> dict[str, dict[str, str]]:
   manifest = yaml.safe_load(PARTS.read_text())
   sourcing: dict[str, dict[str, str]] = {}
@@ -142,8 +167,19 @@ def load_sourcing() -> dict[str, dict[str, str]]:
       "source_hint": "LCSC" if assigned else lcsc or "distributor",
       "notes": str(part.get("note", "")),
     }
-    for reference in expand_reference_expression(part["ref"], part.get("qty")):
-      sourcing[reference] = metadata
+    assign_sourcing(sourcing, expand_part_references(part), metadata)
+
+  for part in manifest.get("assembly_parts", []):
+    lcsc = str(part.get("lcsc", ""))
+    if not re.fullmatch(r"C\d+", lcsc):
+      raise ValueError(f"assembly part has invalid LCSC number: {part}")
+    metadata = {
+      "lcsc_part_number": lcsc,
+      "sourcing_status": "assigned",
+      "source_hint": str(part.get("source_hint", "JLCPCB/LCSC")),
+      "notes": str(part.get("note", "")),
+    }
+    assign_sourcing(sourcing, expand_part_references(part), metadata)
 
   for part in manifest.get("standard_parts", []):
     metadata = {
@@ -152,8 +188,7 @@ def load_sourcing() -> dict[str, dict[str, str]]:
       "source_hint": "distributor",
       "notes": str(part.get("note", "")),
     }
-    for reference in expand_reference_expression(part["ref"], part.get("qty")):
-      sourcing[reference] = metadata
+    assign_sourcing(sourcing, expand_part_references(part), metadata)
 
   return sourcing
 
