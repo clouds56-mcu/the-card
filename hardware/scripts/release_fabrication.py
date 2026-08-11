@@ -163,11 +163,12 @@ def load_sourcing() -> dict[str, dict[str, str]]:
   for part in manifest.get("lcsc_parts", []):
     lcsc = str(part.get("lcsc", ""))
     assigned = bool(re.fullmatch(r"C\d+", lcsc))
+    default_source_hint = "JLCPCB/LCSC" if assigned else lcsc or "distributor"
     metadata = {
       "description": str(part.get("role", "")),
       "lcsc_part_number": lcsc if assigned else "",
       "sourcing_status": "assigned" if assigned else "distributor",
-      "source_hint": "LCSC" if assigned else lcsc or "distributor",
+      "source_hint": str(part.get("source_hint", default_source_hint)),
       "notes": str(part.get("note", "")),
     }
     assign_sourcing(library_sourcing, expand_part_references(part), metadata)

@@ -14,6 +14,7 @@ project: the-card
 eda: kicad
 kicad_version: "10.0"
 libs_output: hardware/libraries/
+jlcpcb_classification_checked: "2026-08-11"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Supplier-specific parts  (fetch from LCSC via easyeda2kicad)
@@ -22,76 +23,93 @@ lcsc_parts:
   - ref: U1
     name: ESP32-S3-WROOM-1-N16R8
     lcsc: C2913202
+    source_hint: JLCPCB Extended
     role: MCU (WiFi+BLE, 16MB Flash, 8MB Octal PSRAM)
   - ref: U2
     name: ST25DV04KC-IE8S3
     lcsc: C5221752
+    source_hint: JLCPCB Extended
     role: NFC dynamic tag with GPO wake (V_EH left unconnected)
   - ref: U3
     name: LSM6DSOTR
     lcsc: C2655100
+    source_hint: JLCPCB Extended
     role: 6-axis IMU
   - ref: U4
     name: SHT40-BD1B-R2
     lcsc: C7461849
+    source_hint: JLCPCB Extended
     role: Temp / Humidity
   - ref: U5
     name: MAX17048G+T10
     lcsc: C2682616
+    source_hint: JLCPCB Extended
     role: Li-ion fuel gauge (ModelGauge)
   - ref: U6
     name: TP4056
     lcsc: C382139
+    source_hint: JLCPCB Extended
     role: Li-ion charger (configured for approximately 500mA)
   - ref: U7
     name: DW01A
     lcsc: C18164398
+    source_hint: JLCPCB Extended
     role: Battery protection IC
   - ref: U8
     name: FS8205A
     lcsc: C16052
+    source_hint: JLCPCB Extended
     role: Dual N-MOSFET symbol and footprint template (protection)
     note: Assembly uses the pin-compatible HXY 8205A selected below.
   - ref: U9
     name: ME6211C33M5G
     lcsc: C82942
+    source_hint: JLCPCB Extended
     role: LDO 3.3V / 500mA
   - ref: U10
     name: USBLC6-2SC6
     lcsc: C7519
+    source_hint: JLCPCB Extended
     role: USB ESD protection  # also exists in KiCad Power_Protection
   - ref: Q1
     name: SI2301
     lcsc: C10487
+    source_hint: JLCPCB Basic
     role: P-MOSFET — AUX LED rail and e-paper VCI gates  # also in Transistor_FET
     qty: 2                     # Q1, Q2
   - ref: D1
     name: WS2812B-Mini
     lcsc: C527089
+    source_hint: JLCPCB Extended
     role: RGB status LED (on AUX branch rail)
   - ref: J1
     name: TYPE-C-31-M-12
     lcsc: C165948
+    source_hint: JLCPCB Extended
     role: USB-C receptacle (6-pin, power+data)
   - ref: SW
     name: TS-1187A
     lcsc: C318884
+    source_hint: JLCPCB Basic
     role: Tactile button (watch-style)
     qty: 4                     # SW1 UP, SW2 DOWN, SW3 SEL, SW4 MENU
   - ref: J2
     name: Hirose FH12-24S-0.5SH(55)
     lcsc: distributor
+    source_hint: distributor
     role: E-ink panel FPC connector (24 signal + 2 mount pads)
     note: bottom-contact ZIF, 0.5 mm pitch, for 0.30 mm FPC
   - ref: J3
     name: S2B-PH-SM4-TB(LF)(SN)
     lcsc: C295747
+    source_hint: JLCPCB Extended
     role: 1S battery connector (pin 1 +BAT, pin 2 BAT_NEG)
     footprint: "Connector_JST:JST_PH_S2B-PH-SM4-TB_1x02-1MP_P2.00mm_Horizontal"
     note: Right-angle SMT JST-PH. Battery cable polarity is not standardized; inspect the actual pack.
   - ref: L1
     name: XRNR5020-47uH/M
     lcsc: C5339697
+    source_hint: JLCPCB Extended
     role: E-paper boost inductor, 47uH, 750mA rated / 770mA saturation
     footprint: "the-card:IND-SMD_L5.0-W5.0_XRNR5020"
 
