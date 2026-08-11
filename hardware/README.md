@@ -98,7 +98,10 @@ Open the schematic:
 
 `parts.yaml` holds procurement and part data. Its `lcsc_parts` section drives
 EasyEDA library fetching, while `assembly_parts` records exact BOM selections
-that reuse existing project or KiCad symbols and footprints. `fetch_libs.sh`
+that reuse existing project or KiCad symbols and footprints. An
+`assembly_parts` entry with the same reference as an `lcsc_parts` entry
+overrides only the procurement selection, allowing a verified pin-compatible
+replacement to keep the existing symbol and footprint. `fetch_libs.sh`
 builds the two KiCad libraries, while `circuit.py` defines electrical
 connectivity and emits `the-card.net`. The layout generator imports that circuit
 and changes only its presentation: one A2 page containing Power/USB, MCU,

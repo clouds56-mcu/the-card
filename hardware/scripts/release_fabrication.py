@@ -156,7 +156,8 @@ def assign_sourcing(
 
 def load_sourcing() -> dict[str, dict[str, str]]:
   manifest = yaml.safe_load(PARTS.read_text())
-  sourcing: dict[str, dict[str, str]] = {}
+  library_sourcing: dict[str, dict[str, str]] = {}
+  assembly_sourcing: dict[str, dict[str, str]] = {}
 
   for part in manifest.get("lcsc_parts", []):
     lcsc = str(part.get("lcsc", ""))
@@ -167,7 +168,7 @@ def load_sourcing() -> dict[str, dict[str, str]]:
       "source_hint": "LCSC" if assigned else lcsc or "distributor",
       "notes": str(part.get("note", "")),
     }
-    assign_sourcing(sourcing, expand_part_references(part), metadata)
+    assign_sourcing(library_sourcing, expand_part_references(part), metadata)
 
   for part in manifest.get("assembly_parts", []):
     lcsc = str(part.get("lcsc", ""))
@@ -179,7 +180,12 @@ def load_sourcing() -> dict[str, dict[str, str]]:
       "source_hint": str(part.get("source_hint", "JLCPCB/LCSC")),
       "notes": str(part.get("note", "")),
     }
-    assign_sourcing(sourcing, expand_part_references(part), metadata)
+    assign_sourcing(assembly_sourcing, expand_part_references(part), metadata)
+
+  # An explicit assembly pick may reuse a symbol/footprint fetched for a
+  # pin-compatible library part. In that case, the assembly selection is the
+  # authoritative procurement record for the generated BOM.
+  sourcing = library_sourcing | assembly_sourcing
 
   for part in manifest.get("standard_parts", []):
     metadata = {

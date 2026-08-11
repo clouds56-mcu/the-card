@@ -50,7 +50,8 @@ lcsc_parts:
   - ref: U8
     name: FS8205A
     lcsc: C16052
-    role: Dual N-MOSFET (protection)
+    role: Dual N-MOSFET symbol and footprint template (protection)
+    note: Assembly uses the pin-compatible HXY 8205A selected below.
   - ref: U9
     name: ME6211C33M5G
     lcsc: C82942
@@ -111,6 +112,12 @@ passive_templates:
 
 # Exact assembly picks that use existing project or KiCad symbols/footprints.
 assembly_parts:
+  - ref: U8
+    name: 8205A
+    lcsc: C5148694
+    role: HXY common-drain dual N-MOSFET, 20V 6A TSSOP-8 (protection)
+    source_hint: JLCPCB Extended
+    note: Pin-compatible with the FS8205A symbol and existing TSSOP-8 footprint.
   - refs: [C1, C4, C7, C10-C12, C14-C19]
     name: CL05B104KO5NNNC
     lcsc: C1525
@@ -147,10 +154,11 @@ assembly_parts:
     role: 1M 1% 0402 resistor
     source_hint: JLCPCB Basic
   - ref: R4
-    name: 0402WGF3003TCE
-    lcsc: C25774
-    role: 300k 1% 0402 resistor
-    source_hint: JLCPCB Basic
+    name: RC0402DR-07300KL
+    lcsc: C4137657
+    role: 300k 0.5% 0402 resistor
+    source_hint: JLCPCB Extended
+    note: Active Yageo replacement for the out-of-stock LCSC retail part.
   - refs: [R5-R6]
     name: 0402WGF5101TCE
     lcsc: C25905
