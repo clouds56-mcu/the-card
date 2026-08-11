@@ -4441,7 +4441,7 @@
 			(at 152.4 157.48 0)
 			(effects (font (size 1.2 1.2) (bold yes)))
 		)
-		(property "Value" "FS8205A"
+		(property "Value" "8205A"
 			(at 152.4 172.72 0)
 			(effects (font (size 1 1)))
 		)
@@ -4449,7 +4449,19 @@
 			(at 152.4 165.1 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
-		(property "Datasheet" "https://lcsc.com/product-detail/MOSFET_FS8205A_C16052.html"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C5148694.pdf"
+			(at 152.4 165.1 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "LCSC Part" "C5148694"
+			(at 152.4 165.1 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "MPN" "8205A"
+			(at 152.4 165.1 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Manufacturer" "HXY MOSFET"
 			(at 152.4 165.1 0)
 			(effects (font (size 1 1)) (hide yes))
 		)

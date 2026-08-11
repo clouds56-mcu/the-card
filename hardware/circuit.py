@@ -211,7 +211,7 @@ bat_neg = Net("BAT_NEG")     # cell- (before protection FETs)  ⚠️ NOT system
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Battery connector — cell side of the on-board DW01A/FS8205A protection stage.
+# Battery connector — cell side of the on-board DW01A/8205A protection stage.
 # Pin 1 is cell positive; pin 2 is cell negative. Verify cable polarity because
 # JST-PH battery leads are not universally wired the same way.
 # ─────────────────────────────────────────────────────────────────────────────
@@ -326,17 +326,23 @@ decouple(bat, "C_bat", "0603")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Battery protection DW01A (U7) + FS8205A (U8)   ✓ VERIFIED vs datasheets
+# Battery protection DW01A (U7) + HXY 8205A (U8)   ✓ VERIFIED vs datasheets
 # DW01A pins (EasyEDA = HMSEMI naming): 1=DOUT(DO, discharge gate), 2=VM(CS, sense),
 # 3=COUT(CO, charge gate), 4=NC, 5=VDD(VCC, +supply via R1), 6=VSS(B-).
 # Protection on the NEGATIVE path: +BAT is common; cell- (BAT_NEG) and P- (GND)
 # are separated by the back-to-back FETs. The selected DW01A recommends
 # R1=100Ω (VCC<-B+), R2=1kΩ (VM<-P-), and C1=100nF (VCC-VSS).
-# FS8205A G1 controls the cell-negative/discharge FET; G2 controls the
+# 8205A G1 controls the cell-negative/discharge FET; G2 controls the
 # pack-negative/charge FET.
 # ─────────────────────────────────────────────────────────────────────────────
 prot = part("U7_PROT")
-fet = part("U8_FET")
+fet = part("U8_FET", value="8205A")
+fet.datasheet = "https://www.lcsc.com/datasheet/C5148694.pdf"
+fet.fields.update({
+    "Manufacturer": "HXY MOSFET",
+    "MPN": "8205A",
+    "LCSC Part": "C5148694",
+})
 r_dvcc = R("100", "R_dvcc"); bat += r_dvcc[1]; r_dvcc[2] += prot["VDD"]          # R1
 r_dvm  = R("1k",  "R_dvm");  gnd += r_dvm[1]; r_dvm[2] += prot["VM"]             # R2 (P- sense)
 bat_neg += prot["VSS"]                                                       # B-

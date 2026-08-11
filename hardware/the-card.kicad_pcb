@@ -8594,7 +8594,7 @@
 				(justify mirror)
 			)
 		)
-		(property "Value" "FS8205A"
+		(property "Value" "8205A"
 			(at 0 -7.2 270)
 			(layer "B.Fab")
 			(hide yes)
@@ -8607,7 +8607,7 @@
 				(justify mirror)
 			)
 		)
-		(property "Datasheet" "https://lcsc.com/product-detail/MOSFET_FS8205A_C16052.html"
+		(property "Datasheet" "https://www.lcsc.com/datasheet/C5148694.pdf"
 			(at 0 0 270)
 			(layer "B.Fab")
 			(hide yes)
@@ -8631,7 +8631,7 @@
 				(justify mirror)
 			)
 		)
-		(property "LCSC Part" "C16052"
+		(property "LCSC Part" "C5148694"
 			(at 0 0 270)
 			(layer "B.Fab")
 			(hide yes)
@@ -8641,6 +8641,28 @@
 					(size 1.27 1.27)
 				)
 				(justify mirror)
+			)
+		)
+		(property "MPN" "8205A"
+			(at 0 0 0)
+			(layer "B.SilkS")
+			(hide yes)
+			(uuid "3a5e91a2-5540-4e25-bce7-df4d86fcf7e3")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Manufacturer" "HXY MOSFET"
+			(at 0 0 0)
+			(layer "B.SilkS")
+			(hide yes)
+			(uuid "cec77381-6d7f-4f53-954b-4dcea990c6e5")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 			)
 		)
 		(attr smd)

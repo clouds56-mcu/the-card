@@ -17,7 +17,7 @@ project an archived datasheet is part of the design record.
 | U5 | MAX17048 | C2682616 | `MAX17048_Maxim.pdf` | Maxim/ADI (LCSC) |
 | U6 | TP4056 | C382139 | `TP4056.pdf` | TPOWER (LCSC wmsc) |
 | U7 | DW01A | C18164398 | `DW01A_Fortune.pdf` | Fortune Semiconductor |
-| U8 | FS8205A | C16052 | `FS8205A_Fortune.pdf` | Fortune Semiconductor |
+| U8 | HXY 8205A | C5148694 | [HXY datasheet](https://www.lcsc.com/datasheet/C5148694.pdf); `FS8205A_Fortune.pdf` is the pin-compatible symbol-template reference | HXY MOSFET / Fortune Semiconductor |
 | U9 | ME6211C33 | C82942 | `ME6211_Microne.pdf` | MICRONE (LCSC) |
 | U10 | USBLC6-2SC6 | C7519 | `USBLC6-2_ST.pdf` | ST (LCSC) |
 | Q1, Q2 | SI2301 | C10487 | `SI2301_Vishay.pdf` | Vishay (LCSC) |

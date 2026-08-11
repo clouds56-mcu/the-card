@@ -289,7 +289,7 @@ LABEL_EACH_NETS = {
   ("epaper", "EPD_VSL"),
 }
 
-# The FS8205A exposes its common drain on two opposite pins. Repeated labels
+# The 8205A exposes its common drain on two opposite pins. Repeated labels
 # communicate that internal node without drawing a misleading wire through the body.
 LABEL_EACH_LOCAL_NETS = {("power_usb", "FET_DRAIN")}
 
@@ -660,6 +660,10 @@ def build_parts() -> tuple[list[dict], dict[str, set[str]]]:
       "value": str(getattr(skidl_part, "value", None) or skidl_part.name),
       "footprint": footprint,
       "datasheet": datasheet,
+      "fields": {
+        str(name): str(value)
+        for name, value in skidl_part.fields.items()
+      },
       "pins": pins,
       "sheet": sheet.key,
       "x": placement.x + offset_x,
@@ -722,6 +726,13 @@ def part_instance(part: dict, sheet: SheetSpec) -> str:
     "\t\t\t(effects (font (size 1 1)) (hide yes))",
     "\t\t)",
   ]
+  for name, value in sorted(part["fields"].items()):
+    lines.extend([
+      f"\t\t(property \"{esc(name)}\" \"{esc(value)}\"",
+      f"\t\t\t(at {fmt(part['x'])} {fmt(part['y'])} 0)",
+      "\t\t\t(effects (font (size 1 1)) (hide yes))",
+      "\t\t)",
+    ])
   for pin in part["pins"]:
     lines.append(
       f"\t\t(pin \"{esc(pin['number'])}\" "

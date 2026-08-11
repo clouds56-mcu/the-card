@@ -34,7 +34,7 @@ though it is not the 480 Mb/s high-speed USB mode.
 2. Identify the actual battery connector with a multimeter. J3 pin 1 must be
    cell positive (`BAT+`); J3 pin 2 must be cell negative (`BAT-`/`BAT_NEG`).
 3. Confirm the cell is a bare, unprotected 1S Li-ion/LiPo if the on-board
-   DW01A/FS8205A protection is populated. A protected pack is electrically safe
+   DW01A/8205A protection is populated. A protected pack is electrically safe
    but duplicates cut-off circuitry and can complicate recovery behavior.
 4. Inspect U8 orientation and verify continuity before connecting a cell:
    S1 side to `BAT_NEG`, S2 side to system GND, and the common drains internal.

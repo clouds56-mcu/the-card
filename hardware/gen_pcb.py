@@ -66,6 +66,13 @@ LAYER_REFERENCE_VIEWS = (
 LAYER_REFERENCE_RASTER_WIDTH = 540
 LAYER_REFERENCE_SCALE = 0.55
 
+BOM_FIELDS = {
+  "Datasheet",
+  "LCSC Part",
+  "Manufacturer",
+  "MPN",
+}
+
 
 @dataclass(frozen=True)
 class Placement:
@@ -340,10 +347,6 @@ def add_footprints(
     board.Add(footprint)
     footprint.SetReference(ref)
     footprint.SetValue(value)
-    for xml_field in component.findall("./fields/field"):
-      field_name = xml_field.attrib["name"]
-      if field_name != "Footprint" and footprint.HasField(field_name):
-        footprint.GetField(field_name).SetText(xml_field.text or "")
     if ref.startswith("TP"):
       footprint.SetExcludedFromBOM(True)
       footprint.SetExcludedFromPosFiles(True)
@@ -387,6 +390,27 @@ def add_footprints(
     unresolved = sorted(expected_pads - footprint_pads)
     if unresolved:
       raise ValueError(f"{ref} is missing footprint pads {unresolved}")
+
+
+def sync_bom_fields(board: pcbnew.BOARD, netlist: ET.Element) -> None:
+  """Copy assembly metadata after geometry UUIDs have been allocated.
+
+  Creating a missing custom field consumes a KiCad UUID. Keeping that work
+  after routing prevents a metadata-only edit from perturbing deterministic
+  track, via, zone, or footprint UUIDs.
+  """
+  fields_by_ref = {
+    component.attrib["ref"]: {
+      field.attrib["name"]: field.text or ""
+      for field in component.findall("./fields/field")
+      if field.attrib["name"] in BOM_FIELDS
+    }
+    for component in netlist.findall("./components/comp")
+  }
+  for footprint in board.GetFootprints():
+    for field_name, value in fields_by_ref[footprint.GetReference()].items():
+      footprint.SetField(field_name, value)
+      footprint.GetField(field_name).SetVisible(False)
 
 
 def add_line(
@@ -703,6 +727,7 @@ def generate() -> None:
   # serialize floating fill fragments depending on internal cache state.
   board.BuildConnectivity()
   pcbnew.ZONE_FILLER(board).Fill(board.Zones())
+  sync_bom_fields(board, netlist)
   pcbnew.SaveBoard(str(OUTPUT), board)
   add_layer_reference_views(OUTPUT)
   print(f"wrote {OUTPUT.name}")

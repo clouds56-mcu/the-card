@@ -284,7 +284,7 @@ passives:
     vdd_resistor: { ref: R9, value: 100Ω, footprint: "Resistor_SMD:R_0402_1005Metric" }
     vm_resistor:  { ref: R10, value: 1kΩ, footprint: "Resistor_SMD:R_0402_1005Metric" }
     capacitor:    { ref: C7, value: 100nF, footprint: "Capacitor_SMD:C_0402_1005Metric" }
-    note: "Values and DOUT→G1 / COUT→G2 topology verified against the selected DW01A and FS8205A datasheets."
+    note: "Values and DOUT→G1 / COUT→G2 topology verified against the selected DW01A and HXY 8205A datasheets."
   imu_vdd_bulk:
     ref: C13
     value: 10µF                # LSM6DSO VDD bulk

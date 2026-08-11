@@ -131,7 +131,7 @@ PCB-layout items are:
 - **JST-PH battery polarity** — rear silkscreen marks `BAT+` and `BAT-`, but the
   selected pack's cable must still be verified before plugging it in.
 
-The DW01A/FS8205A protection stage has been checked against both datasheets:
+The DW01A/HXY 8205A protection stage has been checked against both datasheets:
 R9=100 Ω, R10=1 kΩ, DOUT drives G1 on the cell-negative side, and COUT drives
 G2 on the pack-negative side.
 
