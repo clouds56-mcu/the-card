@@ -173,9 +173,10 @@ SHEETS = (
     }),
     placements={
       "U1": p(115, 70),
-      "C_mcu1": p(72, 43),
-      # Keep the bulk capacitor and its GND stub clear of U1's body edge.
-      "C_mcu2": p(90, 43),
+      # Draw the two supply capacitors as distinct parallel shunts, rather
+      # than a close horizontal pair that can be mistaken for a series path.
+      "C_mcu1": p(58, 43, 270),
+      "C_mcu2": p(75, 43, 270),
       "R_en": p(87, 58, 270),
       # Keep the MCU's leftmost wiring inside its own visual column.
       "C_en": p(72, 70, 270),
@@ -256,46 +257,52 @@ SHEETS = (
     placements={
       # Leave room for the connector value and right-facing net labels before
       # the page frame.
-      "J2": p(165, 70),
-      "L1": p(45, 55),
-      "Q3": p(75, 70),
-      "D2": p(95, 25),
-      "D3": p(95, 38),
+      "J2": p(150, 70),
+      "L1": p(50, 58, 90),
+      "Q3": p(72, 64),
+      "D2": p(90, 32),
+      "D3": p(90, 43),
       # Put the anode directly on EPD_SW and face the cathode toward EPD_VGH.
-      "D4": p(105, 58, 180),
-      "R_epdg": p(65, 95, 270),
-      "R_epds": p(85, 95, 270),
-      # Preserve a visible gutter between the MCU and e-paper circuitry.
-      "C_epd_in": p(30, 85),
+      "D4": p(94, 58, 180),
+      "R_epdg": p(62, 82, 270),
+      "R_epds": p(82, 82, 270),
+      # C20 is the local EPD_VCI reservoir at L1's input.
+      "C_epd_in": p(38, 72, 270),
       # Vertical orientation keeps the charge-pump and switch-node terminals
       # on opposite sides instead of routing one net through the capacitor.
-      "C_epd_pump": p(75, 38, 270),
-      "C_epd_vsh2": p(130, 25),
-      "C_epdvdd": p(130, 35),
-      "C_epd_vsh1": p(130, 45),
-      "C_epd_vgh": p(130, 58),
-      "C_epd_vsl": p(130, 75),
-      "C_epd_vgl": p(130, 95),
-      "C_epd_vcom": p(130, 115),
+      "C_epd_pump": p(72, 43, 270),
+      # The five simple J2-to-capacitor rails sit around the connector. Their
+      # GND terminals face away from J2 and their signal wires use nested,
+      # non-crossing lanes.
+      "C_epd_vsh2": p(128, 63, 180),
+      "C_epdvdd": p(172, 86),
+      "C_epd_vsh1": p(172, 94),
+      "C_epd_vgh": p(112, 58),
+      "C_epd_vsl": p(172, 102),
+      "C_epd_vgl": p(112, 32),
+      "C_epd_vcom": p(172, 110),
     },
     notes=(
       ("GDEY029T94 24-pin FPC interface", g(12), g(12), 1.8),
-      ("Panel-specific SSD1680 booster and 25 V rail capacitors", g(12), g(20), 1.1),
+      ("Booster and boosted gate rails", g(35), g(22), 1.2),
+      ("J2 panel connector and direct rail reservoirs", g(125), g(22), 1.2),
     ),
     passive_callouts=(
       (
-        "C20 -> J2 VCI: input bulk; "
-        "C21 -> J2/Q3: boost pump capacitor",
-        g(12), g(134), 1.0,
+        "C20/L1: VCI input; C21/D2-D4/Q3: boost conversion",
+        g(35), g(112), 1.0,
       ),
       (
-        "R15 -> J2/Q3: boost gate pull-down; "
-        "R16 -> J2/Q3: current sense",
-        g(12), g(142), 1.0,
+        "R15/R16: Q3 gate pull-down and current sense",
+        g(35), g(120), 1.0,
       ),
       (
-        "C22-C28 -> J2: core, source, gate, and VCOM rail reservoirs",
-        g(12), g(150), 1.0,
+        "C22-C24/C26/C28: direct J2 rail reservoirs",
+        g(125), g(118), 1.0,
+      ),
+      (
+        "C25/C27: boosted VGH/VGL reservoirs",
+        g(125), g(126), 1.0,
       ),
     ),
   ),
@@ -372,12 +379,6 @@ LABEL_EACH_NETS = {
   ("sensors_nfc", "NFC_ANTENNA"),
   ("sensors_nfc", "I2C_SCL"),
   ("sensors_nfc", "I2C_SDA"),
-  ("epaper", "EPD_VCOM"),
-  ("epaper", "EPD_VDD_CORE"),
-  ("epaper", "EPD_VGL"),
-  ("epaper", "EPD_VSH1"),
-  ("epaper", "EPD_VSH2"),
-  ("epaper", "EPD_VSL"),
 }
 
 # Some named nets contain multiple compact circuits separated by enough space
@@ -386,6 +387,13 @@ LABEL_EACH_NETS = {
 # component pin. Endpoint keys are explicit so a circuit change cannot silently
 # alter the drawing convention.
 NET_LABEL_CLUSTERS = {
+  # EPD_VCI crosses the power and e-paper regions. Keep the two J2 pins as
+  # compact label stubs, but wire C20 directly to the L1 input locally.
+  ("epaper", "EPD_VCI"): (
+    (("J2", "15"),),
+    (("J2", "16"),),
+    (("L1", "1"), ("C20", "1")),
+  ),
   ("epaper", "EPD_GDR"): (
     (("J2", "2"),),
     (("Q3", "1"), ("R15", "1")),
@@ -398,6 +406,17 @@ NET_LABEL_CLUSTERS = {
     (("J2", "21"),),
     (("D4", "1"), ("C25", "1")),
   ),
+  ("epaper", "EPD_VGL"): (
+    (("J2", "23"),),
+    (("D2", "2"), ("C27", "1")),
+  ),
+}
+
+# A clustered net normally derives its label direction from the cluster's first
+# component pin. These free-space anchors keep selected labels horizontal on an
+# existing local wire. Coordinates are relative to the functional region.
+CLUSTER_LABEL_ANCHORS = {
+  ("epaper", "EPD_RESE", ("Q3", "2")): (g(78), g(68)),
 }
 
 # The 8205A exposes its common drain on two opposite pins. Repeated labels
@@ -422,6 +441,12 @@ TWO_PIN_DOGLEG_ROUTES = {
   ("ui", "BTN_DOWN"): ("vertical", g(78)),
   ("ui", "BTN_SEL"): ("vertical", g(128)),
   ("ui", "BTN_MENU"): ("vertical", g(168)),
+  # Fan the four adjacent right-side J2 rails into a spaced capacitor bank.
+  # Decreasing lane X while increasing capacitor Y keeps the routes nested.
+  ("epaper", "EPD_VDD_CORE"): ("vertical", g(168)),
+  ("epaper", "EPD_VSH1"): ("vertical", g(166)),
+  ("epaper", "EPD_VSL"): ("vertical", g(164)),
+  ("epaper", "EPD_VCOM"): ("vertical", g(162)),
 }
 
 # Prefer these pins when a multi-pin local branch also needs a global label.
@@ -566,6 +591,8 @@ def direction_vector(direction: str, distance: float) -> tuple[float, float]:
 
 
 def wire(seed: str, start: tuple[float, float], end: tuple[float, float]) -> str:
+  if start == end:
+    raise ValueError(f"Zero-length wire for {seed}: {start}")
   return (
     "\t(wire\n"
     f"\t\t(pts (xy {fmt(start[0])} {fmt(start[1])}) "
@@ -633,7 +660,9 @@ def route_net(
     dogleg = TWO_PIN_DOGLEG_ROUTES.get((sheet_key, net_name))
     if dogleg:
       axis, coordinate = dogleg
-      coordinate += offset_x if axis == "vertical" else offset_y
+      coordinate = snap(
+        coordinate + (offset_x if axis == "vertical" else offset_y)
+      )
       if axis == "vertical":
         route_points = [start, (coordinate, start[1]), (coordinate, end[1]), end]
       else:
@@ -651,7 +680,9 @@ def route_net(
     override = TRUNK_ROUTES.get((sheet_key, net_name))
     if override:
       axis, coordinate = override
-      coordinate += offset_x if axis == "vertical" else offset_y
+      coordinate = snap(
+        coordinate + (offset_x if axis == "vertical" else offset_y)
+      )
     elif max(xs) - min(xs) >= max(ys) - min(ys):
       axis, coordinate = "horizontal", snap(sorted(ys)[len(ys) // 2])
     else:
@@ -713,6 +744,8 @@ def route_net(
             if on_first or on_second:
               junction_points.add(point)
 
+  segments = [segment for segment in segments if segment[0] != segment[1]]
+
   pin_points = set(unique_points)
   for point in explicit_junctions:
     if point in pin_points:
@@ -727,7 +760,11 @@ def route_net(
       )
     junction_points.add(point)
 
-  result = [wire(seed, start, end) for start, end in segments]
+  result = [
+    wire(seed, start, end)
+    for start, end in segments
+    if start != end
+  ]
   result.extend(
     junction(f"{seed}:junction", point)
     for point in sorted(junction_points)
@@ -740,12 +777,17 @@ def global_label(
   net_name: str,
   part: dict,
   point: tuple[float, float],
-  pin: dict,
+  pin: dict | None,
+  *,
+  label_id: str | None = None,
+  at_point: bool = False,
 ) -> list[str]:
-  pin_number = pin["number"]
+  pin_number = pin["number"] if pin is not None else label_id
+  if pin_number is None:
+    raise ValueError(f"Label {sheet_key}:{net_name} requires a stable ID")
   direction = outward_direction(part, point, pin)
   is_mcu = part["ref"] == "U1"
-  distance = g(5) if is_mcu else g(4)
+  distance = 0 if at_point else g(5) if is_mcu else g(4)
   font_size = 0.8 if is_mcu else 1
   dx, dy = direction_vector(direction, distance)
   anchor = snap(point[0] + dx), snap(point[1] + dy)
@@ -764,7 +806,13 @@ def global_label(
     f"\t\t(uuid \"{uid('label', sheet_key, net_name, part['ref'], pin_number)}\")\n"
     "\t)"
   )
-  return [wire(f"label:{sheet_key}:{net_name}:{part['ref']}:{pin_number}", point, anchor), label]
+  result = []
+  if point != anchor:
+    result.append(
+      wire(f"label:{sheet_key}:{net_name}:{part['ref']}:{pin_number}", point, anchor)
+    )
+  result.append(label)
+  return result
 
 
 def hidden_global_label(
@@ -930,13 +978,22 @@ def part_instance(part: dict, sheet: SheetSpec) -> str:
     value_x = snap(part["x"] + g(3))
     value_y = part["y"]
     value_angle = 90
+  if part["name"] == "L" and part["rotation"] in {90, 270}:
+    # A rotated KiCad inductor is the conventional horizontal symbol. Lay out
+    # its properties above and below it, matching other horizontal two-pin parts.
+    reference_x = part["x"]
+    reference_y = snap(part["y"] - g(4))
+    reference_angle = 90
+    value_x = part["x"]
+    value_y = snap(part["y"] + g(4))
+    value_angle = 90
   if part["ref"] == "U1":
     value_x = part["x"]
     value_y = snap(part["y"] - g(10))
     value_angle = 0
   elif part["ref"] == "J2":
-    value_x = snap(part["x"] + g(14))
-    value_y = snap(part["y"] + half_height + g(5))
+    value_x = snap(part["x"] - g(17))
+    value_y = snap(part["y"] + half_height + g(7))
     value_angle = 0
   path = f"/{ROOT_UUID}"
   in_bom = "no" if part["ref"].startswith("TP") else "yes"
@@ -1051,11 +1108,6 @@ def render_group(
         ))
       continue
 
-    if net_name in CUSTOM_POWER_NETS:
-      for part, pin, point in entries:
-        lines.extend(global_label(sheet.key, net_name, part, point, pin))
-      continue
-
     clusters = NET_LABEL_CLUSTERS.get((sheet.key, net_name))
     if clusters:
       entries_by_pin = {
@@ -1077,6 +1129,26 @@ def render_group(
           [entry[2] for entry in cluster_entries],
         ))
         part, pin, point = cluster_entries[0]
+        anchor = CLUSTER_LABEL_ANCHORS.get(
+          (sheet.key, net_name, (part["ref"], pin["number"]))
+        )
+        if anchor:
+          label_point = anchor[0] + offset_x, anchor[1] + offset_y
+          lines.extend(global_label(
+            sheet.key,
+            net_name,
+            part,
+            label_point,
+            None,
+            label_id=pin["number"],
+            at_point=True,
+          ))
+        else:
+          lines.extend(global_label(sheet.key, net_name, part, point, pin))
+      continue
+
+    if net_name in CUSTOM_POWER_NETS:
+      for part, pin, point in entries:
         lines.extend(global_label(sheet.key, net_name, part, point, pin))
       continue
 
@@ -1184,15 +1256,15 @@ def validate_configuration(parts: list[dict]) -> None:
   missing_symbols = sorted({part["name"] for part in parts} - set(SYMBOLS))
   if missing_symbols:
     raise ValueError(f"Missing embedded symbols: {missing_symbols}")
-  clustered_power_nets = sorted({
+  clustered_symbol_power_nets = sorted({
     net_name
     for _, net_name in NET_LABEL_CLUSTERS
-    if net_name in SYMBOL_POWER_NETS or net_name in CUSTOM_POWER_NETS
+    if net_name in SYMBOL_POWER_NETS
   })
-  if clustered_power_nets:
+  if clustered_symbol_power_nets:
     raise ValueError(
-      "Power nets require placement-aware symbols, not label clusters: "
-      f"{clustered_power_nets}"
+      "Symbol power nets require placement-aware symbols, not label clusters: "
+      f"{clustered_symbol_power_nets}"
     )
 
 
