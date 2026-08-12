@@ -46,6 +46,10 @@ The properties remain hidden on the drawing to avoid text collisions, but are
 available in symbol properties and BOM export. Compact callouts on the schematic
 summarize the same relationships by functional block:
 
+Support passives are placed beside the IC or functional block they serve. KiCad
+junction dots are shown only where wires are electrically connected; a crossing
+or geometric touch without a dot must not be interpreted as a connection.
+
 | References | Related to | Function |
 |---|---|---|
 | C1, C2 | U1 / +3V3 | MCU high-frequency bypass and local bulk storage |

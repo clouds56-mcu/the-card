@@ -109,21 +109,21 @@ SHEETS = (
       "U10": p(25, 50, 180),
       "R_cc1": p(47, 37),
       "R_cc2": p(47, 65),
-      "C_vbus": p(112, 76, 270),
+      "C_vbus": p(103, 68, 270),
       "U6": p(125, 50),
       "R_prog": p(103, 50, 180),
-      "R_chrg": p(135, 38, 270),
-      "C_bat": p(142, 76, 270),
+      "R_chrg": p(137, 34, 270),
+      "C_bat": p(145, 68, 270),
       "U9": p(190, 50),
-      "C_ldoi": p(176, 76, 270),
-      "C_ldoo": p(205, 76, 270),
+      "C_ldoi": p(174, 68, 270),
+      "C_ldoo": p(206, 68, 270),
       "U5": p(265, 50),
-      "C_fg": p(240, 76, 270),
+      "C_fg": p(240, 68, 270),
       "U7": p(75, 130, 180),
       "U8": p(120, 130),
       "R_dvcc": p(48, 118),
       "R_dvm": p(95, 130, 180),
-      "C_dprot": p(55, 145, 270),
+      "C_dprot": p(58, 143, 270),
       "Q1": p(190, 130),
       "R_q1g": p(187, 116, 270),
       "Q2": p(245, 130),
@@ -141,27 +141,23 @@ SHEETS = (
     ),
     passive_callouts=(
       (
-        "C5 -> J1/U10/U6: USB input bulk; "
-        "R5/R6 -> J1: CC1/CC2 sink pull-downs",
+        "J1/U10 support: R5/R6 CC pull-downs; C5 USB input bulk",
         g(12), g(84), 1.0,
       ),
       (
-        "R7 -> U6: charge-current set; R8 -> U6/U1: CHRG pull-up; "
-        "C6 -> U6: BAT bulk",
+        "U6 support: R7 charge-current set; R8 CHRG pull-up; C5/C6 bulk",
         g(88), g(84), 1.0,
       ),
       (
-        "C8/C9 -> U9: LDO input/output stability; "
-        "C10 -> U5: fuel-gauge bypass",
+        "U9/U5 support: C8/C9 LDO stability; C10 fuel-gauge bypass",
         g(198), g(84), 1.0,
       ),
       (
-        "R9/R10/C7 -> U7/U8: protection supply, sense, and bypass",
+        "U7/U8 support: R9 supply feed; R10 pack sense; C7 bypass",
         g(12), g(158), 1.0,
       ),
       (
-        "R11 -> Q1/U1: AUX gate pull-up; "
-        "R12 -> Q2/U1: e-paper gate pull-up",
+        "Q1/Q2 support: R11/R12 gate pull-ups (rails default off)",
         g(165), g(158), 1.0,
       ),
     ),
@@ -350,6 +346,7 @@ SINGLE_PAGE_OFFSETS = {
 
 # These shared buses are clearer as repeated named stubs than as long wires.
 LABEL_EACH_NETS = {
+  ("power_usb", "~CHRG"),
   ("mcu", "MCU_BOOT"),
   ("mcu", "MCU_EN"),
   ("sensors_nfc", "NFC_ANTENNA"),
@@ -555,6 +552,7 @@ def route_net(sheet_key: str, net_name: str, points: list[tuple[float, float]]) 
     axis, coordinate = "vertical", snap(sorted(xs)[len(xs) // 2])
 
   result: list[str] = []
+  branches: list[tuple[tuple[float, float], tuple[float, float]]] = []
   if axis == "horizontal":
     trunk_start = min(xs), coordinate
     trunk_end = max(xs), coordinate
@@ -564,6 +562,7 @@ def route_net(sheet_key: str, net_name: str, points: list[tuple[float, float]]) 
       branch = point[0], coordinate
       if point != branch:
         result.append(wire(f"{seed}:{index}", point, branch))
+        branches.append((point, branch))
       if len(unique_points) > 2 and min(xs) < branch[0] < max(xs):
         result.append(junction(f"{seed}:{index}", branch))
   else:
@@ -575,8 +574,40 @@ def route_net(sheet_key: str, net_name: str, points: list[tuple[float, float]]) 
       branch = coordinate, point[1]
       if point != branch:
         result.append(wire(f"{seed}:{index}", point, branch))
+        branches.append((point, branch))
       if len(unique_points) > 2 and min(ys) < branch[1] < max(ys):
         result.append(junction(f"{seed}:{index}", branch))
+
+  # Mark a secondary branch that terminates on another same-net branch rather
+  # than directly on the selected trunk. This occurs on BAT_NEG where U8's two
+  # source pins share a vertical fan-in. Restricting the check to this routed
+  # net avoids treating unrelated geometric touches elsewhere as connections.
+  branch_dots: set[tuple[float, float]] = set()
+  for index, (start, end) in enumerate(branches):
+    for other_start, other_end in branches[index + 1:]:
+      same_vertical = start[0] == end[0] == other_start[0] == other_end[0]
+      same_horizontal = start[1] == end[1] == other_start[1] == other_end[1]
+      if same_vertical:
+        for point in (start, end, other_start, other_end):
+          on_first = min(start[1], end[1]) < point[1] < max(start[1], end[1])
+          on_second = (
+            min(other_start[1], other_end[1]) < point[1]
+            < max(other_start[1], other_end[1])
+          )
+          if on_first or on_second:
+            branch_dots.add(point)
+      elif same_horizontal:
+        for point in (start, end, other_start, other_end):
+          on_first = min(start[0], end[0]) < point[0] < max(start[0], end[0])
+          on_second = (
+            min(other_start[0], other_end[0]) < point[0]
+            < max(other_start[0], other_end[0])
+          )
+          if on_first or on_second:
+            branch_dots.add(point)
+  for point in sorted(branch_dots):
+    result.append(junction(f"{seed}:branch", point))
+
   return result
 
 

@@ -120,7 +120,9 @@ schematic, then run `verify_schematic.py` before accepting the result. See
 Every resistor and capacitor also receives hidden `Related To` and `Function`
 properties from `circuit.py`. The single-page schematic shows compact functional
 callouts, while KiCad properties and the internal assembly BOM retain the exact
-per-reference annotations without crowding the drawing.
+per-reference annotations without crowding the drawing. The layout keeps support
+passives beside their related blocks and emits explicit dots at true wire
+junctions; visually crossing wires without a dot are not connected.
 
 ## Verification status (done)
 
