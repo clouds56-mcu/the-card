@@ -9415,12 +9415,12 @@
 		(dnp no)
 		(uuid "0fccd76c-be20-5bcc-b40e-be6967051dae")
 		(property "Reference" "J2"
-			(at 533.4 275.59 0)
-			(effects (font (size 1.2 1.2) (bold yes)))
+			(at 533.4 269.24 0)
+			(effects (font (size 0.9 0.9) (bold yes)))
 		)
 		(property "Value" "FH12-24S-0.5SH(55)"
-			(at 511.81 326.39 0)
-			(effects (font (size 1 1)))
+			(at 533.4 327.66 0)
+			(effects (font (size 0.8 0.8)))
 		)
 		(property "Footprint" "the-card:Hirose_FH12-24S-0.5SH_1x24-2MP_P0.50mm_Horizontal"
 			(at 533.4 298.45 0)
@@ -9499,11 +9499,11 @@
 		(dnp no)
 		(uuid "7049cf7f-0f2f-5499-8833-769ab095d859")
 		(property "Reference" "Q3"
-			(at 434.34 281.94 0)
+			(at 440.69 279.4 0)
 			(effects (font (size 1.2 1.2) (bold yes)))
 		)
 		(property "Value" "SI1308EDL-T1-GE3"
-			(at 434.34 299.72 0)
+			(at 434.34 302.26 0)
 			(effects (font (size 1 1)))
 		)
 		(property "Footprint" "Package_TO_SOT_SMD:SOT-323_SC-70"
@@ -9696,11 +9696,11 @@
 		(dnp no)
 		(uuid "692afe58-918d-51fd-8a8a-50d13ae5fee1")
 		(property "Reference" "C20"
-			(at 387.35 300.99 90)
+			(at 386.08 300.99 270)
 			(effects (font (size 1.2 1.2) (bold yes)))
 		)
 		(property "Value" "4.7uF 25V"
-			(at 394.97 300.99 90)
+			(at 386.08 304.8 270)
 			(effects (font (size 1 1)))
 		)
 		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"
@@ -9734,11 +9734,11 @@
 		(dnp no)
 		(uuid "8a7ff898-0748-52ec-9c9e-2d9492c65194")
 		(property "Reference" "C21"
-			(at 430.53 264.16 90)
+			(at 429.26 264.16 270)
 			(effects (font (size 1.2 1.2) (bold yes)))
 		)
 		(property "Value" "4.7uF 25V"
-			(at 438.15 264.16 90)
+			(at 429.26 267.97 270)
 			(effects (font (size 1 1)))
 		)
 		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric"

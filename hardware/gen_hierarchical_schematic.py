@@ -419,6 +419,24 @@ CLUSTER_LABEL_ANCHORS = {
   ("epaper", "EPD_RESE", ("Q3", "2")): (g(78), g(68)),
 }
 
+# Visible property locations that need to follow the schematic's local
+# functional layout rather than the generic symbol bounds. Coordinates are
+# offsets from the component centre in grid units.
+PROPERTY_LAYOUT = {
+  "C20": ((-4, 0, 270), (-4, 3, 270)),
+  "C21": ((-4, 0, 270), (-4, 3, 270)),
+  "L1": ((0, -4, 90), (0, 4, 90)),
+  "Q3": ((5, -9, 0), (0, 9, 0)),
+  "J2": ((0, -23, 0), (0, 23, 0)),
+}
+
+# Most parts use the standard 1.2 mm reference and 1.0 mm value sizes. The
+# connector has long centred fields, so reduce them rather than moving them
+# sideways into the surrounding net labels.
+PROPERTY_FONT_SIZES = {
+  "J2": (0.9, 0.8),
+}
+
 # The 8205A exposes its common drain on two opposite pins. Repeated labels
 # communicate that internal node without drawing a misleading wire through the body.
 LABEL_EACH_LOCAL_NETS = {("power_usb", "FET_DRAIN")}
@@ -978,23 +996,20 @@ def part_instance(part: dict, sheet: SheetSpec) -> str:
     value_x = snap(part["x"] + g(3))
     value_y = part["y"]
     value_angle = 90
-  if part["name"] == "L" and part["rotation"] in {90, 270}:
-    # A rotated KiCad inductor is the conventional horizontal symbol. Lay out
-    # its properties above and below it, matching other horizontal two-pin parts.
-    reference_x = part["x"]
-    reference_y = snap(part["y"] - g(4))
-    reference_angle = 90
-    value_x = part["x"]
-    value_y = snap(part["y"] + g(4))
-    value_angle = 90
   if part["ref"] == "U1":
     value_x = part["x"]
     value_y = snap(part["y"] - g(10))
     value_angle = 0
-  elif part["ref"] == "J2":
-    value_x = snap(part["x"] - g(17))
-    value_y = snap(part["y"] + half_height + g(7))
-    value_angle = 0
+  property_layout = PROPERTY_LAYOUT.get(part["ref"])
+  if property_layout:
+    reference_layout, value_layout = property_layout
+    reference_x = snap(part["x"] + g(reference_layout[0]))
+    reference_y = snap(part["y"] + g(reference_layout[1]))
+    reference_angle = reference_layout[2]
+    value_x = snap(part["x"] + g(value_layout[0]))
+    value_y = snap(part["y"] + g(value_layout[1]))
+    value_angle = value_layout[2]
+  reference_size, value_size = PROPERTY_FONT_SIZES.get(part["ref"], (1.2, 1.0))
   path = f"/{ROOT_UUID}"
   in_bom = "no" if part["ref"].startswith("TP") else "yes"
   lines = [
@@ -1009,11 +1024,12 @@ def part_instance(part: dict, sheet: SheetSpec) -> str:
     f"\t\t(uuid \"{uid('part', part['ref'])}\")",
     f"\t\t(property \"Reference\" \"{esc(part['ref'])}\"",
     f"\t\t\t(at {fmt(reference_x)} {fmt(reference_y)} {reference_angle})",
-    "\t\t\t(effects (font (size 1.2 1.2) (bold yes)))",
+    f"\t\t\t(effects (font (size {fmt(reference_size)} "
+    f"{fmt(reference_size)}) (bold yes)))",
     "\t\t)",
     f"\t\t(property \"Value\" \"{esc(part['value'])}\"",
     f"\t\t\t(at {fmt(value_x)} {fmt(value_y)} {value_angle})",
-    "\t\t\t(effects (font (size 1 1)))",
+    f"\t\t\t(effects (font (size {fmt(value_size)} {fmt(value_size)})))",
     "\t\t)",
     f"\t\t(property \"Footprint\" \"{esc(part['footprint'])}\"",
     f"\t\t\t(at {fmt(part['x'])} {fmt(part['y'])} 0)",
