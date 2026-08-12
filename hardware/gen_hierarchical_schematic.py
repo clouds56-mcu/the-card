@@ -112,7 +112,7 @@ SHEETS = (
       "C_vbus": p(103, 68, 270),
       "U6": p(125, 50),
       "R_prog": p(103, 50, 180),
-      "R_chrg": p(137, 34, 270),
+      "R_chrg": p(148, 50, 180),
       "C_bat": p(145, 68, 270),
       "U9": p(190, 50),
       "C_ldoi": p(174, 68, 270),
@@ -344,23 +344,38 @@ SINGLE_PAGE_OFFSETS = {
   "ui": (g(0), g(165)),
 }
 
-# These shared buses are clearer as repeated named stubs than as long wires.
+# These widely separated or intentionally symbolic endpoints are clearer as
+# repeated named stubs than as long wires.
 LABEL_EACH_NETS = {
-  ("power_usb", "~CHRG"),
-  ("mcu", "MCU_BOOT"),
-  ("mcu", "MCU_EN"),
   ("sensors_nfc", "NFC_ANTENNA"),
   ("sensors_nfc", "I2C_SCL"),
   ("sensors_nfc", "I2C_SDA"),
   ("epaper", "EPD_VCOM"),
-  ("epaper", "EPD_GDR"),
-  ("epaper", "EPD_RESE"),
   ("epaper", "EPD_VDD_CORE"),
-  ("epaper", "EPD_VGH"),
   ("epaper", "EPD_VGL"),
   ("epaper", "EPD_VSH1"),
   ("epaper", "EPD_VSH2"),
   ("epaper", "EPD_VSL"),
+}
+
+# Some named nets contain multiple compact circuits separated by enough space
+# that one continuous wire would obscure the signal flow. Wire each compact
+# cluster locally and emit one label for the cluster, instead of labeling every
+# component pin. Endpoint keys are explicit so a circuit change cannot silently
+# alter the drawing convention.
+NET_LABEL_CLUSTERS = {
+  ("epaper", "EPD_GDR"): (
+    (("J2", "2"),),
+    (("Q3", "1"), ("R15", "1")),
+  ),
+  ("epaper", "EPD_RESE"): (
+    (("J2", "3"),),
+    (("Q3", "2"), ("R16", "1")),
+  ),
+  ("epaper", "EPD_VGH"): (
+    (("J2", "21"),),
+    (("D4", "1"), ("C25", "1")),
+  ),
 }
 
 # The 8205A exposes its common drain on two opposite pins. Repeated labels
@@ -932,6 +947,30 @@ def render_group(
         lines.extend(global_label(sheet.key, net_name, part, point, pin))
       continue
 
+    clusters = NET_LABEL_CLUSTERS.get((sheet.key, net_name))
+    if clusters:
+      entries_by_pin = {
+        (part["ref"], pin["number"]): (part, pin, point)
+        for part, pin, point in entries
+      }
+      clustered_keys = {key for cluster in clusters for key in cluster}
+      if clustered_keys != set(entries_by_pin):
+        raise ValueError(
+          f"Label clusters for {sheet.key}:{net_name} do not match pins: "
+          f"missing={sorted(set(entries_by_pin) - clustered_keys)}, "
+          f"extra={sorted(clustered_keys - set(entries_by_pin))}"
+        )
+      for cluster in clusters:
+        cluster_entries = [entries_by_pin[key] for key in cluster]
+        lines.extend(route_net(
+          sheet.key,
+          net_name,
+          [entry[2] for entry in cluster_entries],
+        ))
+        part, pin, point = cluster_entries[0]
+        lines.extend(global_label(sheet.key, net_name, part, point, pin))
+      continue
+
     is_cross_sheet = len(net_sheets[net_name]) > 1
     label_each = (sheet.key, net_name) in LABEL_EACH_NETS
     label_each_local = (sheet.key, net_name) in LABEL_EACH_LOCAL_NETS
@@ -1026,6 +1065,16 @@ def validate_configuration(parts: list[dict]) -> None:
   missing_symbols = sorted({part["name"] for part in parts} - set(SYMBOLS))
   if missing_symbols:
     raise ValueError(f"Missing embedded symbols: {missing_symbols}")
+  clustered_power_nets = sorted({
+    net_name
+    for _, net_name in NET_LABEL_CLUSTERS
+    if net_name in SYMBOL_POWER_NETS or net_name in CUSTOM_POWER_NETS
+  })
+  if clustered_power_nets:
+    raise ValueError(
+      "Power nets require placement-aware symbols, not label clusters: "
+      f"{clustered_power_nets}"
+    )
 
 
 def main() -> None:

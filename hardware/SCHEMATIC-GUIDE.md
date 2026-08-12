@@ -49,6 +49,9 @@ summarize the same relationships by functional block:
 Support passives are placed beside the IC or functional block they serve. KiCad
 junction dots are shown only where wires are electrically connected; a crossing
 or geometric touch without a dot must not be interpreted as a connection.
+Compact local circuits such as MCU EN/BOOT and charger CHRG support are wired
+directly. Repeated endpoint labels are reserved for distant functional regions
+or intentionally symbolic connections where a long wire would reduce clarity.
 
 | References | Related to | Function |
 |---|---|---|
