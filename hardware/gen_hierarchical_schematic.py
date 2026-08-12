@@ -120,14 +120,17 @@ SHEETS = (
       "U5": p(265, 50),
       "C_fg": p(240, 68, 270),
       "U7": p(75, 130, 180),
-      "U8": p(120, 130),
+      # Rotate the dual MOSFET so its gate traces do not run through the
+      # intervening source pins on either side of the symbol.
+      "U8": p(115, 128, 90),
       "R_dvcc": p(48, 118),
       "R_dvm": p(95, 130, 180),
-      "C_dprot": p(58, 143, 270),
+      # Both pins face outward: VDD above and BAT_NEG directly on the trunk.
+      "C_dprot": p(58, 138, 270),
       "Q1": p(190, 130),
-      "R_q1g": p(187, 116, 270),
+      "R_q1g": p(181, 116, 270),
       "Q2": p(245, 130),
-      "R_q2g": p(242, 116, 270),
+      "R_q2g": p(236, 116, 270),
       "TP1": p(18, 152),
       "TP2": p(30, 152),
       "TP3": p(205, 152),
@@ -250,7 +253,9 @@ SHEETS = (
       "R_epdg": p(65, 95, 270),
       "R_epds": p(85, 95, 270),
       "C_epd_in": p(25, 85),
-      "C_epd_pump": p(58, 30),
+      # Vertical orientation keeps the charge-pump and switch-node terminals
+      # on opposite sides instead of routing one net through the capacitor.
+      "C_epd_pump": p(75, 38, 270),
       "C_epd_vsh2": p(130, 25),
       "C_epd_vgh": p(130, 43),
       "C_epd_vsh1": p(130, 61),
@@ -291,10 +296,12 @@ SHEETS = (
       "SW2": p(90, 55),
       "SW3": p(140, 55),
       "SW4": p(190, 55),
-      "C_btn1": p(36, 67, 270),
-      "C_btn2": p(86, 67, 270),
-      "C_btn3": p(136, 67, 270),
-      "C_btn4": p(186, 67, 270),
+      # Offset the capacitors from the switches; the signal leg can then
+      # dogleg around pin 3 instead of appearing to join its GND stub.
+      "C_btn1": p(32, 67, 270),
+      "C_btn2": p(82, 67, 270),
+      "C_btn3": p(132, 67, 270),
+      "C_btn4": p(182, 67, 270),
       "D1": p(125, 118),
       "C_led": p(88, 118, 270),
     },
@@ -388,6 +395,18 @@ TRUNK_ROUTES = {
   ("power_usb", "N$7"): ("horizontal", g(28)),
 }
 
+# Two-terminal nets normally use a single orthogonal corner. These nets need a
+# third segment so that the route does not pass through unrelated symbol pins.
+# The coordinate is the lane used between the two endpoints.
+TWO_PIN_DOGLEG_ROUTES = {
+  ("power_usb", "N$10"): ("horizontal", g(146)),
+  ("power_usb", "N$11"): ("horizontal", g(113)),
+  ("ui", "BTN_UP"): ("vertical", g(28)),
+  ("ui", "BTN_DOWN"): ("vertical", g(78)),
+  ("ui", "BTN_SEL"): ("vertical", g(128)),
+  ("ui", "BTN_MENU"): ("vertical", g(178)),
+}
+
 # Prefer these pins when a multi-pin local branch also needs a global label.
 LABEL_PIN = {
   ("power_usb", "~CHRG"): ("U6", "7"),
@@ -397,6 +416,17 @@ LABEL_PIN = {
   ("ui", "BTN_DOWN"): ("SW2", "1"),
   ("ui", "BTN_SEL"): ("SW3", "1"),
   ("ui", "BTN_MENU"): ("SW4", "1"),
+}
+
+# Put the visible label branch on the existing local route, away from component
+# pins. These are true three-way electrical junctions and therefore get dots.
+LABEL_JUNCTION_POINTS = {
+  ("power_usb", "PWR_AUX"): (g(181), g(130)),
+  ("power_usb", "EPD_PWR_EN"): (g(236), g(130)),
+  ("ui", "BTN_UP"): (g(28), g(53)),
+  ("ui", "BTN_DOWN"): (g(78), g(53)),
+  ("ui", "BTN_SEL"): (g(128), g(53)),
+  ("ui", "BTN_MENU"): (g(178), g(53)),
 }
 
 
@@ -529,6 +559,31 @@ def wire(seed: str, start: tuple[float, float], end: tuple[float, float]) -> str
   )
 
 
+def wire_path(
+  seed: str,
+  points: list[tuple[float, float]],
+) -> list[str]:
+  """Emit the non-zero orthogonal segments in a route."""
+  result = []
+  for start, end in zip(points, points[1:]):
+    if start != end:
+      result.append(wire(seed, start, end))
+  return result
+
+
+def point_on_segment(
+  point: tuple[float, float],
+  segment: tuple[tuple[float, float], tuple[float, float]],
+) -> bool:
+  """Return whether a point lies on an orthogonal wire segment."""
+  start, end = segment
+  if start[0] == end[0] == point[0]:
+    return min(start[1], end[1]) <= point[1] <= max(start[1], end[1])
+  if start[1] == end[1] == point[1]:
+    return min(start[0], end[0]) <= point[0] <= max(start[0], end[0])
+  return False
+
+
 def junction(seed: str, point: tuple[float, float]) -> str:
   return (
     "\t(junction\n"
@@ -540,89 +595,126 @@ def junction(seed: str, point: tuple[float, float]) -> str:
   )
 
 
-def route_net(sheet_key: str, net_name: str, points: list[tuple[float, float]]) -> list[str]:
+def route_net(
+  sheet_key: str,
+  net_name: str,
+  points: list[tuple[float, float]],
+  explicit_junctions: tuple[tuple[float, float], ...] = (),
+) -> list[str]:
   """Route a small local net as an orthogonal tree."""
   unique_points = list(dict.fromkeys(points))
   if len(unique_points) < 2:
     return []
   seed = f"{sheet_key}:{net_name}"
+  offset_x, offset_y = SINGLE_PAGE_OFFSETS[sheet_key]
+  segments: list[
+    tuple[tuple[float, float], tuple[float, float]]
+  ] = []
+  junction_points: set[tuple[float, float]] = set()
   if len(unique_points) == 2:
     start, end = unique_points
-    corner = end[0], start[1]
-    result = []
-    if start != corner:
-      result.append(wire(seed, start, corner))
-    if corner != end:
-      result.append(wire(seed, corner, end))
-    return result
-
-  xs = [point[0] for point in unique_points]
-  ys = [point[1] for point in unique_points]
-  override = TRUNK_ROUTES.get((sheet_key, net_name))
-  if override:
-    axis, coordinate = override
-  elif max(xs) - min(xs) >= max(ys) - min(ys):
-    axis, coordinate = "horizontal", snap(sorted(ys)[len(ys) // 2])
+    dogleg = TWO_PIN_DOGLEG_ROUTES.get((sheet_key, net_name))
+    if dogleg:
+      axis, coordinate = dogleg
+      coordinate += offset_x if axis == "vertical" else offset_y
+      if axis == "vertical":
+        route_points = [start, (coordinate, start[1]), (coordinate, end[1]), end]
+      else:
+        route_points = [start, (start[0], coordinate), (end[0], coordinate), end]
+    else:
+      route_points = [start, (end[0], start[1]), end]
+    segments.extend(
+      (segment_start, segment_end)
+      for segment_start, segment_end in zip(route_points, route_points[1:])
+      if segment_start != segment_end
+    )
   else:
-    axis, coordinate = "vertical", snap(sorted(xs)[len(xs) // 2])
+    xs = [point[0] for point in unique_points]
+    ys = [point[1] for point in unique_points]
+    override = TRUNK_ROUTES.get((sheet_key, net_name))
+    if override:
+      axis, coordinate = override
+      coordinate += offset_x if axis == "vertical" else offset_y
+    elif max(xs) - min(xs) >= max(ys) - min(ys):
+      axis, coordinate = "horizontal", snap(sorted(ys)[len(ys) // 2])
+    else:
+      axis, coordinate = "vertical", snap(sorted(xs)[len(xs) // 2])
 
-  result: list[str] = []
-  branches: list[tuple[tuple[float, float], tuple[float, float]]] = []
-  if axis == "horizontal":
-    trunk_start = min(xs), coordinate
-    trunk_end = max(xs), coordinate
+    if axis == "horizontal":
+      trunk_start = min(xs), coordinate
+      trunk_end = max(xs), coordinate
+    else:
+      trunk_start = coordinate, min(ys)
+      trunk_end = coordinate, max(ys)
     if trunk_start != trunk_end:
-      result.append(wire(seed, trunk_start, trunk_end))
-    for index, point in enumerate(unique_points):
-      branch = point[0], coordinate
-      if point != branch:
-        result.append(wire(f"{seed}:{index}", point, branch))
-        branches.append((point, branch))
-      if len(unique_points) > 2 and min(xs) < branch[0] < max(xs):
-        result.append(junction(f"{seed}:{index}", branch))
-  else:
-    trunk_start = coordinate, min(ys)
-    trunk_end = coordinate, max(ys)
-    if trunk_start != trunk_end:
-      result.append(wire(seed, trunk_start, trunk_end))
-    for index, point in enumerate(unique_points):
-      branch = coordinate, point[1]
-      if point != branch:
-        result.append(wire(f"{seed}:{index}", point, branch))
-        branches.append((point, branch))
-      if len(unique_points) > 2 and min(ys) < branch[1] < max(ys):
-        result.append(junction(f"{seed}:{index}", branch))
+      segments.append((trunk_start, trunk_end))
 
-  # Mark a secondary branch that terminates on another same-net branch rather
-  # than directly on the selected trunk. This occurs on BAT_NEG where U8's two
-  # source pins share a vertical fan-in. Restricting the check to this routed
-  # net avoids treating unrelated geometric touches elsewhere as connections.
-  branch_dots: set[tuple[float, float]] = set()
-  for index, (start, end) in enumerate(branches):
-    for other_start, other_end in branches[index + 1:]:
-      same_vertical = start[0] == end[0] == other_start[0] == other_end[0]
-      same_horizontal = start[1] == end[1] == other_start[1] == other_end[1]
-      if same_vertical:
-        for point in (start, end, other_start, other_end):
-          on_first = min(start[1], end[1]) < point[1] < max(start[1], end[1])
-          on_second = (
-            min(other_start[1], other_end[1]) < point[1]
-            < max(other_start[1], other_end[1])
-          )
-          if on_first or on_second:
-            branch_dots.add(point)
-      elif same_horizontal:
-        for point in (start, end, other_start, other_end):
-          on_first = min(start[0], end[0]) < point[0] < max(start[0], end[0])
-          on_second = (
-            min(other_start[0], other_end[0]) < point[0]
-            < max(other_start[0], other_end[0])
-          )
-          if on_first or on_second:
-            branch_dots.add(point)
-  for point in sorted(branch_dots):
-    result.append(junction(f"{seed}:branch", point))
+    branches: list[tuple[tuple[float, float], tuple[float, float]]] = []
+    for point in unique_points:
+      if axis == "horizontal":
+        branch = point[0], coordinate
+        branch_is_internal = min(xs) < branch[0] < max(xs)
+      else:
+        branch = coordinate, point[1]
+        branch_is_internal = min(ys) < branch[1] < max(ys)
+      if point != branch:
+        segments.append((point, branch))
+        branches.append((point, branch))
+      if branch_is_internal:
+        junction_points.add(branch)
 
+    # A trunk endpoint can still be a true junction when multiple branches
+    # meet there (for example, the two source pins of U8).
+    branch_end_counts: dict[tuple[float, float], int] = {}
+    for _, end in branches:
+      branch_end_counts[end] = branch_end_counts.get(end, 0) + 1
+    for point, count in branch_end_counts.items():
+      if count > 1 and point in {trunk_start, trunk_end}:
+        junction_points.add(point)
+
+    # Mark a secondary branch that terminates on another same-net branch.
+    for index, (start, end) in enumerate(branches):
+      for other_start, other_end in branches[index + 1:]:
+        same_vertical = start[0] == end[0] == other_start[0] == other_end[0]
+        same_horizontal = start[1] == end[1] == other_start[1] == other_end[1]
+        if same_vertical:
+          for point in (start, end, other_start, other_end):
+            on_first = min(start[1], end[1]) < point[1] < max(start[1], end[1])
+            on_second = (
+              min(other_start[1], other_end[1]) < point[1]
+              < max(other_start[1], other_end[1])
+            )
+            if on_first or on_second:
+              junction_points.add(point)
+        elif same_horizontal:
+          for point in (start, end, other_start, other_end):
+            on_first = min(start[0], end[0]) < point[0] < max(start[0], end[0])
+            on_second = (
+              min(other_start[0], other_end[0]) < point[0]
+              < max(other_start[0], other_end[0])
+            )
+            if on_first or on_second:
+              junction_points.add(point)
+
+  pin_points = set(unique_points)
+  for point in explicit_junctions:
+    if point in pin_points:
+      raise ValueError(
+        f"Explicit junction for {sheet_key}:{net_name} is on a component pin: "
+        f"{point}"
+      )
+    if not any(point_on_segment(point, segment) for segment in segments):
+      raise ValueError(
+        f"Explicit junction for {sheet_key}:{net_name} is not on its route: "
+        f"{point}"
+      )
+    junction_points.add(point)
+
+  result = [wire(seed, start, end) for start, end in segments]
+  result.extend(
+    junction(f"{seed}:junction", point)
+    for point in sorted(junction_points)
+  )
   return result
 
 
@@ -979,7 +1071,15 @@ def render_group(
         lines.extend(global_label(sheet.key, net_name, part, point, pin))
       continue
 
-    lines.extend(route_net(sheet.key, net_name, [entry[2] for entry in entries]))
+    label_point = LABEL_JUNCTION_POINTS.get((sheet.key, net_name))
+    if label_point:
+      label_point = label_point[0] + offset_x, label_point[1] + offset_y
+    lines.extend(route_net(
+      sheet.key,
+      net_name,
+      [entry[2] for entry in entries],
+      (label_point,) if label_point else (),
+    ))
     if is_cross_sheet or len(entries) == 1:
       preferred = LABEL_PIN.get((sheet.key, net_name))
       if preferred:
@@ -990,6 +1090,8 @@ def render_group(
         )
       else:
         part, pin, point = entries[0]
+      if label_point:
+        point = label_point
       lines.extend(global_label(sheet.key, net_name, part, point, pin))
 
   return lines
