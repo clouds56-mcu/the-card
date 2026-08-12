@@ -174,14 +174,17 @@ SHEETS = (
     placements={
       "U1": p(115, 70),
       "C_mcu1": p(72, 43),
-      "C_mcu2": p(96, 43),
+      # Keep the bulk capacitor and its GND stub clear of U1's body edge.
+      "C_mcu2": p(90, 43),
       "R_en": p(87, 58, 270),
-      "C_en": p(67, 70, 270),
+      # Keep the MCU's leftmost wiring inside its own visual column.
+      "C_en": p(72, 70, 270),
       "R_io0": p(148, 82, 270),
       "R_vbh": p(145, 60, 270),
       "R_vbl": p(145, 68, 270),
       "C_vb": p(158, 68, 270),
-      "TP5": p(87, 80),
+      # Keep the EN test point left of U1's dense label fanout.
+      "TP5": p(78, 80),
       "TP6": p(148, 96),
     },
     notes=(
@@ -251,22 +254,26 @@ SHEETS = (
       "C_epd_vcom",
     }),
     placements={
-      "J2": p(170, 70),
+      # Leave room for the connector value and right-facing net labels before
+      # the page frame.
+      "J2": p(165, 70),
       "L1": p(45, 55),
       "Q3": p(75, 70),
       "D2": p(95, 25),
       "D3": p(95, 38),
-      "D4": p(105, 55),
+      # Put the anode directly on EPD_SW and face the cathode toward EPD_VGH.
+      "D4": p(105, 58, 180),
       "R_epdg": p(65, 95, 270),
       "R_epds": p(85, 95, 270),
-      "C_epd_in": p(25, 85),
+      # Preserve a visible gutter between the MCU and e-paper circuitry.
+      "C_epd_in": p(30, 85),
       # Vertical orientation keeps the charge-pump and switch-node terminals
       # on opposite sides instead of routing one net through the capacitor.
       "C_epd_pump": p(75, 38, 270),
       "C_epd_vsh2": p(130, 25),
       "C_epdvdd": p(130, 35),
       "C_epd_vsh1": p(130, 45),
-      "C_epd_vgh": p(130, 55),
+      "C_epd_vgh": p(130, 58),
       "C_epd_vsl": p(130, 75),
       "C_epd_vgl": p(130, 95),
       "C_epd_vcom": p(130, 115),
@@ -302,13 +309,13 @@ SHEETS = (
       "SW1": p(40, 55),
       "SW2": p(90, 55),
       "SW3": p(140, 55),
-      "SW4": p(190, 55),
+      "SW4": p(180, 55),
       # Offset the capacitors from the switches; the signal leg can then
       # dogleg around pin 3 instead of appearing to join its GND stub.
       "C_btn1": p(32, 67, 270),
       "C_btn2": p(82, 67, 270),
       "C_btn3": p(132, 67, 270),
-      "C_btn4": p(182, 67, 270),
+      "C_btn4": p(172, 67, 270),
       "D1": p(125, 118),
       "C_led": p(88, 118, 270),
     },
@@ -352,7 +359,8 @@ SHEET_BY_REF = {ref: sheet for sheet in SHEETS for ref in sheet.refs}
 # calculated.
 SINGLE_PAGE_OFFSETS = {
   "power_usb": (g(0), g(0)),
-  "mcu": (g(130), g(135)),
+  # Start below the final power-section callout instead of sharing its band.
+  "mcu": (g(130), g(145)),
   "sensors_nfc": (g(265), g(0)),
   "epaper": (g(270), g(165)),
   "ui": (g(0), g(165)),
@@ -400,6 +408,8 @@ LABEL_EACH_LOCAL_NETS = {("power_usb", "FET_DRAIN")}
 TRUNK_ROUTES = {
   ("power_usb", "N$6"): ("horizontal", g(72)),
   ("power_usb", "N$7"): ("horizontal", g(28)),
+  # Keep the boost switch node on D4's anode so the diode reads left-to-right.
+  ("epaper", "EPD_SW"): ("horizontal", g(58)),
 }
 
 # Two-terminal nets normally use a single orthogonal corner. These nets need a
@@ -411,7 +421,7 @@ TWO_PIN_DOGLEG_ROUTES = {
   ("ui", "BTN_UP"): ("vertical", g(28)),
   ("ui", "BTN_DOWN"): ("vertical", g(78)),
   ("ui", "BTN_SEL"): ("vertical", g(128)),
-  ("ui", "BTN_MENU"): ("vertical", g(178)),
+  ("ui", "BTN_MENU"): ("vertical", g(168)),
 }
 
 # Prefer these pins when a multi-pin local branch also needs a global label.
@@ -433,7 +443,7 @@ LABEL_JUNCTION_POINTS = {
   ("ui", "BTN_UP"): (g(28), g(53)),
   ("ui", "BTN_DOWN"): (g(78), g(53)),
   ("ui", "BTN_SEL"): (g(128), g(53)),
-  ("ui", "BTN_MENU"): (g(178), g(53)),
+  ("ui", "BTN_MENU"): (g(168), g(53)),
 }
 
 
