@@ -423,18 +423,18 @@ CLUSTER_LABEL_ANCHORS = {
 # functional layout rather than the generic symbol bounds. Coordinates are
 # offsets from the component centre in grid units.
 PROPERTY_LAYOUT = {
-  "C20": ((-4, 0, 270), (-4, 3, 270)),
-  "C21": ((-4, 0, 270), (-4, 3, 270)),
+  "C20": ((-6, -1, 270), (-6, 2, 270)),
+  "C21": ((-6, -1, 270), (-6, 2, 270)),
   "L1": ((0, -4, 90), (0, 4, 90)),
-  "Q3": ((5, -9, 0), (0, 9, 0)),
-  "J2": ((0, -23, 0), (0, 23, 0)),
+  "Q3": ((0, -9, 0), (0, 9, 0)),
+  "J2": ((0, -17, 0), (0, 18, 0)),
 }
 
-# Most parts use the standard 1.2 mm reference and 1.0 mm value sizes. The
-# connector has long centred fields, so reduce them rather than moving them
-# sideways into the surrounding net labels.
+# Most parts use the standard 1.2 mm reference and 1.0 mm value sizes. J2 keeps
+# the standard reference hierarchy while its long centred part number is
+# reduced to fit beside the surrounding net labels.
 PROPERTY_FONT_SIZES = {
-  "J2": (0.9, 0.8),
+  "J2": (1.2, 0.8),
 }
 
 # The 8205A exposes its common drain on two opposite pins. Repeated labels
