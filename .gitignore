@@ -48,12 +48,15 @@ _autosave-*
 fp-info-cache
 *.tsv
 *.dcm
+hardware/~*.lck
 
-# Fabrication output is kept by default for open hardware.
-# Uncomment the lines below if you prefer to ignore generated outputs:
-# gerbers/
-# exports/
-# JLCGBO/
+# Generated fabrication, export, and local review artifacts.
+/output/
+/outputs/
+/tmp/
+/hardware/tmp/
+/.zcode/
+/*.erc
 
 # ---- Node / web (for any companion app later) ----
 node_modules/
