@@ -5575,6 +5575,12 @@
 		(color 0 0 0 0)
 		(uuid "8e900541-e121-5ed2-8ff2-00660cf93305")
 	)
+	(global_label "BAT_NEG"
+		(shape bidirectional)
+		(at 20.32 180.34 0)
+		(effects (font (size 0.01 0.01)) (hide yes))
+		(uuid "7b5a24ea-3905-5435-9c98-5556011f6a0c")
+	)
 	(wire
 		(pts (xy 281.94 165.1) (xy 274.32 165.1))
 		(stroke (width 0) (type default))
@@ -8059,6 +8065,12 @@
 		(color 0 0 0 0)
 		(uuid "1915dbf8-db6a-51ca-8e23-9758a990de2a")
 	)
+	(global_label "MCU_BOOT"
+		(shape bidirectional)
+		(at 332.74 294.64 0)
+		(effects (font (size 0.01 0.01)) (hide yes))
+		(uuid "f072d1ca-6964-5c88-a22e-d994c76d54ae")
+	)
 	(wire
 		(pts (xy 256.54 267.97) (xy 289.56 267.97))
 		(stroke (width 0) (type default))
@@ -8090,6 +8102,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "8eaa2acb-20eb-5423-9024-1f495b63d3ee")
+	)
+	(global_label "MCU_EN"
+		(shape bidirectional)
+		(at 289.56 266.7 0)
+		(effects (font (size 0.01 0.01)) (hide yes))
+		(uuid "d6b4dd88-2bd5-56bf-89b5-71de5cabb670")
 	)
 	(wire
 		(pts (xy 332.74 265.43) (xy 365.76 265.43))
@@ -10134,6 +10152,12 @@
 		(color 0 0 0 0)
 		(uuid "855500c0-5778-5e68-a738-538d5a6d5f5d")
 	)
+	(global_label "EPD_PUMP"
+		(shape bidirectional)
+		(at 453.39 250.19 0)
+		(effects (font (size 0.01 0.01)) (hide yes))
+		(uuid "db14d3c8-24e5-503d-b8f3-79144b38b255")
+	)
 	(wire
 		(pts (xy 525.78 287.02) (xy 520.7 287.02))
 		(stroke (width 0) (type default))
@@ -10221,6 +10245,12 @@
 		(color 0 0 0 0)
 		(uuid "bdfd9cd8-7515-5638-b090-9c6354beb2c2")
 	)
+	(global_label "EPD_SW"
+		(shape bidirectional)
+		(at 410.21 283.21 0)
+		(effects (font (size 0.01 0.01)) (hide yes))
+		(uuid "58bb9d4a-4636-5524-966b-329ee0279391")
+	)
 	(wire
 		(pts (xy 525.78 302.26) (xy 520.7 302.26))
 		(stroke (width 0) (type default))
@@ -10279,6 +10309,12 @@
 		(stroke (width 0) (type default))
 		(uuid "d130c0c1-7682-53e6-9f6c-cdfe05935104")
 	)
+	(global_label "EPD_VCOM"
+		(shape bidirectional)
+		(at 541.02 312.42 0)
+		(effects (font (size 0.01 0.01)) (hide yes))
+		(uuid "093f41b4-a4cb-57fd-a519-c7365d05389f")
+	)
 	(wire
 		(pts (xy 541.02 304.8) (xy 556.26 304.8))
 		(stroke (width 0) (type default))
@@ -10288,6 +10324,12 @@
 		(pts (xy 556.26 304.8) (xy 556.26 318.77))
 		(stroke (width 0) (type default))
 		(uuid "7376291a-f863-5420-9db3-4d10e8c3ca3c")
+	)
+	(global_label "EPD_VDD_CORE"
+		(shape bidirectional)
+		(at 541.02 304.8 0)
+		(effects (font (size 0.01 0.01)) (hide yes))
+		(uuid "e202e3f9-74d6-50c9-b6ff-f8b4ca128973")
 	)
 	(wire
 		(pts (xy 525.78 309.88) (xy 520.7 309.88))
@@ -10358,10 +10400,22 @@
 		(stroke (width 0) (type default))
 		(uuid "4718ce6d-9596-55c9-b211-b5b85bd95a6e")
 	)
+	(global_label "EPD_VSH1"
+		(shape bidirectional)
+		(at 541.02 307.34 0)
+		(effects (font (size 0.01 0.01)) (hide yes))
+		(uuid "7f25aa0b-9edf-57db-a053-53be6903f798")
+	)
 	(wire
 		(pts (xy 525.78 289.56) (xy 510.54 289.56))
 		(stroke (width 0) (type default))
 		(uuid "d729100b-29d0-58d6-81c5-b57c54ca3453")
+	)
+	(global_label "EPD_VSH2"
+		(shape bidirectional)
+		(at 525.78 289.56 0)
+		(effects (font (size 0.01 0.01)) (hide yes))
+		(uuid "32cbecd7-8da8-58de-9a6c-334d0b7b1c1c")
 	)
 	(wire
 		(pts (xy 541.02 309.88) (xy 551.18 309.88))
@@ -10377,6 +10431,12 @@
 		(pts (xy 551.18 339.09) (xy 556.26 339.09))
 		(stroke (width 0) (type default))
 		(uuid "c9c84ef6-2717-5e08-8eaf-3b707ceb3854")
+	)
+	(global_label "EPD_VSL"
+		(shape bidirectional)
+		(at 541.02 309.88 0)
+		(effects (font (size 0.01 0.01)) (hide yes))
+		(uuid "711eea1b-ebd8-59cc-8ce1-3b83fcd77dd0")
 	)
 	(wire
 		(pts (xy 525.78 304.8) (xy 520.7 304.8))

@@ -8,11 +8,14 @@ from collections import defaultdict
 import csv
 from datetime import datetime, timezone
 import hashlib
+import importlib.metadata
 import json
 from pathlib import Path
+import platform
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 from typing import Any, Iterable
 import xml.etree.ElementTree as ET
@@ -27,12 +30,56 @@ BOARD = HARDWARE / "the-card.kicad_pcb"
 PROJECT = HARDWARE / "the-card.kicad_pro"
 SCHEMATIC = HARDWARE / "the-card.kicad_sch"
 PARTS = HARDWARE / "parts.yaml"
+CIRCUIT = HARDWARE / "circuit.py"
+SCHEMATIC_GENERATOR = HARDWARE / "gen_hierarchical_schematic.py"
+PCB_GENERATOR = HARDWARE / "gen_pcb.py"
+PCB_ROUTER = HARDWARE / "pcb_router.py"
+PYPROJECT = HARDWARE / "pyproject.toml"
+UV_LOCK = HARDWARE / "uv.lock"
+FP_LIB_TABLE = HARDWARE / "fp-lib-table"
+SYM_LIB_TABLE = HARDWARE / "sym-lib-table"
+LIBRARIES = HARDWARE / "libraries"
+SYMBOL_LIBRARIES = (
+  LIBRARIES / "the-card.kicad_sym",
+  LIBRARIES / "passives.kicad_sym",
+)
 KICAD_CLI = Path("/Applications/KiCad/KiCad.app/Contents/MacOS/kicad-cli")
 KICAD_PYTHON = Path(
   "/Applications/KiCad/KiCad.app/Contents/Frameworks/"
   "Python.framework/Versions/3.9/bin/python3"
 )
 RASTERIZE_SVG = HARDWARE / "scripts" / "rasterize_svg.py"
+VERIFY_SCHEMATIC = HARDWARE / "verify_schematic.py"
+RELEASE_SCRIPT = Path(__file__).resolve()
+FETCH_LIBRARIES = HARDWARE / "scripts" / "fetch_libs.sh"
+NORMALIZE_LIBRARIES = HARDWARE / "scripts" / "normalize_libraries.py"
+
+RELEASE_INPUT_FILES = (
+  BOARD,
+  PROJECT,
+  SCHEMATIC,
+  PARTS,
+)
+VERIFICATION_INPUT_FILES = (
+  CIRCUIT,
+  VERIFY_SCHEMATIC,
+  *SYMBOL_LIBRARIES,
+)
+RELEASE_TOOL_FILES = (
+  RELEASE_SCRIPT,
+  RASTERIZE_SVG,
+  PYPROJECT,
+  UV_LOCK,
+  FP_LIB_TABLE,
+  SYM_LIB_TABLE,
+)
+DESIGN_GENERATOR_FILES = (
+  SCHEMATIC_GENERATOR,
+  PCB_GENERATOR,
+  PCB_ROUTER,
+  FETCH_LIBRARIES,
+  NORMALIZE_LIBRARIES,
+)
 
 GERBER_LAYERS = (
   "F.Cu",
@@ -97,6 +144,61 @@ def sha256(path: Path) -> str:
     for chunk in iter(lambda: source.read(1024 * 1024), b""):
       digest.update(chunk)
   return digest.hexdigest()
+
+
+def local_model_files() -> tuple[Path, ...]:
+  relative_paths = set(re.findall(
+    r'\(model "\$\{KIPRJMOD\}/([^"\n]+)"',
+    BOARD.read_text(),
+  ))
+  models = tuple(sorted(HARDWARE / path for path in relative_paths))
+  missing = [path for path in models if not path.is_file()]
+  if missing:
+    raise FileNotFoundError(
+      "board-local 3D models missing: " + ", ".join(map(str, missing))
+    )
+  return models
+
+
+def release_source_groups() -> dict[str, tuple[Path, ...]]:
+  return {
+    "release_inputs": RELEASE_INPUT_FILES,
+    "verification_inputs": VERIFICATION_INPUT_FILES,
+    "release_tools": RELEASE_TOOL_FILES,
+    "design_generators": DESIGN_GENERATOR_FILES,
+    "library_assets": local_model_files(),
+  }
+
+
+def flatten_source_groups(
+  groups: dict[str, tuple[Path, ...]],
+) -> tuple[Path, ...]:
+  return tuple(sorted({path for paths in groups.values() for path in paths}))
+
+
+def capture_source_hashes(files: tuple[Path, ...]) -> dict[Path, str]:
+  return {path: sha256(path) for path in files}
+
+
+def assert_source_hashes_unchanged(initial: dict[Path, str]) -> None:
+  current = capture_source_hashes(tuple(initial))
+  changed = [
+    path.relative_to(REPOSITORY)
+    for path, digest in initial.items()
+    if current[path] != digest
+  ]
+  if changed:
+    raise RuntimeError(
+      "release inputs changed during generation: "
+      + ", ".join(map(str, changed))
+    )
+
+
+def package_version(distribution: str) -> str:
+  try:
+    return importlib.metadata.version(distribution)
+  except importlib.metadata.PackageNotFoundError:
+    return "not installed"
 
 
 def natural_reference_key(reference: str) -> tuple[str, int]:
@@ -206,13 +308,13 @@ def load_sourcing() -> dict[str, dict[str, str]]:
 
 def assert_inputs() -> None:
   required = (
-    BOARD,
-    PROJECT,
-    SCHEMATIC,
-    PARTS,
+    *RELEASE_INPUT_FILES,
+    *VERIFICATION_INPUT_FILES,
+    *RELEASE_TOOL_FILES,
+    *DESIGN_GENERATOR_FILES,
+    LIBRARIES,
     KICAD_CLI,
     KICAD_PYTHON,
-    RASTERIZE_SVG,
   )
   missing = [path for path in required if not path.exists()]
   if missing:
@@ -227,6 +329,16 @@ def assert_inputs() -> None:
   }
   if mismatches:
     raise ValueError(f"project fabrication rules do not match the generator: {mismatches}")
+
+
+def verify_schematic_connectivity() -> None:
+  run([
+    sys.executable,
+    str(VERIFY_SCHEMATIC),
+    str(SCHEMATIC),
+    "--kicad-cli",
+    str(KICAD_CLI),
+  ])
 
 
 def export_reports(root: Path) -> dict[str, Any]:
@@ -681,12 +793,52 @@ def git_output(*arguments: str) -> str:
   return result.stdout.strip()
 
 
+def capture_git_state() -> dict[str, Any]:
+  return {
+    "commit": git_output("rev-parse", "HEAD"),
+    "dirty_hardware_worktree": bool(git_output(
+      "status",
+      "--porcelain",
+      "--untracked-files=normal",
+      "--",
+      "hardware",
+    )),
+  }
+
+
+def capture_toolchain() -> dict[str, Any]:
+  kicad_version = subprocess.run(
+    [str(KICAD_CLI), "--version"],
+    check=True,
+    capture_output=True,
+    text=True,
+  ).stdout.strip()
+  return {
+    "kicad_cli": {
+      "path": str(KICAD_CLI),
+      "version": kicad_version,
+    },
+    "python": {
+      "executable": str(Path(sys.executable).resolve()),
+      "version": platform.python_version(),
+    },
+    "python_packages": {
+      "PyYAML": package_version("PyYAML"),
+      "skidl": package_version("skidl"),
+    },
+  }
+
+
 def write_manifest(
   root: Path,
   revision: str,
   checks: dict[str, Any],
   assembly: dict[str, int],
   position_count: int,
+  source_groups: dict[str, tuple[Path, ...]],
+  source_hashes: dict[Path, str],
+  git_state: dict[str, Any],
+  toolchain: dict[str, Any],
 ) -> None:
   if position_count != assembly["placed_components"]:
     raise RuntimeError(
@@ -694,27 +846,18 @@ def write_manifest(
       f"{assembly['placed_components']} BOM components vs {position_count} placements"
     )
 
-  source_files = (BOARD, PROJECT, SCHEMATIC, PARTS)
   payload_files = sorted(
     path for path in root.rglob("*")
     if path.is_file() and path.name not in {"release-manifest.json", "SHA256SUMS"}
   )
-  dirty = bool(git_output("status", "--porcelain", "--untracked-files=no", "--", "hardware"))
   manifest = {
     "project": "the-card",
     "revision": revision,
     "generated_at_utc": datetime.now(timezone.utc).isoformat(),
     "generator": "hardware/scripts/release_fabrication.py",
-    "kicad_version": subprocess.run(
-      [str(KICAD_CLI), "--version"],
-      check=True,
-      capture_output=True,
-      text=True,
-    ).stdout.strip(),
-    "git": {
-      "commit": git_output("rev-parse", "HEAD"),
-      "dirty_hardware_worktree": dirty,
-    },
+    "kicad_version": toolchain["kicad_cli"]["version"],
+    "git": git_state,
+    "toolchain": toolchain,
     "board": BOARD_SPEC,
     "checks": checks,
     "assembly": assembly,
@@ -725,9 +868,16 @@ def write_manifest(
       "Inspect U8 orientation and protection-path continuity before connecting a cell.",
       "Tune and range-test the NFC antenna on the first physical prototype.",
     ],
+    "source_file_groups": {
+      name: [
+        str(path.relative_to(REPOSITORY))
+        for path in paths
+      ]
+      for name, paths in source_groups.items()
+    },
     "source_files": {
-      str(path.relative_to(REPOSITORY)): sha256(path)
-      for path in source_files
+      str(path.relative_to(REPOSITORY)): digest
+      for path, digest in source_hashes.items()
     },
     "payload_files": {
       str(path.relative_to(root)): {
@@ -749,25 +899,42 @@ def write_manifest(
 
 
 def build_release(output: Path, revision: str) -> None:
-  assert_inputs()
   if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", revision):
     raise ValueError(f"invalid revision label: {revision!r}")
   output = output.resolve()
   if output.exists():
     raise FileExistsError(f"refusing to overwrite existing release directory: {output}")
+  assert_inputs()
   output.parent.mkdir(parents=True, exist_ok=True)
+  source_groups = release_source_groups()
+  source_hashes = capture_source_hashes(flatten_source_groups(source_groups))
+  git_state = capture_git_state()
+  toolchain = capture_toolchain()
+  verify_schematic_connectivity()
 
   with tempfile.TemporaryDirectory(prefix=f".{output.name}-", dir=output.parent) as temp:
     root = Path(temp) / output.name
     root.mkdir()
     checks = export_reports(root)
+    checks["connectivity_verifier"] = True
     fabrication_files, plot_checks = export_fabrication(root)
     checks.update(plot_checks)
     assembly = export_bom(root)
     position_count = export_positions(root)
     export_review(root)
     write_fabrication_archive(root, revision, fabrication_files)
-    write_manifest(root, revision, checks, assembly, position_count)
+    write_manifest(
+      root,
+      revision,
+      checks,
+      assembly,
+      position_count,
+      source_groups,
+      source_hashes,
+      git_state,
+      toolchain,
+    )
+    assert_source_hashes_unchanged(source_hashes)
     root.rename(output)
 
   print(json.dumps({

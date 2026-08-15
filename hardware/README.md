@@ -44,10 +44,11 @@ uv run python verify_schematic.py
 kicad-cli sch erc --severity-all --output /tmp/erc.json --format json the-card.kicad_sch
 ```
 
-The verifier exports the complete KiCad schematic and compares the peer set of
-every component pin with the canonicalized SKiDL circuit. The expected result is
-75 components and 286 component pins with identical connectivity. KiCad ERC has
-0 violations.
+The verifier exports the complete KiCad schematic and compares both the peer
+set of every component pin and every explicitly named net with the canonicalized
+SKiDL circuit. The expected result is 75 components and 286 component pins with
+identical connectivity across 42 canonical named nets. KiCad ERC has 0
+violations.
 
 Generate the PCB layout with KiCad's bundled Python:
 
@@ -76,12 +77,13 @@ uv run python scripts/release_fabrication.py \
   --output ../outputs/the-card-rev-a
 ```
 
-The release command refuses to overwrite an existing directory. It requires a
-clean full DRC, schematic parity check, and ERC before it emits the fabrication
-ZIP, separate PTH/NPTH drills, internal assembly BOM, JLC upload BOM, position
-file, checksums, 3D renders, and per-layer SVG/PNG review plots. The internal
-assembly BOM reports unresolved sourcing explicitly; a clean board does not
-imply that every row is ready for a turnkey PCBA order.
+The release command refuses to overwrite an existing directory. It runs the
+connectivity and canonical-net-name verifier, then requires a clean full DRC,
+schematic parity check, and ERC before it emits the fabrication ZIP, separate
+PTH/NPTH drills, internal assembly BOM, JLC upload BOM, position file,
+checksums, 3D renders, and per-layer SVG/PNG review plots. The internal assembly
+BOM reports unresolved sourcing explicitly; a clean board does not imply that
+every row is ready for a turnkey PCBA order.
 
 `assembly/the-card-jlc-bom.csv` follows JLC's eight-column
 `Comment, Description, Designator, Footprint, LibRef, Pins, Quantity, JLCPCB Part #`

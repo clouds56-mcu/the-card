@@ -66,11 +66,11 @@ LAYER_REFERENCE_VIEWS = (
 LAYER_REFERENCE_RASTER_WIDTH = 540
 LAYER_REFERENCE_SCALE = 0.55
 
-BOM_FIELDS = {
-  "Datasheet",
-  "LCSC Part",
-  "Manufacturer",
-  "MPN",
+SCHEMATIC_FIELD_EXCLUSIONS = {
+  "Component Class",
+  "Footprint",
+  "Reference",
+  "Value",
 }
 
 
@@ -186,14 +186,14 @@ POWER_NETS = {
   "VBUS",
 }
 EPD_HV_NETS = {
+  "EPD_PUMP",
+  "EPD_SW",
   "EPD_VCOM",
   "EPD_VGH",
   "EPD_VGL",
   "EPD_VSH1",
   "EPD_VSH2",
   "EPD_VSL",
-  "Net-(D2-K)",
-  "Net-(D4-A)",
 }
 USB_NETS = {"USB_DP", "USB_DM", "Net-(J1-DP1)", "Net-(J1-DN1)"}
 
@@ -392,18 +392,19 @@ def add_footprints(
       raise ValueError(f"{ref} is missing footprint pads {unresolved}")
 
 
-def sync_bom_fields(board: pcbnew.BOARD, netlist: ET.Element) -> None:
-  """Copy assembly metadata after geometry UUIDs have been allocated.
+def sync_schematic_fields(board: pcbnew.BOARD, netlist: ET.Element) -> None:
+  """Copy schematic metadata after geometry UUIDs have been allocated.
 
   Creating a missing custom field consumes a KiCad UUID. Keeping that work
   after routing prevents a metadata-only edit from perturbing deterministic
-  track, via, zone, or footprint UUIDs.
+  track, via, zone, or footprint UUIDs. KiCad owns the identity fields listed
+  above; every other exported field must stay in schematic/footprint parity.
   """
   fields_by_ref = {
     component.attrib["ref"]: {
       field.attrib["name"]: field.text or ""
       for field in component.findall("./fields/field")
-      if field.attrib["name"] in BOM_FIELDS
+      if field.attrib["name"] not in SCHEMATIC_FIELD_EXCLUSIONS
     }
     for component in netlist.findall("./components/comp")
   }
@@ -727,7 +728,7 @@ def generate() -> None:
   # serialize floating fill fragments depending on internal cache state.
   board.BuildConnectivity()
   pcbnew.ZONE_FILLER(board).Fill(board.Zones())
-  sync_bom_fields(board, netlist)
+  sync_schematic_fields(board, netlist)
   pcbnew.SaveBoard(str(OUTPUT), board)
   add_layer_reference_views(OUTPUT)
   print(f"wrote {OUTPUT.name}")

@@ -149,6 +149,6 @@ bus from back-powering an unpowered sensor. `AUX_3V3` therefore powers only D1.
 
 - Regenerate from the script; do not maintain one-off generated-file edits.
 - Run `verify_schematic.py`; expect 75 components and 286 pins with identical
-  peer sets to `circuit.py`.
+  peer sets and canonical net names from `circuit.py`.
 - Run **Inspect → Electrical Rules Checker** in eeschema. Expect 0 violations.
 - Then **Tools → Update PCB from Schematic** (or import `the-card.net`) to start layout.

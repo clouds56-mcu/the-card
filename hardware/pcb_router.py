@@ -34,14 +34,14 @@ POWER_NETS = {
   "VBUS",
 }
 EPD_HV_NETS = {
+  "EPD_PUMP",
+  "EPD_SW",
   "EPD_VCOM",
   "EPD_VGH",
   "EPD_VGL",
   "EPD_VSH1",
   "EPD_VSH2",
   "EPD_VSL",
-  "Net-(D2-K)",
-  "Net-(D4-A)",
 }
 USB_NETS = {
   "USB_DP",
@@ -1181,8 +1181,8 @@ def route_board(board: pcbnew.BOARD) -> None:
     "EPD_VCI",
     "EPD_GDR",
     "EPD_RESE",
-    "Net-(D4-A)",
-    "Net-(D2-K)",
+    "EPD_SW",
+    "EPD_PUMP",
     "EPD_BUSY",
     "EPD_RST",
     "EPD_DC",
@@ -1190,7 +1190,7 @@ def route_board(board: pcbnew.BOARD) -> None:
     "EPD_SCLK",
     "EPD_SDA",
     "FET_DRAIN",
-    "Net-(J3-Pin_2)",
+    "BAT_NEG",
     "Net-(U7-COUT)",
     "Net-(U7-DOUT)",
     "Net-(U7-VDD)",

@@ -839,14 +839,16 @@ def hidden_global_label(
   ref: str,
   pin_number: str,
   point: tuple[float, float],
+  *,
+  uuid_seed: str = "hidden-power-label",
 ) -> str:
-  """Name a power stub while leaving the conventional power symbol visible."""
+  """Name a connected tree without adding visible schematic annotation."""
   return (
     f"\t(global_label \"{esc(net_name)}\"\n"
     "\t\t(shape bidirectional)\n"
     f"\t\t(at {fmt(point[0])} {fmt(point[1])} 0)\n"
     "\t\t(effects (font (size 0.01 0.01)) (hide yes))\n"
-    f"\t\t(uuid \"{uid('hidden-power-label', sheet_key, net_name, ref, pin_number)}\")\n"
+    f"\t\t(uuid \"{uid(uuid_seed, sheet_key, net_name, ref, pin_number)}\")\n"
     "\t)"
   )
 
@@ -927,10 +929,15 @@ def text_note(
   )
 
 
-def build_parts() -> tuple[list[dict], dict[str, set[str]]]:
+def build_parts() -> tuple[list[dict], dict[str, set[str]], set[str]]:
   design = circuit.nfc.circuit
   design.merge_net_names()
   design.merge_nets()
+  explicit_net_names = {
+    str(net.name)
+    for net in design.nets
+    if net.name != "__NOCONNECT" and not net.is_implicit()
+  }
   parts: list[dict] = []
   net_sheets: dict[str, set[str]] = {}
   for skidl_part in design.parts:
@@ -977,7 +984,7 @@ def build_parts() -> tuple[list[dict], dict[str, set[str]]]:
       "y": placement.y + offset_y,
       "rotation": placement.rotation,
     })
-  return parts, net_sheets
+  return parts, net_sheets, explicit_net_names
 
 
 def part_instance(part: dict, sheet: SheetSpec) -> str:
@@ -1067,6 +1074,7 @@ def render_group(
   sheet: SheetSpec,
   all_parts: list[dict],
   net_sheets: dict[str, set[str]],
+  explicit_net_names: set[str],
 ) -> list[str]:
   parts = [part for part in all_parts if part["sheet"] == sheet.key]
   lines: list[str] = []
@@ -1185,6 +1193,10 @@ def render_group(
       [entry[2] for entry in entries],
       (label_point,) if label_point else (),
     ))
+    # A wire preserves connectivity, but KiCad invents a Net-(ref-pin) name
+    # unless the connected tree also contains a label or power symbol. Visible
+    # labels communicate distant or symbolic connections; a hidden label keeps
+    # canonical names on compact local circuits without cluttering the drawing.
     if is_cross_sheet or len(entries) == 1:
       preferred = LABEL_PIN.get((sheet.key, net_name))
       if preferred:
@@ -1198,6 +1210,16 @@ def render_group(
       if label_point:
         point = label_point
       lines.extend(global_label(sheet.key, net_name, part, point, pin))
+    elif net_name in explicit_net_names:
+      part, pin, point = entries[0]
+      lines.append(hidden_global_label(
+        sheet.key,
+        net_name,
+        part["ref"],
+        pin["number"],
+        point,
+        uuid_seed="hidden-local-label",
+      ))
 
   return lines
 
@@ -1205,6 +1227,7 @@ def render_group(
 def render_single_page(
   all_parts: list[dict],
   net_sheets: dict[str, set[str]],
+  explicit_net_names: set[str],
 ) -> str:
   used_power_nets = sorted({
     pin["net"]
@@ -1240,7 +1263,12 @@ def render_single_page(
   lines.append("\t)")
 
   for sheet in SHEETS:
-    lines.extend(render_group(sheet, all_parts, net_sheets))
+    lines.extend(render_group(
+      sheet,
+      all_parts,
+      net_sheets,
+      explicit_net_names,
+    ))
 
   lines.extend([
     "\t(sheet_instances (path \"/\" (page \"1\")))",
@@ -1285,14 +1313,18 @@ def validate_configuration(parts: list[dict]) -> None:
 
 
 def main() -> None:
-  parts, net_sheets = build_parts()
+  parts, net_sheets, explicit_net_names = build_parts()
   validate_configuration(parts)
   output = HERE / "the-card.kicad_sch"
-  output.write_text(render_single_page(parts, net_sheets))
+  output.write_text(render_single_page(
+    parts,
+    net_sheets,
+    explicit_net_names,
+  ))
   print(f"wrote {output.name}")
   print(
     f"parts={len(parts)} sheets=1 groups={len(SHEETS)} "
-    f"nets={len(net_sheets)}"
+    f"nets={len(net_sheets)} named_nets={len(explicit_net_names)}"
   )
 
 
