@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     container:
-      image: kicad/kicad:10.0.5@sha256:182c8005cb775a2c448a4c18681d489f1ff472a761885eba3e08b07e3c0564de
+      image: kicad/kicad:10.0.5-full@sha256:32495bae547afb6a0cfd3decc686a8c5acc0ef616d5c56c1b4861a770bfe9464
       options: --user 0
     defaults:
       run:
