@@ -1115,7 +1115,12 @@ def write_category_archives(
 
 def git_output(*arguments: str) -> str:
   result = subprocess.run(
-    ["git", *arguments],
+    [
+      "git",
+      "-c",
+      f"safe.directory={REPOSITORY}",
+      *arguments,
+    ],
     cwd=REPOSITORY,
     check=True,
     capture_output=True,
