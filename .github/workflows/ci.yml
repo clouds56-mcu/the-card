@@ -21,6 +21,7 @@ jobs:
     timeout-minutes: 15
     container:
       image: kicad/kicad:10.0.5@sha256:182c8005cb775a2c448a4c18681d489f1ff472a761885eba3e08b07e3c0564de
+      options: --user 0
     defaults:
       run:
         shell: bash
@@ -28,7 +29,7 @@ jobs:
 
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Show tool versions
         run: |
@@ -63,7 +64,7 @@ jobs:
 
       - name: Upload KiCad reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: kicad-reports
           path: hardware/ci-reports/*.json
