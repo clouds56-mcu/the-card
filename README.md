@@ -24,6 +24,7 @@
 | [docs/architecture.md](docs/architecture.md) | System block diagram, subsystem design, **GPIO pin map** |
 | [docs/bom.md](docs/bom.md) | Full BOM (with LCSC part #s / unit prices / links) + cost analysis |
 | [docs/power-budget.md](docs/power-budget.md) | State-based power model + battery-life scenarios |
+| [website/README.md](website/README.md) | Product site, hardware previews, and candidate release downloads |
 
 ## 💰 Key Takeaways
 

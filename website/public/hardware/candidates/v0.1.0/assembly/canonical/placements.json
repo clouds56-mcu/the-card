@@ -1,0 +1,623 @@
+[
+  {
+    "designator": "C1",
+    "footprint": "C_0402_1005Metric",
+    "rotation_deg": 90.0,
+    "side": "bottom",
+    "value": "100nF",
+    "x_mm": 58.0,
+    "y_mm": -28.2
+  },
+  {
+    "designator": "C2",
+    "footprint": "C_0603_1608Metric",
+    "rotation_deg": 90.0,
+    "side": "bottom",
+    "value": "10uF",
+    "x_mm": 60.5,
+    "y_mm": -28.2
+  },
+  {
+    "designator": "C3",
+    "footprint": "C_0603_1608Metric",
+    "rotation_deg": 90.0,
+    "side": "bottom",
+    "value": "1uF",
+    "x_mm": 60.0,
+    "y_mm": -31.2
+  },
+  {
+    "designator": "C4",
+    "footprint": "C_0402_1005Metric",
+    "rotation_deg": 90.0,
+    "side": "bottom",
+    "value": "100nF",
+    "x_mm": 34.0,
+    "y_mm": -28.5
+  },
+  {
+    "designator": "C5",
+    "footprint": "C_0603_1608Metric",
+    "rotation_deg": 90.0,
+    "side": "bottom",
+    "value": "10uF",
+    "x_mm": 36.5,
+    "y_mm": -96.5
+  },
+  {
+    "designator": "C6",
+    "footprint": "C_0603_1608Metric",
+    "rotation_deg": 0.0,
+    "side": "bottom",
+    "value": "10uF",
+    "x_mm": 31.5,
+    "y_mm": -93.5
+  },
+  {
+    "designator": "C7",
+    "footprint": "C_0402_1005Metric",
+    "rotation_deg": 90.0,
+    "side": "bottom",
+    "value": "100nF",
+    "x_mm": 64.5,
+    "y_mm": -94.5
+  },
+  {
+    "designator": "C8",
+    "footprint": "C_0603_1608Metric",
+    "rotation_deg": 0.0,
+    "side": "bottom",
+    "value": "1uF",
+    "x_mm": 31.0,
+    "y_mm": -82.0
+  },
+  {
+    "designator": "C9",
+    "footprint": "C_0603_1608Metric",
+    "rotation_deg": 0.0,
+    "side": "bottom",
+    "value": "1uF",
+    "x_mm": 31.0,
+    "y_mm": -84.5
+  },
+  {
+    "designator": "C10",
+    "footprint": "C_0402_1005Metric",
+    "rotation_deg": 0.0,
+    "side": "bottom",
+    "value": "100nF",
+    "x_mm": 31.0,
+    "y_mm": -78.5
+  },
+  {
+    "designator": "C11",
+    "footprint": "C_0402_1005Metric",
+    "rotation_deg": 0.0,
+    "side": "bottom",
+    "value": "100nF",
+    "x_mm": 31.2,
+    "y_mm": -51.5
+  },
+  {
+    "designator": "C12",
+    "footprint": "C_0402_1005Metric",
+    "rotation_deg": 0.0,
+    "side": "bottom",
+    "value": "100nF",
+    "x_mm": 31.0,
+    "y_mm": -61.5
+  },
+  {
+    "designator": "C13",
+    "footprint": "C_0603_1608Metric",
+    "rotation_deg": 0.0,
+    "side": "bottom",
+    "value": "10uF",
+    "x_mm": 31.0,
+    "y_mm": -64.5
+  },
+  {
+    "designator": "C14",
+    "footprint": "C_0402_1005Metric",
+    "rotation_deg": 0.0,
+    "side": "bottom",
+    "value": "100nF",
+    "x_mm": 31.0,
+    "y_mm": -71.0
+  },
+  {
+    "designator": "C20",
+    "footprint": "C_0805_2012Metric",
+    "rotation_deg": 0.0,
+    "side": "bottom",
+    "value": "4.7uF 25V",
+    "x_mm": 67.0,
+    "y_mm": -53.0
+  },
+  {
+    "designator": "C21",
+    "footprint": "C_0805_2012Metric",
+    "rotation_deg": 0.0,
+    "side": "bottom",
+    "value": "4.7uF 25V",
+    "x_mm": 70.5,
+    "y_mm": -73.2
+  },
+  {
+    "designator": "C22",
+    "footprint": "C_0805_2012Metric",
+    "rotation_deg": 0.0,
+    "side": "bottom",
+    "value": "1uF 50V",
+    "x_mm": 66.0,
+    "y_mm": -77.0
+  },
+  {
+    "designator": "C23",
+    "footprint": "C_0805_2012Metric",
+    "rotation_deg": 0.0,
+    "side": "bottom",
+    "value": "1uF 50V",
+    "x_mm": 70.0,
+    "y_mm": -77.0
+  },
+  {
+    "designator": "C24",
+    "footprint": "C_0805_2012Metric",
+    "rotation_deg": 0.0,
+    "side": "bottom",
+    "value": "1uF 50V",
+    "x_mm": 66.0,
+    "y_mm": -80.0
+  },
+  {
+    "designator": "C25",
+    "footprint": "C_0805_2012Metric",
+    "rotation_deg": 0.0,
+    "side": "bottom",
+    "value": "1uF 50V",
+    "x_mm": 70.0,
+    "y_mm": -80.0
+  },
+  {
+    "designator": "C26",
+    "footprint": "C_0805_2012Metric",
+    "rotation_deg": 0.0,
+    "side": "bottom",
+    "value": "1uF 50V",
+    "x_mm": 66.0,
+    "y_mm": -83.0
+  },
+  {
+    "designator": "C27",
+    "footprint": "C_0805_2012Metric",
+    "rotation_deg": 0.0,
+    "side": "bottom",
+    "value": "1uF 50V",
+    "x_mm": 70.0,
+    "y_mm": -83.0
+  },
+  {
+    "designator": "C28",
+    "footprint": "C_0805_2012Metric",
+    "rotation_deg": 0.0,
+    "side": "bottom",
+    "value": "1uF 50V",
+    "x_mm": 66.0,
+    "y_mm": -86.0
+  },
+  {
+    "designator": "D2",
+    "footprint": "D_SOD-123",
+    "rotation_deg": 90.0,
+    "side": "bottom",
+    "value": "LMBR0530T1G",
+    "x_mm": 66.5,
+    "y_mm": -73.2
+  },
+  {
+    "designator": "D3",
+    "footprint": "D_SOD-123",
+    "rotation_deg": 90.0,
+    "side": "bottom",
+    "value": "LMBR0530T1G",
+    "x_mm": 70.5,
+    "y_mm": -68.0
+  },
+  {
+    "designator": "D4",
+    "footprint": "D_SOD-123",
+    "rotation_deg": 90.0,
+    "side": "bottom",
+    "value": "LMBR0530T1G",
+    "x_mm": 66.5,
+    "y_mm": -68.0
+  },
+  {
+    "designator": "J1",
+    "footprint": "USB-C_SMD-TYPE-C-31-M-12_1",
+    "rotation_deg": 0.0,
+    "side": "bottom",
+    "value": "TYPE-C-31-M-12",
+    "x_mm": 26.0,
+    "y_mm": -100.5
+  },
+  {
+    "designator": "J2",
+    "footprint": "Hirose_FH12-24S-0.5SH_1x24-2MP_P0.50mm_Horizontal",
+    "rotation_deg": 0.0,
+    "side": "bottom",
+    "value": "FH12-24S-0.5SH(55)",
+    "x_mm": 47.0,
+    "y_mm": -100.4
+  },
+  {
+    "designator": "J3",
+    "footprint": "JST_PH_S2B-PH-SM4-TB_1x02-1MP_P2.00mm_Horizontal",
+    "rotation_deg": 90.0,
+    "side": "bottom",
+    "value": "S2B-PH-SM4-TB(LF)(SN)",
+    "x_mm": 68.75,
+    "y_mm": -44.0
+  },
+  {
+    "designator": "L1",
+    "footprint": "IND-SMD_L5.0-W5.0_XRNR5020",
+    "rotation_deg": 0.0,
+    "side": "bottom",
+    "value": "XRNR5020-47uH/M 47uH",
+    "x_mm": 68.0,
+    "y_mm": -58.0
+  },
+  {
+    "designator": "Q1",
+    "footprint": "SOT-23-3_L3.0-W1.7-P0.95-LS2.9-BR",
+    "rotation_deg": 90.0,
+    "side": "bottom",
+    "value": "SI2301CDS-T1-GE3",
+    "x_mm": 29.0,
+    "y_mm": -87.0
+  },
+  {
+    "designator": "Q2",
+    "footprint": "SOT-23-3_L3.0-W1.7-P0.95-LS2.9-BR",
+    "rotation_deg": 90.0,
+    "side": "bottom",
+    "value": "SI2301CDS-T1-GE3",
+    "x_mm": 67.0,
+    "y_mm": -50.5
+  },
+  {
+    "designator": "Q3",
+    "footprint": "SOT-323_SC-70",
+    "rotation_deg": 90.0,
+    "side": "bottom",
+    "value": "SI1308EDL-T1-GE3",
+    "x_mm": 67.0,
+    "y_mm": -63.0
+  },
+  {
+    "designator": "R1",
+    "footprint": "R_0402_1005Metric",
+    "rotation_deg": 90.0,
+    "side": "bottom",
+    "value": "10k",
+    "x_mm": 57.5,
+    "y_mm": -31.2
+  },
+  {
+    "designator": "R2",
+    "footprint": "R_0402_1005Metric",
+    "rotation_deg": 90.0,
+    "side": "bottom",
+    "value": "10k",
+    "x_mm": 34.0,
+    "y_mm": -44.0
+  },
+  {
+    "designator": "R3",
+    "footprint": "R_0402_1005Metric",
+    "rotation_deg": 90.0,
+    "side": "bottom",
+    "value": "1M",
+    "x_mm": 34.0,
+    "y_mm": -31.2
+  },
+  {
+    "designator": "R4",
+    "footprint": "R_0402_1005Metric",
+    "rotation_deg": 90.0,
+    "side": "bottom",
+    "value": "300k",
+    "x_mm": 34.0,
+    "y_mm": -33.7
+  },
+  {
+    "designator": "R5",
+    "footprint": "R_0402_1005Metric",
+    "rotation_deg": 90.0,
+    "side": "bottom",
+    "value": "5.1k",
+    "x_mm": 32.5,
+    "y_mm": -96.5
+  },
+  {
+    "designator": "R6",
+    "footprint": "R_0402_1005Metric",
+    "rotation_deg": 90.0,
+    "side": "bottom",
+    "value": "5.1k",
+    "x_mm": 34.5,
+    "y_mm": -96.5
+  },
+  {
+    "designator": "R7",
+    "footprint": "R_0402_1005Metric",
+    "rotation_deg": 0.0,
+    "side": "bottom",
+    "value": "2.2k",
+    "x_mm": 31.5,
+    "y_mm": -89.5
+  },
+  {
+    "designator": "R8",
+    "footprint": "R_0402_1005Metric",
+    "rotation_deg": 0.0,
+    "side": "bottom",
+    "value": "10k",
+    "x_mm": 31.5,
+    "y_mm": -91.5
+  },
+  {
+    "designator": "R9",
+    "footprint": "R_0402_1005Metric",
+    "rotation_deg": 90.0,
+    "side": "bottom",
+    "value": "100",
+    "x_mm": 64.5,
+    "y_mm": -92.0
+  },
+  {
+    "designator": "R10",
+    "footprint": "R_0402_1005Metric",
+    "rotation_deg": 90.0,
+    "side": "bottom",
+    "value": "1k",
+    "x_mm": 71.0,
+    "y_mm": -92.0
+  },
+  {
+    "designator": "R11",
+    "footprint": "R_0402_1005Metric",
+    "rotation_deg": 0.0,
+    "side": "bottom",
+    "value": "10k",
+    "x_mm": 32.0,
+    "y_mm": -88.5
+  },
+  {
+    "designator": "R12",
+    "footprint": "R_0402_1005Metric",
+    "rotation_deg": 90.0,
+    "side": "bottom",
+    "value": "10k",
+    "x_mm": 70.5,
+    "y_mm": -50.5
+  },
+  {
+    "designator": "R13",
+    "footprint": "R_0402_1005Metric",
+    "rotation_deg": 0.0,
+    "side": "bottom",
+    "value": "4.7k",
+    "x_mm": 31.0,
+    "y_mm": -54.5
+  },
+  {
+    "designator": "R14",
+    "footprint": "R_0402_1005Metric",
+    "rotation_deg": 0.0,
+    "side": "bottom",
+    "value": "4.7k",
+    "x_mm": 31.0,
+    "y_mm": -56.5
+  },
+  {
+    "designator": "R15",
+    "footprint": "R_0402_1005Metric",
+    "rotation_deg": 90.0,
+    "side": "bottom",
+    "value": "1M",
+    "x_mm": 70.5,
+    "y_mm": -62.0
+  },
+  {
+    "designator": "R16",
+    "footprint": "R_1206_3216Metric",
+    "rotation_deg": 0.0,
+    "side": "bottom",
+    "value": "2.2",
+    "x_mm": 70.5,
+    "y_mm": -64.4
+  },
+  {
+    "designator": "U1",
+    "footprint": "WIRELM-SMD_ESP32-S3-WROOM-1",
+    "rotation_deg": 180.0,
+    "side": "bottom",
+    "value": "ESP32-S3-WROOM-1-N16R8",
+    "x_mm": 47.0,
+    "y_mm": -36.9
+  },
+  {
+    "designator": "U2",
+    "footprint": "SO-8_L4.9-W3.9-P1.27-LS6.0-BL",
+    "rotation_deg": 90.0,
+    "side": "bottom",
+    "value": "ST25DV04KC-IE8S3",
+    "x_mm": 26.0,
+    "y_mm": -54.0
+  },
+  {
+    "designator": "U3",
+    "footprint": "LGA-14_L3.0-W2.5-P0.50-TL",
+    "rotation_deg": 90.0,
+    "side": "bottom",
+    "value": "LSM6DSOTR",
+    "x_mm": 26.0,
+    "y_mm": -63.0
+  },
+  {
+    "designator": "U4",
+    "footprint": "DFN-4_L1.5-W1.5-P0.80-TL-EP",
+    "rotation_deg": 90.0,
+    "side": "bottom",
+    "value": "SHT40-BD1B-R2",
+    "x_mm": 26.0,
+    "y_mm": -71.0
+  },
+  {
+    "designator": "U5",
+    "footprint": "TDFN-8_L2.0-W2.0-P0.50-BL-EP1.2",
+    "rotation_deg": 90.0,
+    "side": "bottom",
+    "value": "MAX17048G+T10",
+    "x_mm": 26.0,
+    "y_mm": -78.5
+  },
+  {
+    "designator": "U6",
+    "footprint": "ESOP-8_L4.9-W3.9-P1.27-LS6.0-BL-EP",
+    "rotation_deg": 90.0,
+    "side": "bottom",
+    "value": "TP4056_C382139",
+    "x_mm": 26.0,
+    "y_mm": -91.5
+  },
+  {
+    "designator": "U7",
+    "footprint": "SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BR",
+    "rotation_deg": 90.0,
+    "side": "bottom",
+    "value": "DW01A_C18164398",
+    "x_mm": 68.0,
+    "y_mm": -93.5
+  },
+  {
+    "designator": "U8",
+    "footprint": "TSSOP-8_L4.4-W3.0-P0.65-LS6.4-BL-2",
+    "rotation_deg": 90.0,
+    "side": "bottom",
+    "value": "8205A",
+    "x_mm": 68.0,
+    "y_mm": -99.0
+  },
+  {
+    "designator": "U9",
+    "footprint": "SOT-23-5_L3.0-W1.7-P0.95-LS2.8-BL",
+    "rotation_deg": 90.0,
+    "side": "bottom",
+    "value": "ME6211C33M5G-N",
+    "x_mm": 26.0,
+    "y_mm": -83.5
+  },
+  {
+    "designator": "U10",
+    "footprint": "SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BL",
+    "rotation_deg": 90.0,
+    "side": "bottom",
+    "value": "USBLC6-2SC6",
+    "x_mm": 34.5,
+    "y_mm": -101.0
+  },
+  {
+    "designator": "C15",
+    "footprint": "C_0402_1005Metric",
+    "rotation_deg": 90.0,
+    "side": "top",
+    "value": "100nF",
+    "x_mm": 28.0,
+    "y_mm": -84.0
+  },
+  {
+    "designator": "C16",
+    "footprint": "C_0402_1005Metric",
+    "rotation_deg": 90.0,
+    "side": "top",
+    "value": "100nF",
+    "x_mm": 66.2,
+    "y_mm": -58.5
+  },
+  {
+    "designator": "C17",
+    "footprint": "C_0402_1005Metric",
+    "rotation_deg": 90.0,
+    "side": "top",
+    "value": "100nF",
+    "x_mm": 66.2,
+    "y_mm": -69.5
+  },
+  {
+    "designator": "C18",
+    "footprint": "C_0402_1005Metric",
+    "rotation_deg": 90.0,
+    "side": "top",
+    "value": "100nF",
+    "x_mm": 66.2,
+    "y_mm": -80.5
+  },
+  {
+    "designator": "C19",
+    "footprint": "C_0402_1005Metric",
+    "rotation_deg": 90.0,
+    "side": "top",
+    "value": "100nF",
+    "x_mm": 66.2,
+    "y_mm": -91.5
+  },
+  {
+    "designator": "D1",
+    "footprint": "LED-SMD_4P-L3.5-W3.5-TL_WS2812B",
+    "rotation_deg": 0.0,
+    "side": "top",
+    "value": "WS2812B-MINI",
+    "x_mm": 24.7,
+    "y_mm": -84.0
+  },
+  {
+    "designator": "SW1",
+    "footprint": "SW-SMD_4P-L5.1-W5.1-P3.70-LS6.5-TL_H1.5",
+    "rotation_deg": 0.0,
+    "side": "top",
+    "value": "TS-1187A-B-A-B",
+    "x_mm": 69.5,
+    "y_mm": -58.5
+  },
+  {
+    "designator": "SW2",
+    "footprint": "SW-SMD_4P-L5.1-W5.1-P3.70-LS6.5-TL_H1.5",
+    "rotation_deg": 0.0,
+    "side": "top",
+    "value": "TS-1187A-B-A-B",
+    "x_mm": 69.5,
+    "y_mm": -69.5
+  },
+  {
+    "designator": "SW3",
+    "footprint": "SW-SMD_4P-L5.1-W5.1-P3.70-LS6.5-TL_H1.5",
+    "rotation_deg": 0.0,
+    "side": "top",
+    "value": "TS-1187A-B-A-B",
+    "x_mm": 69.5,
+    "y_mm": -80.5
+  },
+  {
+    "designator": "SW4",
+    "footprint": "SW-SMD_4P-L5.1-W5.1-P3.70-LS6.5-TL_H1.5",
+    "rotation_deg": 0.0,
+    "side": "top",
+    "value": "TS-1187A-B-A-B",
+    "x_mm": 69.5,
+    "y_mm": -91.5
+  }
+]

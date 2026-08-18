@@ -1,0 +1,2 @@
+# Candidate artifacts are checksum-addressed release bytes, not source text.
+public/hardware/candidates/** -text -diff

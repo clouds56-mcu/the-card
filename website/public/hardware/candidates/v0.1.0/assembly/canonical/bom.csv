@@ -1,0 +1,34 @@
+designators,quantity,value,footprint,lcsc_part_number,sourcing_status,source_hint,related_to,functions,notes
+"C1,C4,C7,C10,C11,C12,C14,C15,C16,C17,C18,C19",12,100nF,Capacitor_SMD:C_0402_1005Metric,C1525,assigned,JLCPCB Basic,C1: U1 3V3; C4: U1 IO1 / battery ADC; C7: U7 VDD / BAT_NEG; C10: U5 CELL/VDD; C11: U2 VCC; C12: U3 VDD/VDDIO; C14: U4 VDD; C15: D1 VDD / AUX_3V3; C16: SW1 / U1 IO4; C17: SW2 / U1 IO5; C18: SW3 / U1 IO6; C19: SW4 / U1 IO7,C1: MCU high-frequency supply decoupling; C4: Battery measurement low-pass filter; C7: Battery-protection supply decoupling; C10: Fuel-gauge supply decoupling; C11: NFC supply decoupling; C12: IMU high-frequency supply decoupling; C14: Humidity-sensor supply decoupling; C15: Addressable-LED supply decoupling; C16: UP-button hardware debounce; C17: DOWN-button hardware debounce; C18: SELECT-button hardware debounce; C19: MENU-button hardware debounce,
+"C2,C5,C6,C13",4,10uF,Capacitor_SMD:C_0603_1608Metric,C19702,assigned,JLCPCB Basic,C2: U1 3V3 / +3V3; C5: J1 / U10 / U6 VBUS; C6: U6 BAT / +BAT; C13: U3 VDD/VDDIO / +3V3,C2: MCU local bulk capacitance; C5: USB input bulk capacitance; C6: Charger output and battery-rail bulk capacitance; C13: IMU local bulk capacitance,
+"C3,C8,C9",3,1uF,Capacitor_SMD:C_0603_1608Metric,C15849,assigned,JLCPCB Basic,C3: U1 EN; C8: U9 VIN; C9: U9 VOUT,C3: MCU reset and startup timing; C8: LDO input bypass and stability capacitance; C9: LDO output stability capacitance,
+"C20,C21",2,4.7uF 25V,Capacitor_SMD:C_0805_2012Metric,C1779,assigned,JLCPCB Basic,C20: J2 VCI / e-paper boost; C21: J2 / Q3 / EPD_PUMP,C20: E-paper switched-input bulk capacitance; C21: E-paper boost charge-pump capacitor,
+"C22,C23,C24,C25,C26,C27,C28",7,1uF 50V,Capacitor_SMD:C_0805_2012Metric,C28323,assigned,JLCPCB Basic,C22: J2 VDD; C23: J2 VSH2; C24: J2 VSH1; C25: J2 VGH; C26: J2 VSL; C27: J2 VGL; C28: J2 VCOM,C22: E-paper internal core-regulator bypass; C23: E-paper positive source-rail reservoir; C24: E-paper positive source-rail reservoir; C25: E-paper positive gate-rail reservoir; C26: E-paper negative source-rail reservoir; C27: E-paper negative gate-rail reservoir; C28: E-paper common-electrode rail reservoir,
+D1,1,WS2812B-MINI,the-card:LED-SMD_4P-L3.5-W3.5-TL_WS2812B,C527089,assigned,JLCPCB Extended,,,
+"D2,D3,D4",3,LMBR0530T1G,Diode_SMD:D_SOD-123,C18863,assigned,JLCPCB Extended,,,
+J1,1,TYPE-C-31-M-12,the-card:USB-C_SMD-TYPE-C-31-M-12_1,C165948,assigned,JLCPCB Extended,,,
+J2,1,FH12-24S-0.5SH(55),the-card:Hirose_FH12-24S-0.5SH_1x24-2MP_P0.50mm_Horizontal,,distributor,distributor,,,"bottom-contact ZIF, 0.5 mm pitch, for 0.30 mm FPC"
+J3,1,S2B-PH-SM4-TB(LF)(SN),Connector_JST:JST_PH_S2B-PH-SM4-TB_1x02-1MP_P2.00mm_Horizontal,C295747,assigned,JLCPCB Extended,,,Right-angle SMT JST-PH. Battery cable polarity is not standardized; inspect the actual pack.
+L1,1,XRNR5020-47uH/M 47uH,the-card:IND-SMD_L5.0-W5.0_XRNR5020,C5339697,assigned,JLCPCB Extended,,,
+"Q1,Q2",2,SI2301CDS-T1-GE3,the-card:SOT-23-3_L3.0-W1.7-P0.95-LS2.9-BR,C10487,assigned,JLCPCB Basic,,,
+Q3,1,SI1308EDL-T1-GE3,Package_TO_SOT_SMD:SOT-323_SC-70,C469327,assigned,JLCPCB Extended,,,
+"R1,R2,R8,R11,R12",5,10k,Resistor_SMD:R_0402_1005Metric,C25744,assigned,JLCPCB Basic,R1: U1 EN; R2: U1 IO0; R8: U6 CHRG / U1 IO15; R11: Q1 / U1 IO47; R12: Q2 / U1 IO16,R1: MCU enable pull-up to +3V3; R2: MCU boot-strap pull-up to +3V3; R8: Open-drain charge-status pull-up; R11: AUX rail P-MOSFET gate pull-up (default off); R12: E-paper P-MOSFET gate pull-up (default off),
+"R3,R15",2,1M,Resistor_SMD:R_0402_1005Metric,C26083,assigned,JLCPCB Basic,R3: U1 IO1 / +BAT; R15: J2 GDR / Q3,"R3: Battery ADC divider, upper leg; R15: E-paper boost MOSFET gate pull-down",
+R4,1,300k,Resistor_SMD:R_0402_1005Metric,C4137657,assigned,JLCPCB Extended,R4: U1 IO1 / GND,"R4: Battery ADC divider, lower leg",Active Yageo replacement for the out-of-stock LCSC retail part.
+"R5,R6",2,5.1k,Resistor_SMD:R_0402_1005Metric,C25905,assigned,JLCPCB Basic,R5: J1 CC1; R6: J1 CC2,R5: USB-C sink configuration pull-down; R6: USB-C sink configuration pull-down,
+R7,1,2.2k,Resistor_SMD:R_0402_1005Metric,C25879,assigned,JLCPCB Basic,R7: U6 PROG,R7: TP4056 charge-current programming (~500mA),
+R9,1,100,Resistor_SMD:R_0402_1005Metric,C25076,assigned,JLCPCB Basic,R9: U7 VDD / +BAT,R9: Battery-protection supply feed resistor,
+R10,1,1k,Resistor_SMD:R_0402_1005Metric,C11702,assigned,JLCPCB Basic,R10: U7 VM / GND,R10: Battery-protection pack-negative sense resistor,
+"R13,R14",2,4.7k,Resistor_SMD:R_0402_1005Metric,C25900,assigned,JLCPCB Basic,R13: I2C_SCL / U1-U5; R14: I2C_SDA / U1-U5,R13: Shared I2C clock pull-up; R14: Shared I2C data pull-up,
+R16,1,2.2,Resistor_SMD:R_1206_3216Metric,C1854860,assigned,JLCPCB Extended,R16: J2 RESE / Q3,R16: E-paper boost current-sense resistor,1206 size provides pulse and power margin in the e-paper boost stage.
+"SW1,SW2,SW3,SW4",4,TS-1187A-B-A-B,the-card:SW-SMD_4P-L5.1-W5.1-P3.70-LS6.5-TL_H1.5,C318884,assigned,JLCPCB Basic,,,
+U1,1,ESP32-S3-WROOM-1-N16R8,the-card:WIRELM-SMD_ESP32-S3-WROOM-1,C2913202,assigned,JLCPCB Extended,,,
+U2,1,ST25DV04KC-IE8S3,the-card:SO-8_L4.9-W3.9-P1.27-LS6.0-BL,C5221752,assigned,JLCPCB Extended,,,
+U3,1,LSM6DSOTR,the-card:LGA-14_L3.0-W2.5-P0.50-TL,C2655100,assigned,JLCPCB Extended,,,
+U4,1,SHT40-BD1B-R2,the-card:DFN-4_L1.5-W1.5-P0.80-TL-EP,C7461849,assigned,JLCPCB Extended,,,
+U5,1,MAX17048G+T10,the-card:TDFN-8_L2.0-W2.0-P0.50-BL-EP1.2,C2682616,assigned,JLCPCB Extended,,,
+U6,1,TP4056_C382139,the-card:ESOP-8_L4.9-W3.9-P1.27-LS6.0-BL-EP,C382139,assigned,JLCPCB Extended,,,
+U7,1,DW01A_C18164398,the-card:SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BR,C18164398,assigned,JLCPCB Extended,,,
+U8,1,8205A,the-card:TSSOP-8_L4.4-W3.0-P0.65-LS6.4-BL-2,C5148694,assigned,JLCPCB Extended,,,Pin-compatible with the FS8205A symbol and existing TSSOP-8 footprint.
+U9,1,ME6211C33M5G-N,the-card:SOT-23-5_L3.0-W1.7-P0.95-LS2.8-BL,C82942,assigned,JLCPCB Extended,,,
+U10,1,USBLC6-2SC6,the-card:SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BL,C7519,assigned,JLCPCB Extended,,,
