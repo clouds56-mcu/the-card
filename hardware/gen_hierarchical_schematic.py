@@ -22,6 +22,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import circuit
+from design_metadata import HARDWARE_REVISION, PROJECT_NAME
 
 
 HERE = Path(__file__).resolve().parent
@@ -32,7 +33,6 @@ POWER_LIB = Path(
 STANDARD_SYMBOL_DIR = Path(
   "/Applications/KiCad/KiCad.app/Contents/SharedSupport/symbols"
 )
-PROJECT = "the-card"
 TITLE = "the-card - ESP32-S3 e-paper smart badge"
 DATE = "2026-08-09"
 GRID = 1.27
@@ -893,7 +893,7 @@ def power_symbol(
     f"\t\t(property \"Datasheet\" \"\" (at {fmt(point[0])} {fmt(point[1])} 0) "
     "(effects (font (size 1 1)) (hide yes)))\n"
     f"\t\t(pin \"1\" (uuid \"{uid('power-pin', sheet.key, ref, net_name, *point)}\"))\n"
-    f"\t\t(instances (project \"{PROJECT}\" (path \"{path}\" "
+    f"\t\t(instances (project \"{PROJECT_NAME}\" (path \"{path}\" "
     f"(reference \"{ref}\") (unit 1))))\n"
     "\t)"
   )
@@ -1060,7 +1060,7 @@ def part_instance(part: dict, sheet: SheetSpec) -> str:
       f"(uuid \"{uid('part-pin', part['ref'], pin['number'])}\"))"
     )
   lines.extend([
-    f"\t\t(instances (project \"{PROJECT}\" (path \"{path}\"",
+    f"\t\t(instances (project \"{PROJECT_NAME}\" (path \"{path}\"",
     f"\t\t\t(reference \"{esc(part['ref'])}\") (unit 1))))",
     "\t)",
   ])
@@ -1245,7 +1245,8 @@ def render_single_page(
     "\t(title_block",
     f"\t\t(title \"{TITLE}\")",
     f"\t\t(date \"{DATE}\")",
-    "\t\t(company \"the-card\")",
+    f"\t\t(rev \"{HARDWARE_REVISION}\")",
+    f"\t\t(company \"{PROJECT_NAME}\")",
     "\t\t(comment 1 \"Single-page functional schematic\")",
     "\t\t(comment 2 \"Connectivity generated from circuit.py\")",
     "\t)",

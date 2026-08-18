@@ -7,6 +7,7 @@ installed; the schematic opens in eeschema and is ERC-clean (0 errors).
 ```
 hardware/
 ├── parts.yaml              # parts/procurement manifest, kept in sync with circuit.py
+├── design_metadata.py      # shared project name and physical hardware revision
 ├── pyproject.toml + uv.lock# uv project: skidl + easyeda2kicad (+ pypdf dev)
 ├── circuit.py              # the design in SKiDL (connectivity) -> the-card.net
 ├── gen_hierarchical_schematic.py # current deterministic A2 layout generator
@@ -23,6 +24,8 @@ hardware/
 ├── scripts/fetch_libs.sh   # regenerate libraries/ from LCSC#s in parts.yaml
 ├── scripts/normalize_libraries.py # reviewed corrections to fetched footprints
 ├── scripts/release_fabrication.py # checked Gerber/drill/BOM/placement release
+├── scripts/export_design_review.py # portable CI schematic/PCB review exports
+├── scripts/release_manifest.py # versioned release.json metadata + hashes
 ├── scripts/rasterize_svg.py # review PNGs from KiCad SVG plots
 └── libraries/              # Reviewed 2D libs tracked; generated 3D models ignored
 ```
@@ -69,26 +72,65 @@ routed and passes KiCad DRC with 0 violations and 0 unconnected items. Four
 non-fabrication reference images are embedded beside the board in PCB Editor,
 showing F.Cu, In1.Cu, In2.Cu, and B.Cu simultaneously without affecting plots.
 
+## CI design review
+
+For every CI run, `.github/workflows/ci.yml` publishes a short-lived
+`design-review-<commit>` artifact after ERC and DRC pass. It contains the
+schematic as PDF/SVG/PNG, a thumbnail, a multipage PCB PDF, and front, inner,
+and mirrored back PCB PNGs. These files make schematic and layout changes easy
+to inspect without KiCad; they are previews from one commit, not approved
+fabrication outputs. The separate `kicad-reports` artifact retains the ERC and
+DRC JSON reports, including reports from failed runs when available.
+
+Run the manual `Hardware output` workflow when a complete candidate handoff is
+needed. It rebuilds all release gates in the pinned KiCad environment and
+uploads the fabrication, preview, assembly, reports, manifest, and checksums as
+one 30-day Actions artifact. The workflow does not publish a GitHub Release or
+mark the physical approval gates complete.
+
 Build a manufacturing handoff into a new directory after generation:
 
 ```bash
 uv run python scripts/release_fabrication.py \
-  --revision rev-a \
-  --output ../outputs/the-card-rev-a
+  --release-version 0.1.0 \
+  --hardware-revision A \
+  --output ../outputs/the-card-hardware-v0.1.0
 ```
 
-The release command refuses to overwrite an existing directory. It runs the
-connectivity and canonical-net-name verifier, then requires a clean full DRC,
-schematic parity check, and ERC before it emits the fabrication ZIP, separate
-PTH/NPTH drills, internal assembly BOM, JLC upload BOM, position file,
-checksums, 3D renders, and per-layer SVG/PNG review plots. The internal assembly
-BOM reports unresolved sourcing explicitly; a clean board does not imply that
-every row is ready for a turnkey PCBA order.
+The physical `--hardware-revision` must match `HARDWARE_REVISION` in
+`design_metadata.py`, which is rendered into both KiCad title blocks and the PCB
+silkscreen. When manufactured bare boards must be distinguished, update that
+source value and regenerate the schematic and PCB before building the matching
+release. The semantic `--release-version` identifies an artifact handoff and
+can advance for corrected exports, sourcing data, documentation, or release
+tooling without renaming an unchanged PCB revision.
 
-`assembly/the-card-jlc-bom.csv` follows JLC's eight-column
+The release command refuses to overwrite an existing directory or use a dirty
+worktree. It runs the connectivity and canonical-net-name verifier, then
+requires a clean full DRC, schematic parity check, and ERC. The output tree is:
+
+```text
+fabrication/       # Gerbers, PTH/NPTH drills, notes, fabrication-only ZIP
+preview/           # schematic/PCB PDFs and PNGs, layer/drill plots, preview ZIP
+assembly/
+├── canonical/     # normalized BOM/placement CSV+JSON and assembly drawings
+└── jlcpcb/        # upload-ready BOM and position CSVs
+reports/           # ERC, DRC/parity, and drill reports
+release.json       # release identity, provenance, validation, pending approval
+SHA256SUMS         # hashes for every artifact and release.json
+```
+
+Pass `--include-3d` only when all ignored supplier 3D models referenced by the
+board are present and reviewed. Without it, the release remains complete for
+fabrication and assembly and uses 2D previews generated from tracked design
+files. The internal assembly BOM reports unresolved sourcing explicitly; a
+clean board does not imply that every row is ready for a turnkey PCBA order. See
+[`FABRICATION.md`](FABRICATION.md) before sending any files to a board house.
+
+`assembly/jlcpcb/bom.csv` follows JLC's eight-column
 `Comment, Description, Designator, Footprint, LibRef, Pins, Quantity, JLCPCB Part #`
 format. Exact LCSC/JLC codes are written to `JLCPCB Part #` when assigned.
-`assembly/the-card-jlc-positions.csv` is the matching millimetre CPL with
+`assembly/jlcpcb/positions.csv` is the matching millimetre CPL with
 `Designator, Mid X, Mid Y, Rotation, Layer` and normalized `Top`/`Bottom`
 layer names.
 

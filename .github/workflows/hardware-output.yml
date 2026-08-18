@@ -1,0 +1,68 @@
+name: Hardware output
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: Semantic artifact version, for example 0.1.0
+        required: true
+        type: string
+      hardware_revision:
+        description: Physical PCB revision marked on the board, for example A
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hardware-output-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build checked hardware output
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    container:
+      image: kicad/kicad:10.0.5@sha256:182c8005cb775a2c448a4c18681d489f1ff472a761885eba3e08b07e3c0564de
+      options: --user 0
+    env:
+      KICAD_CONFIG_HOME: /home/kicad/.config/kicad
+      KICAD_PYTHON: /usr/bin/python3
+      KICAD10_SYMBOL_DIR: /usr/share/kicad/symbols
+    defaults:
+      run:
+        shell: bash
+        working-directory: hardware
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
+        with:
+          version: 0.12.5
+          enable-cache: true
+
+      - name: Build fabrication, preview, and assembly output
+        env:
+          RELEASE_VERSION: ${{ inputs.release_version }}
+          HARDWARE_REVISION: ${{ inputs.hardware_revision }}
+        run: |
+          uv run --no-project \
+            --with pyyaml==6.0.3 \
+            --with skidl==2.3.0 \
+            python scripts/release_fabrication.py \
+              --release-version "$RELEASE_VERSION" \
+              --hardware-revision "$HARDWARE_REVISION" \
+              --output ../outputs/hardware-output
+
+      - name: Upload checked hardware output
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: hardware-output-${{ github.sha }}
+          path: outputs/hardware-output
+          if-no-files-found: error
+          retention-days: 30

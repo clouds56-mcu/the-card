@@ -64,6 +64,17 @@ jobs:
             --exit-code-violations \
             the-card.kicad_pcb
 
+      - name: Export design-review artifacts
+        run: python3 scripts/export_design_review.py
+
+      - name: Upload design-review artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: design-review-${{ github.sha }}
+          path: hardware/ci-design-review
+          if-no-files-found: error
+          retention-days: 7
+
       - name: Upload KiCad reports
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1

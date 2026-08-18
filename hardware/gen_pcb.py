@@ -24,6 +24,7 @@ import xml.etree.ElementTree as ET
 
 import pcbnew
 
+from design_metadata import HARDWARE_REVISION
 from pcb_router import route_board
 
 
@@ -642,7 +643,14 @@ def add_mechanics(board: pcbnew.BOARD) -> None:
     0.90,
   )
   add_text(board, "THE CARD", 27.0, 84.0, pcbnew.F_SilkS, 1.0)
-  add_text(board, "REV A - 4L / 0.8 mm", 27.0, 28.5, pcbnew.B_SilkS, 0.80)
+  add_text(
+    board,
+    f"REV {HARDWARE_REVISION} - 4L / 0.8 mm",
+    27.0,
+    28.5,
+    pcbnew.B_SilkS,
+    0.80,
+  )
   # These assembly-critical marks are intentionally explicit instead of relying
   # on connector conventions: battery leads are not polarity-standardized, and
   # the bottom-contact FPC connector otherwise has no visible pin-1 cue.
@@ -710,7 +718,7 @@ def generate() -> None:
   pcbnew.KIID.SeedGenerator(0x54484344)
   netlist = export_netlist()
   board = pcbnew.BOARD()
-  board.SetFileName(str(OUTPUT))
+  board.GetTitleBlock().SetRevision(HARDWARE_REVISION)
   netclasses = configure_board(board)
   nets, pad_nets = add_nets(board, netlist, netclasses)
   add_footprints(board, netlist, nets, pad_nets)
@@ -729,8 +737,20 @@ def generate() -> None:
   board.BuildConnectivity()
   pcbnew.ZONE_FILLER(board).Fill(board.Zones())
   sync_schematic_fields(board, netlist)
-  pcbnew.SaveBoard(str(OUTPUT), board)
-  add_layer_reference_views(OUTPUT)
+
+  # KiCad's bundled pcbnew currently rewrites the project and local settings
+  # files adjacent to SaveBoard's destination. Stage the generated board in an
+  # isolated same-filesystem directory so those side effects are discarded,
+  # then atomically replace only the intended PCB source.
+  with tempfile.TemporaryDirectory(
+    prefix=".the-card-pcb-",
+    dir=OUTPUT.parent,
+  ) as directory:
+    staged_output = Path(directory) / OUTPUT.name
+    board.SetFileName(str(staged_output))
+    pcbnew.SaveBoard(str(staged_output), board)
+    add_layer_reference_views(staged_output)
+    staged_output.replace(OUTPUT)
   print(f"wrote {OUTPUT.name}")
   print(
     f"footprints={len(list(board.GetFootprints()))} "

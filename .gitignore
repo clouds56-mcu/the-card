@@ -55,6 +55,7 @@ hardware/~*.lck
 /outputs/
 /tmp/
 /hardware/tmp/
+/hardware/ci-design-review/
 /.zcode/
 /*.erc
 

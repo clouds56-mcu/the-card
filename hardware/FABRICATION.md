@@ -52,25 +52,78 @@ though it is not the 480 Mb/s high-speed USB mode.
 ## Release gate
 
 Regenerate the schematic and PCB, then require all of the following from the
-same revision: connectivity verifier passes, KiCad ERC has zero violations,
-KiCad DRC has zero violations, zero unconnected items, and zero schematic parity
-issues, and the Gerber/drill preview matches the 53.98 x 85.60 mm outline.
+same committed design: connectivity verifier passes, KiCad ERC has zero
+violations, KiCad DRC has zero violations, zero unconnected items, and zero
+schematic parity issues, and the Gerber/drill preview matches the
+53.98 x 85.60 mm outline.
+
+The physical hardware revision and release version identify different things:
+
+- `--hardware-revision A` identifies the fabricated PCB design and must match
+  both the revision marked on the board and the PCB title-block revision carried
+  into the Gerber job. When the bare-board design requires a new identity, update
+  `HARDWARE_REVISION` in `design_metadata.py`, regenerate the schematic and PCB,
+  and then pass that same revision to the release command.
+- `--release-version 0.1.0` identifies one semantic-versioned artifact handoff.
+  It may advance when the same hardware revision receives corrected exports,
+  sourcing data, documentation, or release tooling.
+
+Do not use successive release versions as substitute PCB revisions, and do not
+advance the hardware revision merely because the handoff was regenerated.
 
 Build the handoff into a new directory from `hardware/`:
 
 ```bash
 uv run python scripts/release_fabrication.py \
-  --revision rev-a \
-  --output ../outputs/the-card-rev-a
+  --release-version 0.1.0 \
+  --hardware-revision A \
+  --output ../outputs/the-card-hardware-v0.1.0
 ```
 
-`the-card-rev-a-fabrication.zip` contains only the Gerbers and separate PTH/NPTH
-drill files intended for the board house. Assembly CSVs, DRC/ERC reports,
-checksums, manifests, 3D renders, and layer previews remain beside the ZIP for
-review. Do not upload the whole release directory as a fabrication archive.
+The command refuses to overwrite an existing output directory or release from a
+dirty worktree. By default it creates 2D review material from the tracked design
+without depending on the ignored supplier 3D-model directory. Add
+`--include-3d` only when every model referenced by the board is available and
+has been reviewed; this adds `preview/3d/` renders but does not change the
+fabrication files.
+
+The generated handoff is organized by audience:
+
+```text
+the-card-hardware-v0.1.0/
+├── fabrication/
+│   ├── gerbers/                       # production Gerbers
+│   ├── drill/                         # separate PTH/NPTH Excellon files
+│   ├── fabrication-notes.md           # stackup and ordering cautions
+│   └── the-card-hardware-v0.1.0-fabrication.zip
+├── preview/
+│   ├── schematic.pdf + schematic.svg + schematic.png
+│   ├── schematic-thumbnail.png
+│   ├── pcb.pdf + pcb-front.png + two inner PNGs + pcb-back.png
+│   ├── schematic/ + pcb/ + layers/ + drill/
+│   ├── 3d/                            # only with --include-3d
+│   └── the-card-hardware-v0.1.0-preview.zip
+├── assembly/
+│   ├── canonical/                     # normalized CSV/JSON + assembly drawings
+│   ├── jlcpcb/                        # upload-ready BOM and position CSVs
+│   └── the-card-hardware-v0.1.0-assembly.zip
+├── reports/                           # ERC, DRC/parity, and drill reports
+├── release.json                       # versioned manifest and provenance
+└── SHA256SUMS                         # hashes every published file above
+```
+
+`fabrication/the-card-hardware-v0.1.0-fabrication.zip` contains only the
+Gerbers and separate PTH/NPTH drill files intended for the board house. The
+assembly data, reports, checksums, manifest, and review material remain outside
+that ZIP. Do not upload the whole release directory, preview archive, or
+assembly archive as the PCB fabrication archive. `release.json` deliberately
+records the physical approval state as pending; passing automated gates does
+not complete the physical checks below.
 
 The release includes the detailed internal sourcing BOM plus the upload-ready
-`assembly/the-card-jlc-bom.csv` and `assembly/the-card-jlc-positions.csv` pair.
+`assembly/jlcpcb/bom.csv` and `assembly/jlcpcb/positions.csv` pair. The
+normalized, board-house-independent records and printable front/back assembly
+drawings are kept under `assembly/canonical/`.
 The JLC BOM follows the requested eight-column format and assigns exact
 LCSC/JLCPCB codes in `JLCPCB Part #` to every board-placed electrical component
 except J2, the intentionally distributor-sourced Hirose FPC connector. The JLC

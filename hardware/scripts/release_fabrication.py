@@ -10,9 +10,12 @@ from datetime import datetime, timezone
 import hashlib
 import importlib.metadata
 import json
+import mimetypes
+import os
 from pathlib import Path
 import platform
 import re
+import runpy
 import shutil
 import subprocess
 import sys
@@ -23,13 +26,35 @@ import zipfile
 
 import yaml
 
+if __package__:
+  from .export_design_review import check_rasterizer, export_pcb, export_schematic
+  from .release_manifest import (
+    ArtifactSpec,
+    HARDWARE_REVISION_PATTERN,
+    SEMANTIC_VERSION,
+  )
+  from .release_manifest import write_release_manifest
+else:
+  from export_design_review import check_rasterizer, export_pcb, export_schematic
+  from release_manifest import (
+    ArtifactSpec,
+    HARDWARE_REVISION_PATTERN,
+    SEMANTIC_VERSION,
+  )
+  from release_manifest import write_release_manifest
+
 
 HARDWARE = Path(__file__).resolve().parents[1]
 REPOSITORY = HARDWARE.parent
+CI_WORKFLOW = REPOSITORY / ".github" / "workflows" / "ci.yml"
+HARDWARE_OUTPUT_WORKFLOW = (
+  REPOSITORY / ".github" / "workflows" / "hardware-output.yml"
+)
 BOARD = HARDWARE / "the-card.kicad_pcb"
 PROJECT = HARDWARE / "the-card.kicad_pro"
 SCHEMATIC = HARDWARE / "the-card.kicad_sch"
 PARTS = HARDWARE / "parts.yaml"
+DESIGN_METADATA = HARDWARE / "design_metadata.py"
 CIRCUIT = HARDWARE / "circuit.py"
 SCHEMATIC_GENERATOR = HARDWARE / "gen_hierarchical_schematic.py"
 PCB_GENERATOR = HARDWARE / "gen_pcb.py"
@@ -43,22 +68,24 @@ SYMBOL_LIBRARIES = (
   LIBRARIES / "the-card.kicad_sym",
   LIBRARIES / "passives.kicad_sym",
 )
-KICAD_CLI = Path("/Applications/KiCad/KiCad.app/Contents/MacOS/kicad-cli")
-KICAD_PYTHON = Path(
-  "/Applications/KiCad/KiCad.app/Contents/Frameworks/"
-  "Python.framework/Versions/3.9/bin/python3"
-)
+FOOTPRINT_LIBRARIES = tuple(sorted(
+  (LIBRARIES / "the-card.pretty").glob("*.kicad_mod")
+))
 RASTERIZE_SVG = HARDWARE / "scripts" / "rasterize_svg.py"
 VERIFY_SCHEMATIC = HARDWARE / "verify_schematic.py"
 RELEASE_SCRIPT = Path(__file__).resolve()
 FETCH_LIBRARIES = HARDWARE / "scripts" / "fetch_libs.sh"
 NORMALIZE_LIBRARIES = HARDWARE / "scripts" / "normalize_libraries.py"
+DESIGN_REVIEW_EXPORTER = HARDWARE / "scripts" / "export_design_review.py"
+RELEASE_MANIFEST = HARDWARE / "scripts" / "release_manifest.py"
+FABRICATION_NOTES = HARDWARE / "FABRICATION.md"
 
 RELEASE_INPUT_FILES = (
   BOARD,
   PROJECT,
   SCHEMATIC,
   PARTS,
+  DESIGN_METADATA,
 )
 VERIFICATION_INPUT_FILES = (
   CIRCUIT,
@@ -67,7 +94,12 @@ VERIFICATION_INPUT_FILES = (
 )
 RELEASE_TOOL_FILES = (
   RELEASE_SCRIPT,
+  DESIGN_REVIEW_EXPORTER,
+  RELEASE_MANIFEST,
   RASTERIZE_SVG,
+  FABRICATION_NOTES,
+  CI_WORKFLOW,
+  HARDWARE_OUTPUT_WORKFLOW,
   PYPROJECT,
   UV_LOCK,
   FP_LIB_TABLE,
@@ -99,11 +131,13 @@ REVIEW_LAYERS = (
   ("02-in1-cu", "In1.Cu", False),
   ("03-in2-cu", "In2.Cu", False),
   ("04-b-cu-bottom-view", "B.Cu", True),
-  ("05-f-mask", "F.Mask", False),
-  ("06-b-mask-bottom-view", "B.Mask", True),
-  ("07-f-silkscreen", "F.Silkscreen", False),
-  ("08-b-silkscreen-bottom-view", "B.Silkscreen", True),
-  ("09-edge-cuts", "Edge.Cuts", False),
+  ("05-f-paste", "F.Paste", False),
+  ("06-b-paste-bottom-view", "B.Paste", True),
+  ("07-f-mask", "F.Mask", False),
+  ("08-b-mask-bottom-view", "B.Mask", True),
+  ("09-f-silkscreen", "F.Silkscreen", False),
+  ("10-b-silkscreen-bottom-view", "B.Silkscreen", True),
+  ("11-edge-cuts", "Edge.Cuts", False),
 )
 EXPECTED_RULES = {
   "min_through_hole_diameter": 0.25,
@@ -115,6 +149,48 @@ BOARD_SPEC = {
   "copper_layers": 4,
   "finished_thickness_mm": 0.80,
 }
+EXPECTED_KICAD_VERSION = "10.0.5"
+MANUAL_RELEASE_GATES = (
+  "Confirm display FPC pin 1, contact side, and fold direction with the physical panel.",
+  "Confirm battery connector polarity with a multimeter.",
+  "Confirm bare versus protected cell choice before populating the on-board protector.",
+  "Inspect U8 orientation and protection-path continuity before connecting a cell.",
+  "Import the assembly files and verify stock, package, side, rotation, pin 1, "
+  "and polarized-part orientation.",
+  "Tune and range-test the NFC antenna on the first physical prototype.",
+)
+
+
+def find_executable(
+  environment_name: str,
+  *candidates: str | Path,
+) -> Path:
+  configured = os.environ.get(environment_name)
+  if configured:
+    return Path(configured).expanduser().resolve()
+  for candidate in candidates:
+    path = Path(candidate).expanduser()
+    if path.is_absolute() and path.is_file():
+      return path.resolve()
+    discovered = shutil.which(str(candidate))
+    if discovered:
+      return Path(discovered).resolve()
+  return Path(candidates[0])
+
+
+KICAD_CLI = find_executable(
+  "KICAD_CLI",
+  "kicad-cli",
+  Path("/Applications/KiCad/KiCad.app/Contents/MacOS/kicad-cli"),
+)
+KICAD_PYTHON = find_executable(
+  "KICAD_PYTHON",
+  Path(
+    "/Applications/KiCad/KiCad.app/Contents/Frameworks/"
+    "Python.framework/Versions/3.9/bin/python3"
+  ),
+  "python3",
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -126,9 +202,19 @@ def parse_args() -> argparse.Namespace:
     help="New release directory; the command refuses to overwrite it.",
   )
   parser.add_argument(
-    "--revision",
-    default="rev-a",
-    help="Revision label recorded in the manifest and archive name.",
+    "--release-version",
+    required=True,
+    help="Semantic output version, for example 0.1.0.",
+  )
+  parser.add_argument(
+    "--hardware-revision",
+    required=True,
+    help="Physical PCB revision, for example A.",
+  )
+  parser.add_argument(
+    "--include-3d",
+    action="store_true",
+    help="Include optional 3D renders; requires every referenced model.",
   )
   return parser.parse_args()
 
@@ -160,13 +246,18 @@ def local_model_files() -> tuple[Path, ...]:
   return models
 
 
-def release_source_groups() -> dict[str, tuple[Path, ...]]:
+def release_source_groups(
+  include_3d: bool,
+) -> dict[str, tuple[Path, ...]]:
+  library_assets = (*SYMBOL_LIBRARIES, *FOOTPRINT_LIBRARIES)
+  if include_3d:
+    library_assets = (*library_assets, *local_model_files())
   return {
     "release_inputs": RELEASE_INPUT_FILES,
     "verification_inputs": VERIFICATION_INPUT_FILES,
     "release_tools": RELEASE_TOOL_FILES,
     "design_generators": DESIGN_GENERATOR_FILES,
-    "library_assets": local_model_files(),
+    "library_assets": library_assets,
   }
 
 
@@ -306,12 +397,38 @@ def load_sourcing() -> dict[str, dict[str, str]]:
   return sourcing
 
 
-def assert_inputs() -> None:
+def load_design_metadata() -> dict[str, str]:
+  namespace = runpy.run_path(str(DESIGN_METADATA))
+  metadata = {
+    "project_name": namespace.get("PROJECT_NAME"),
+    "hardware_revision": namespace.get("HARDWARE_REVISION"),
+  }
+  invalid = {
+    name: value
+    for name, value in metadata.items()
+    if not isinstance(value, str) or not value
+  }
+  if invalid:
+    raise ValueError(f"invalid design_metadata.py values: {invalid}")
+  return metadata
+
+
+def assert_hardware_revision(requested: str) -> None:
+  configured = load_design_metadata()["hardware_revision"]
+  if requested != configured:
+    raise ValueError(
+      "requested hardware revision does not match design_metadata.py: "
+      f"requested={requested!r}, configured={configured!r}"
+    )
+
+
+def assert_inputs(hardware_revision: str) -> None:
   required = (
     *RELEASE_INPUT_FILES,
     *VERIFICATION_INPUT_FILES,
     *RELEASE_TOOL_FILES,
     *DESIGN_GENERATOR_FILES,
+    *FOOTPRINT_LIBRARIES,
     LIBRARIES,
     KICAD_CLI,
     KICAD_PYTHON,
@@ -320,6 +437,7 @@ def assert_inputs() -> None:
   if missing:
     raise FileNotFoundError(f"release inputs missing: {', '.join(map(str, missing))}")
 
+  assert_hardware_revision(hardware_revision)
   project = json.loads(PROJECT.read_text())
   rules = project["board"]["design_settings"]["rules"]
   mismatches = {
@@ -375,20 +493,59 @@ def export_reports(root: Path) -> dict[str, Any]:
 
   drc_data = json.loads(drc.read_text())
   erc_data = json.loads(erc.read_text())
+  erc_violations = sum(
+    len(sheet.get("violations", []))
+    for sheet in erc_data.get("sheets", [])
+  )
   return {
     "drc_violations": len(drc_data.get("violations", [])),
     "unconnected_items": len(drc_data.get("unconnected_items", [])),
     "schematic_parity_violations": len(drc_data.get("schematic_parity", [])),
-    "erc_violations": len(erc_data.get("violations", [])),
+    "erc_violations": erc_violations,
   }
 
 
-def export_fabrication(root: Path) -> tuple[list[Path], dict[str, float | int]]:
+def validate_gerber_job(
+  gerber_job: dict[str, Any],
+  hardware_revision: str,
+) -> dict[str, float | int | str]:
+  plotted_revision = gerber_job["ProjectId"]["Revision"]
+  if plotted_revision != hardware_revision:
+    raise RuntimeError(
+      "requested hardware revision does not match the PCB title block: "
+      f"requested={hardware_revision!r}, plotted={plotted_revision!r}"
+    )
+
+  plotted_size = gerber_job["Size"]
+  if (
+    abs(plotted_size["X"] - BOARD_SPEC["width_mm"]) > 0.10
+    or abs(plotted_size["Y"] - BOARD_SPEC["height_mm"]) > 0.10
+    or gerber_job["LayerNumber"] != BOARD_SPEC["copper_layers"]
+    or gerber_job["BoardThickness"] != BOARD_SPEC["finished_thickness_mm"]
+  ):
+    raise RuntimeError(
+      "Gerber job does not match the expected board specification: "
+      f"{gerber_job}"
+    )
+  return {
+    "gerber_job_width_mm": plotted_size["X"],
+    "gerber_job_height_mm": plotted_size["Y"],
+    "gerber_job_copper_layers": gerber_job["LayerNumber"],
+    "gerber_job_thickness_mm": gerber_job["BoardThickness"],
+    "gerber_job_revision": plotted_revision,
+  }
+
+
+def export_fabrication(
+  root: Path,
+  hardware_revision: str,
+) -> tuple[list[Path], dict[str, float | int | str]]:
   fabrication = root / "fabrication"
   gerbers = fabrication / "gerbers"
   drill = fabrication / "drill"
   gerbers.mkdir(parents=True)
   drill.mkdir(parents=True)
+  shutil.copy2(FABRICATION_NOTES, fabrication / "fabrication-notes.md")
 
   # gen_pcb.py fills every copper zone before saving, and the full DRC gate
   # above validates the resulting geometry. KiCad 10.0.5 on macOS aborts in
@@ -431,10 +588,10 @@ def export_fabrication(root: Path) -> tuple[list[Path], dict[str, float | int]]:
     str(BOARD),
   ])
 
-  review_drill = root / "review" / "drill"
-  review_drill.mkdir(parents=True)
+  preview_drill = root / "preview" / "drill"
+  preview_drill.mkdir(parents=True)
   for map_path in drill.glob("*map*.gbr"):
-    shutil.move(str(map_path), review_drill / map_path.name)
+    shutil.move(str(map_path), preview_drill / map_path.name)
 
   gerber_files = sorted(path for path in gerbers.iterdir() if path.is_file())
   layer_gerbers = [path for path in gerber_files if path.suffix != ".gbrjob"]
@@ -449,20 +606,7 @@ def export_fabrication(root: Path) -> tuple[list[Path], dict[str, float | int]]:
     raise RuntimeError(f"expected separate PTH and NPTH drill files, found {len(drill_files)}")
 
   gerber_job = json.loads(gerber_jobs[0].read_text())["GeneralSpecs"]
-  plotted_size = gerber_job["Size"]
-  if (
-    abs(plotted_size["X"] - BOARD_SPEC["width_mm"]) > 0.10
-    or abs(plotted_size["Y"] - BOARD_SPEC["height_mm"]) > 0.10
-    or gerber_job["LayerNumber"] != BOARD_SPEC["copper_layers"]
-    or gerber_job["BoardThickness"] != BOARD_SPEC["finished_thickness_mm"]
-  ):
-    raise RuntimeError(f"Gerber job does not match the expected board specification: {gerber_job}")
-  plot_checks = {
-    "gerber_job_width_mm": plotted_size["X"],
-    "gerber_job_height_mm": plotted_size["Y"],
-    "gerber_job_copper_layers": gerber_job["LayerNumber"],
-    "gerber_job_thickness_mm": gerber_job["BoardThickness"],
-  }
+  plot_checks = validate_gerber_job(gerber_job, hardware_revision)
   return gerber_files + drill_files, plot_checks
 
 
@@ -503,9 +647,27 @@ def jlc_footprint(identifier: str) -> str:
   return identifier.split(":", 1)[-1]
 
 
+def write_json(path: Path, value: Any) -> None:
+  path.write_text(
+    json.dumps(value, indent=2, sort_keys=True) + "\n",
+    encoding="utf-8",
+  )
+
+
 def export_bom(root: Path) -> dict[str, int]:
   assembly = root / "assembly"
-  assembly.mkdir(parents=True)
+  canonical = assembly / "canonical"
+  jlcpcb = assembly / "jlcpcb"
+  canonical.mkdir(parents=True)
+  jlcpcb.mkdir()
+  (assembly / "README.md").write_text(
+    "# Assembly outputs\n\n"
+    "`canonical/` contains vendor-neutral BOM, placement, and drawing data.\n"
+    "`jlcpcb/` contains upload-ready BOM and position files derived from the "
+    "canonical data. J2 is intentionally distributor-sourced and has no LCSC "
+    "part number.\n",
+    encoding="utf-8",
+  )
   sourcing = load_sourcing()
   component_details = export_component_details()
 
@@ -568,21 +730,23 @@ def export_bom(root: Path) -> dict[str, int]:
     jlc_grouped[jlc_key].append(reference)
     component_counts[metadata["sourcing_status"]] += 1
 
-  bom_path = assembly / "the-card-assembly-bom.csv"
+  bom_path = canonical / "bom.csv"
+  bom_records: list[dict[str, str | int]] = []
+  bom_fields = (
+    "designators",
+    "quantity",
+    "value",
+    "footprint",
+    "lcsc_part_number",
+    "sourcing_status",
+    "source_hint",
+    "related_to",
+    "functions",
+    "notes",
+  )
   with bom_path.open("w", newline="") as output:
-    writer = csv.writer(output)
-    writer.writerow([
-      "designators",
-      "quantity",
-      "value",
-      "footprint",
-      "lcsc_part_number",
-      "sourcing_status",
-      "source_hint",
-      "related_to",
-      "functions",
-      "notes",
-    ])
+    writer = csv.DictWriter(output, fieldnames=bom_fields)
+    writer.writeheader()
     for key, references in sorted(
       grouped.items(),
       key=lambda item: natural_reference_key(item[1][0]),
@@ -599,20 +763,23 @@ def export_bom(root: Path) -> dict[str, int]:
         for reference in references
         if functions[reference]
       )
-      writer.writerow([
-        ",".join(references),
-        len(references),
-        value,
-        footprint,
-        lcsc,
-        status,
-        source_hint,
-        related_to,
-        component_functions,
-        notes,
-      ])
+      record: dict[str, str | int] = {
+        "designators": ",".join(references),
+        "quantity": len(references),
+        "value": value,
+        "footprint": footprint,
+        "lcsc_part_number": lcsc,
+        "sourcing_status": status,
+        "source_hint": source_hint,
+        "related_to": related_to,
+        "functions": component_functions,
+        "notes": notes,
+      }
+      writer.writerow(record)
+      bom_records.append(record)
+  write_json(canonical / "bom.json", bom_records)
 
-  jlc_bom_path = assembly / "the-card-jlc-bom.csv"
+  jlc_bom_path = jlcpcb / "bom.csv"
   with jlc_bom_path.open("w", newline="", encoding="utf-8") as output:
     writer = csv.writer(output)
     writer.writerow([
@@ -654,27 +821,29 @@ def export_bom(root: Path) -> dict[str, int]:
 
 def export_positions(root: Path) -> int:
   assembly = root / "assembly"
-  position_path = assembly / "the-card-positions.csv"
-  run([
-    str(KICAD_CLI),
-    "pcb",
-    "export",
-    "pos",
-    "--output",
-    str(position_path),
-    "--side",
-    "both",
-    "--format",
-    "csv",
-    "--units",
-    "mm",
-    "--exclude-dnp",
-    str(BOARD),
-  ])
-  with position_path.open(newline="") as source:
-    rows = list(csv.DictReader(source))
+  canonical = assembly / "canonical"
+  jlcpcb = assembly / "jlcpcb"
+  with tempfile.NamedTemporaryFile(suffix=".csv") as raw:
+    run([
+      str(KICAD_CLI),
+      "pcb",
+      "export",
+      "pos",
+      "--output",
+      raw.name,
+      "--side",
+      "both",
+      "--format",
+      "csv",
+      "--units",
+      "mm",
+      "--exclude-dnp",
+      str(BOARD),
+    ])
+    with Path(raw.name).open(newline="") as source:
+      rows = list(csv.DictReader(source))
 
-  with (assembly / "the-card-jlc-bom.csv").open(newline="") as source:
+  with (jlcpcb / "bom.csv").open(newline="") as source:
     bom_references = {
       reference
       for row in csv.DictReader(source)
@@ -690,7 +859,35 @@ def export_positions(root: Path) -> int:
       f"extra={sorted(position_references - bom_references)}"
     )
 
-  jlc_position_path = assembly / "the-card-jlc-positions.csv"
+  placements = [
+    {
+      "designator": row["Ref"],
+      "value": row["Val"],
+      "footprint": row["Package"],
+      "x_mm": float(row["PosX"]),
+      "y_mm": float(row["PosY"]),
+      "rotation_deg": float(row["Rot"]),
+      "side": row["Side"].lower(),
+    }
+    for row in rows
+  ]
+  placement_fields = (
+    "designator",
+    "value",
+    "footprint",
+    "x_mm",
+    "y_mm",
+    "rotation_deg",
+    "side",
+  )
+  placement_path = canonical / "placements.csv"
+  with placement_path.open("w", newline="", encoding="utf-8") as output:
+    writer = csv.DictWriter(output, fieldnames=placement_fields)
+    writer.writeheader()
+    writer.writerows(placements)
+  write_json(canonical / "placements.json", placements)
+
+  jlc_position_path = jlcpcb / "positions.csv"
   with jlc_position_path.open("w", newline="", encoding="utf-8") as output:
     writer = csv.writer(output)
     writer.writerow(["Designator", "Mid X", "Mid Y", "Rotation", "Layer"])
@@ -710,11 +907,9 @@ def export_positions(root: Path) -> int:
   return len(rows)
 
 
-def export_review(root: Path) -> None:
-  layers = root / "review" / "layers"
-  renders = root / "review" / "3d"
+def export_layer_previews(root: Path) -> None:
+  layers = root / "preview" / "layers"
   layers.mkdir(parents=True)
-  renders.mkdir(parents=True)
 
   for filename, layer, mirror in REVIEW_LAYERS:
     plotted_layers = layer if layer == "Edge.Cuts" else f"{layer},Edge.Cuts"
@@ -743,9 +938,79 @@ def export_review(root: Path) -> None:
       str(RASTERIZE_SVG),
       str(layers / f"{filename}.svg"),
       str(layers / f"{filename}.png"),
-      "1600",
+      "1800",
     ])
 
+
+def export_assembly_drawings(root: Path) -> None:
+  canonical = root / "assembly" / "canonical"
+  for side, layer, mirror in (
+    ("front", "F.Fab", False),
+    ("back", "B.Fab", True),
+  ):
+    pdf = canonical / f"assembly-{side}.pdf"
+    pdf_command = [
+      str(KICAD_CLI),
+      "pcb",
+      "export",
+      "pdf",
+      "--output",
+      str(pdf),
+      "--layers",
+      f"{layer},Edge.Cuts",
+      "--mode-single",
+      "--black-and-white",
+      "--exclude-value",
+      "--include-border-title",
+      "--sketch-pads-on-fab-layers",
+      "--hide-DNP-footprints-on-fab-layers",
+      "--drill-shape-opt",
+      "2",
+      "--scale",
+      "1",
+      "--no-property-popups",
+    ]
+    if mirror:
+      pdf_command.append("--mirror")
+    pdf_command.append(str(BOARD))
+    run(pdf_command)
+
+    svg = canonical / f"assembly-{side}.svg"
+    svg_command = [
+      str(KICAD_CLI),
+      "pcb",
+      "export",
+      "svg",
+      "--output",
+      str(svg),
+      "--layers",
+      f"{layer},Edge.Cuts",
+      "--mode-single",
+      "--page-size-mode",
+      "2",
+      "--exclude-drawing-sheet",
+      "--black-and-white",
+      "--sketch-pads-on-fab-layers",
+      "--hide-DNP-footprints-on-fab-layers",
+      "--drill-shape-opt",
+      "2",
+    ]
+    if mirror:
+      svg_command.append("--mirror")
+    svg_command.append(str(BOARD))
+    run(svg_command)
+    run([
+      str(KICAD_PYTHON),
+      str(RASTERIZE_SVG),
+      str(svg),
+      str(canonical / f"assembly-{side}.png"),
+      "1800",
+    ])
+
+
+def export_3d_renders(root: Path) -> None:
+  renders = root / "preview" / "3d"
+  renders.mkdir(parents=True)
   for side in ("top", "bottom"):
     run([
       str(KICAD_CLI),
@@ -769,17 +1034,83 @@ def export_review(root: Path) -> None:
     ])
 
 
-def write_fabrication_archive(root: Path, revision: str, files: Iterable[Path]) -> Path:
-  archive = root / f"the-card-{revision}-fabrication.zip"
-  with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as output:
+def export_preview(root: Path, include_3d: bool) -> None:
+  check_rasterizer(str(KICAD_PYTHON))
+  preview = root / "preview"
+  export_schematic(
+    str(KICAD_CLI),
+    str(KICAD_PYTHON),
+    preview,
+    3200,
+    900,
+  )
+  export_pcb(
+    str(KICAD_CLI),
+    str(KICAD_PYTHON),
+    preview,
+    1800,
+  )
+  export_layer_previews(root)
+  export_assembly_drawings(root)
+  if include_3d:
+    export_3d_renders(root)
+
+
+def write_deterministic_archive(
+  archive: Path,
+  files: Iterable[Path],
+  base: Path,
+) -> Path:
+  with zipfile.ZipFile(
+    archive,
+    "w",
+    compression=zipfile.ZIP_DEFLATED,
+    compresslevel=9,
+  ) as output:
     for path in sorted(files):
-      relative = path.relative_to(root / "fabrication")
-      info = zipfile.ZipInfo.from_file(path, arcname=str(relative))
+      relative = path.relative_to(base)
+      info = zipfile.ZipInfo.from_file(path, arcname=relative.as_posix())
       info.date_time = (1980, 1, 1, 0, 0, 0)
       info.external_attr = 0o100644 << 16
       with path.open("rb") as source:
-        output.writestr(info, source.read(), compress_type=zipfile.ZIP_DEFLATED, compresslevel=9)
+        output.writestr(
+          info,
+          source.read(),
+          compress_type=zipfile.ZIP_DEFLATED,
+          compresslevel=9,
+        )
   return archive
+
+
+def write_category_archives(
+  root: Path,
+  release_version: str,
+  fabrication_files: Iterable[Path],
+) -> tuple[Path, Path, Path]:
+  prefix = f"the-card-hardware-v{release_version}"
+  fabrication = root / "fabrication"
+  fabrication_archive = write_deterministic_archive(
+    fabrication / f"{prefix}-fabrication.zip",
+    fabrication_files,
+    fabrication,
+  )
+
+  assembly = root / "assembly"
+  assembly_files = sorted(path for path in assembly.rglob("*") if path.is_file())
+  assembly_archive = write_deterministic_archive(
+    assembly / f"{prefix}-assembly.zip",
+    assembly_files,
+    assembly,
+  )
+
+  preview = root / "preview"
+  preview_files = sorted(path for path in preview.rglob("*") if path.is_file())
+  preview_archive = write_deterministic_archive(
+    preview / f"{prefix}-preview.zip",
+    preview_files,
+    preview,
+  )
+  return fabrication_archive, assembly_archive, preview_archive
 
 
 def git_output(*arguments: str) -> str:
@@ -796,12 +1127,10 @@ def git_output(*arguments: str) -> str:
 def capture_git_state() -> dict[str, Any]:
   return {
     "commit": git_output("rev-parse", "HEAD"),
-    "dirty_hardware_worktree": bool(git_output(
+    "dirty_worktree": bool(git_output(
       "status",
       "--porcelain",
       "--untracked-files=normal",
-      "--",
-      "hardware",
     )),
   }
 
@@ -813,6 +1142,10 @@ def capture_toolchain() -> dict[str, Any]:
     capture_output=True,
     text=True,
   ).stdout.strip()
+  if kicad_version != EXPECTED_KICAD_VERSION:
+    raise RuntimeError(
+      f"release requires KiCad {EXPECTED_KICAD_VERSION}, found {kicad_version}"
+    )
   return {
     "kicad_cli": {
       "path": str(KICAD_CLI),
@@ -822,6 +1155,7 @@ def capture_toolchain() -> dict[str, Any]:
       "executable": str(Path(sys.executable).resolve()),
       "version": platform.python_version(),
     },
+    "rasterizer_python": str(KICAD_PYTHON),
     "python_packages": {
       "PyYAML": package_version("PyYAML"),
       "skidl": package_version("skidl"),
@@ -829,9 +1163,61 @@ def capture_toolchain() -> dict[str, Any]:
   }
 
 
-def write_manifest(
+def artifact_id(path: Path) -> str:
+  portable_path = path.as_posix()
+  readable = re.sub(r"[^a-z0-9]+", "_", portable_path.lower()).strip("_")
+  if not readable:
+    raise ValueError(f"unable to derive artifact ID from {path}")
+  # The readable form alone is ambiguous: for example, `pcb-front.png` and
+  # `pcb/front.png` normalize to the same snake_case value. Keep it useful to
+  # humans while adding a stable path digest so every distinct path stays
+  # distinct in the website-facing manifest.
+  path_digest = hashlib.sha256(portable_path.encode("utf-8")).hexdigest()[:12]
+  return f"{readable}_{path_digest}"
+
+
+def artifact_media_type(path: Path) -> str:
+  overrides = {
+    ".csv": "text/csv",
+    ".drl": "application/octet-stream",
+    ".gbr": "application/octet-stream",
+    ".gbrjob": "application/json",
+    ".md": "text/markdown",
+    ".svg": "image/svg+xml",
+  }
+  return overrides.get(
+    path.suffix.lower(),
+    mimetypes.guess_type(path.name)[0] or "application/octet-stream",
+  )
+
+
+def artifact_spec(root: Path, path: Path) -> ArtifactSpec:
+  relative = path.relative_to(root)
+  category = relative.parts[0]
+  profile: str | None = None
+  if category == "reports":
+    category = "report"
+  elif category == "assembly":
+    profile = (
+      relative.parts[1]
+      if len(relative.parts) > 2 and relative.parts[1] in {"canonical", "jlcpcb"}
+      else "bundle"
+    )
+  if category not in {"assembly", "fabrication", "preview", "report"}:
+    raise ValueError(f"artifact has no public category: {relative}")
+  return ArtifactSpec(
+    artifact_id(relative),
+    category,
+    relative,
+    artifact_media_type(relative),
+    profile=profile,
+  )
+
+
+def write_release_metadata(
   root: Path,
-  revision: str,
+  release_version: str,
+  hardware_revision: str,
   checks: dict[str, Any],
   assembly: dict[str, int],
   position_count: int,
@@ -846,69 +1232,74 @@ def write_manifest(
       f"{assembly['placed_components']} BOM components vs {position_count} placements"
     )
 
-  payload_files = sorted(
+  artifact_files = sorted(
     path for path in root.rglob("*")
-    if path.is_file() and path.name not in {"release-manifest.json", "SHA256SUMS"}
+    if path.is_file() and path.name not in {"release.json", "SHA256SUMS"}
   )
-  manifest = {
-    "project": "the-card",
-    "revision": revision,
-    "generated_at_utc": datetime.now(timezone.utc).isoformat(),
-    "generator": "hardware/scripts/release_fabrication.py",
-    "kicad_version": toolchain["kicad_cli"]["version"],
-    "git": git_state,
+  provenance = {
+    "dirty_worktree": git_state["dirty_worktree"],
     "toolchain": toolchain,
-    "board": BOARD_SPEC,
-    "checks": checks,
-    "assembly": assembly,
-    "manual_release_gates": [
-      "Confirm display FPC pin 1, contact side, and fold direction with the physical panel.",
-      "Confirm battery connector polarity with a multimeter.",
-      "Confirm bare versus protected cell choice before populating the on-board protector.",
-      "Inspect U8 orientation and protection-path continuity before connecting a cell.",
-      "Tune and range-test the NFC antenna on the first physical prototype.",
-    ],
     "source_file_groups": {
       name: [
-        str(path.relative_to(REPOSITORY))
+        path.relative_to(REPOSITORY).as_posix()
         for path in paths
       ]
       for name, paths in source_groups.items()
     },
     "source_files": {
-      str(path.relative_to(REPOSITORY)): digest
+      path.relative_to(REPOSITORY).as_posix(): digest
       for path, digest in source_hashes.items()
     },
-    "payload_files": {
-      str(path.relative_to(root)): {
-        "bytes": path.stat().st_size,
-        "sha256": sha256(path),
-      }
-      for path in payload_files
-    },
   }
-  manifest_path = root / "release-manifest.json"
-  manifest_path.write_text(json.dumps(manifest, indent=2, sort_keys=True) + "\n")
+  manifest_path = write_release_manifest(
+    root,
+    project=load_design_metadata()["project_name"],
+    release_version=release_version,
+    hardware_revision=hardware_revision,
+    git_commit=git_state["commit"],
+    generator="hardware/scripts/release_fabrication.py",
+    kicad_version=toolchain["kicad_cli"]["version"],
+    board=BOARD_SPEC,
+    validation=checks,
+    assembly={**assembly, "position_count": position_count},
+    provenance=provenance,
+    manual_approval_status="pending",
+    manual_release_gates=MANUAL_RELEASE_GATES,
+    artifacts=[artifact_spec(root, path) for path in artifact_files],
+    generated_at=datetime.now(timezone.utc),
+  )
 
-  checksum_files = sorted([*payload_files, manifest_path])
+  checksum_files = sorted(
+    [*artifact_files, manifest_path],
+    key=lambda path: path.relative_to(root).as_posix(),
+  )
   checksum_path = root / "SHA256SUMS"
   checksum_path.write_text("".join(
-    f"{sha256(path)}  {path.relative_to(root)}\n"
+    f"{sha256(path)}  {path.relative_to(root).as_posix()}\n"
     for path in checksum_files
-  ))
+  ), encoding="utf-8")
 
 
-def build_release(output: Path, revision: str) -> None:
-  if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", revision):
-    raise ValueError(f"invalid revision label: {revision!r}")
+def build_release(
+  output: Path,
+  release_version: str,
+  hardware_revision: str,
+  include_3d: bool,
+) -> None:
+  if not SEMANTIC_VERSION.fullmatch(release_version):
+    raise ValueError(f"release version is not semantic: {release_version!r}")
+  if not HARDWARE_REVISION_PATTERN.fullmatch(hardware_revision):
+    raise ValueError(f"invalid hardware revision: {hardware_revision!r}")
   output = output.resolve()
   if output.exists():
     raise FileExistsError(f"refusing to overwrite existing release directory: {output}")
-  assert_inputs()
+  assert_inputs(hardware_revision)
   output.parent.mkdir(parents=True, exist_ok=True)
-  source_groups = release_source_groups()
+  source_groups = release_source_groups(include_3d)
   source_hashes = capture_source_hashes(flatten_source_groups(source_groups))
   git_state = capture_git_state()
+  if git_state["dirty_worktree"]:
+    raise RuntimeError("refusing to release from a dirty worktree")
   toolchain = capture_toolchain()
   verify_schematic_connectivity()
 
@@ -917,15 +1308,19 @@ def build_release(output: Path, revision: str) -> None:
     root.mkdir()
     checks = export_reports(root)
     checks["connectivity_verifier"] = True
-    fabrication_files, plot_checks = export_fabrication(root)
+    fabrication_files, plot_checks = export_fabrication(
+      root,
+      hardware_revision,
+    )
     checks.update(plot_checks)
     assembly = export_bom(root)
     position_count = export_positions(root)
-    export_review(root)
-    write_fabrication_archive(root, revision, fabrication_files)
-    write_manifest(
+    export_preview(root, include_3d)
+    write_category_archives(root, release_version, fabrication_files)
+    write_release_metadata(
       root,
-      revision,
+      release_version,
+      hardware_revision,
       checks,
       assembly,
       position_count,
@@ -939,6 +1334,8 @@ def build_release(output: Path, revision: str) -> None:
 
   print(json.dumps({
     "release": str(output),
+    "release_version": release_version,
+    "hardware_revision": hardware_revision,
     "checks": checks,
     "assembly": assembly,
     "position_count": position_count,
@@ -947,4 +1344,9 @@ def build_release(output: Path, revision: str) -> None:
 
 if __name__ == "__main__":
   arguments = parse_args()
-  build_release(arguments.output, arguments.revision)
+  build_release(
+    arguments.output,
+    arguments.release_version,
+    arguments.hardware_revision,
+    arguments.include_3d,
+  )
