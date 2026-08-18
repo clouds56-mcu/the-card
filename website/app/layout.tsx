@@ -1,6 +1,10 @@
 import { GeistMono } from "geist/font/mono";
 import { GeistSans } from "geist/font/sans";
 import type { Metadata } from "next";
+import {
+  normalizeSiteOrigin,
+  withPublicBasePath,
+} from "../site-config";
 import { current_release } from "./data/release";
 import "./globals.css";
 
@@ -8,27 +12,20 @@ const title = "The Card — Open E-Paper Badge";
 const description =
   "An open ESP32-S3 e-paper badge, documented from schematic to fabrication output.";
 const configured_origin = process.env.SITE_ORIGIN ?? "http://localhost:3000";
-
-function siteOrigin() {
-  const origin = new URL(configured_origin);
-  if (!(["http:", "https:"] as const).includes(origin.protocol as "http:" | "https:")) {
-    throw new Error("SITE_ORIGIN must use http or https");
-  }
-  if (origin.username || origin.password || origin.pathname !== "/" || origin.search || origin.hash) {
-    throw new Error("SITE_ORIGIN must be an origin without credentials, path, query, or hash");
-  }
-  if (process.env.SITE_ORIGIN && process.env.NODE_ENV === "production" && origin.protocol !== "https:") {
-    throw new Error("SITE_ORIGIN must use https in production");
-  }
-  return new URL(origin.origin);
+const site_origin = normalizeSiteOrigin(configured_origin);
+if (
+  process.env.SITE_ORIGIN &&
+  process.env.NODE_ENV === "production" &&
+  site_origin.protocol !== "https:"
+) {
+  throw new Error("SITE_ORIGIN must use https in production");
 }
-
-const site_origin = siteOrigin();
-const social_image = new URL("/og.png", site_origin).toString();
+const site_url = new URL(withPublicBasePath("/"), site_origin);
+const social_image = new URL(withPublicBasePath("/og.png"), site_origin).toString();
 
 export const metadata: Metadata = {
   alternates: {
-    canonical: "/",
+    canonical: site_url,
   },
   metadataBase: site_origin,
   title,
@@ -37,7 +34,7 @@ export const metadata: Metadata = {
     title,
     description,
     type: "website",
-    url: site_origin,
+    url: site_url,
     images: [{
       url: social_image,
       width: 1672,

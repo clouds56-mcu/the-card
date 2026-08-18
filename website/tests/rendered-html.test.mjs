@@ -111,6 +111,20 @@ test("mirrored candidate tree matches the public release manifest and checksums"
         `${artifact.path} contains active PDF JavaScript`,
       );
     }
+    if (artifact.path.endsWith(".svg")) {
+      const svg_text = await readFile(artifact_url, "utf8");
+      const active_patterns = [
+        /<(?:script|foreignObject)\b/i,
+        /\son[a-z]+\s*=/i,
+        /(?:javascript:|data:text\/html|<!ENTITY)/i,
+      ];
+      for (const pattern of active_patterns) {
+        assert.equal(pattern.test(svg_text), false, `${artifact.path}: ${pattern}`);
+      }
+      for (const match of svg_text.matchAll(/\b(?:href|xlink:href)\s*=\s*["']([^"']+)["']/gi)) {
+        assert.ok(match[1].startsWith("#"), `${artifact.path}: external SVG reference ${match[1]}`);
+      }
+    }
   }
 
   const bundles = manifest.artifacts.filter(({ path }) => path.endsWith(".zip"));

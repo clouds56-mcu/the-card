@@ -22,6 +22,32 @@ npm test
 npm run lint
 ```
 
+## GitHub Pages
+
+The public site is deployed to
+<https://clouds56-mcu.github.io/the-card/> after the hardware and website CI
+checks pass on `main`. The Pages build uses Vinext's static export mode and the
+repository base path reported by GitHub, while local and Worker builds remain
+root-mounted.
+
+GitHub Pages serves static files and therefore does not execute the Worker or
+its `_headers` policy. CI compensates by rejecting active PDF scripting and
+active or externally referenced SVG content before deployment.
+
+To reproduce the Pages build locally:
+
+```bash
+SITE_ORIGIN=https://clouds56-mcu.github.io \
+SITE_ASSET_PREFIX=https://clouds56-mcu.github.io/the-card \
+NEXT_PUBLIC_SITE_BASE_PATH=/the-card \
+npm run build:pages
+
+SITE_ORIGIN=https://clouds56-mcu.github.io \
+SITE_ASSET_PREFIX=https://clouds56-mcu.github.io/the-card \
+NEXT_PUBLIC_SITE_BASE_PATH=/the-card \
+npm run test:pages
+```
+
 ## Hardware assets
 
 The checked Revision A candidate is mirrored under

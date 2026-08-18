@@ -3,6 +3,8 @@ import { LayerExplorer } from "./components/layer-explorer";
 import { candidate_paths } from "./data/paths";
 import { current_release } from "./data/release";
 
+export const dynamic = "force-static";
+
 const specifications = [
   {
     value: `${current_release.board.width_mm.toFixed(2)} × ${current_release.board.height_mm.toFixed(2)}`,
