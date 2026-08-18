@@ -231,6 +231,37 @@ class ReleaseManifestTests(unittest.TestCase):
     with self.assertRaisesRegex(ValueError, "invalid artifact category"):
       build_release_manifest(self.root, **values)
 
+  def test_validates_semantic_version_identifiers(self) -> None:
+    valid_versions = (
+      "1.0.0-0",
+      "1.0.0-alpha.1",
+      "1.0.0-0A",
+      "1.0.0+001",
+      "1.0.0-alpha+build.001",
+    )
+    for release_version in valid_versions:
+      with self.subTest(release_version=release_version):
+        values = self.values()
+        values["release_version"] = release_version
+        manifest = build_release_manifest(self.root, **values)
+        self.assertEqual(manifest["release_version"], release_version)
+
+    invalid_versions = (
+      "01.0.0",
+      "1.01.0",
+      "1.0.01",
+      "1.0.0-01",
+      "1.0.0-alpha.01",
+      "1.0.0-",
+      "1.0.0+",
+    )
+    for release_version in invalid_versions:
+      with self.subTest(release_version=release_version):
+        values = self.values()
+        values["release_version"] = release_version
+        with self.assertRaisesRegex(ValueError, "release_version is not semantic"):
+          build_release_manifest(self.root, **values)
+
   def test_requires_timezone_aware_generation_time(self) -> None:
     values = self.values()
     values["generated_at"] = datetime(2026, 8, 18, 12, 30)

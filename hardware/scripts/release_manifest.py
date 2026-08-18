@@ -21,10 +21,11 @@ ARTIFACT_CATEGORIES = frozenset({
 })
 APPROVAL_STATUSES = frozenset({"approved", "pending", "rejected"})
 SEMANTIC_VERSION = re.compile(
-  r"(?:0|[1-9]\d*)\."
-  r"(?:0|[1-9]\d*)\."
-  r"(?:0|[1-9]\d*)"
-  r"(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?"
+  r"(?:0|[1-9][0-9]*)\."
+  r"(?:0|[1-9][0-9]*)\."
+  r"(?:0|[1-9][0-9]*)"
+  r"(?:-(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)"
+  r"(?:\.(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*))*)?"
   r"(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?"
 )
 HARDWARE_REVISION_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
