@@ -24,7 +24,7 @@ hardware/
 ├── scripts/normalize_libraries.py # reviewed corrections to fetched footprints
 ├── scripts/release_fabrication.py # checked Gerber/drill/BOM/placement release
 ├── scripts/rasterize_svg.py # review PNGs from KiCad SVG plots
-└── libraries/              # GENERATED (gitignored): symbols / footprints / 3D
+└── libraries/              # Reviewed 2D libs tracked; generated 3D models ignored
 ```
 
 ## One-time setup

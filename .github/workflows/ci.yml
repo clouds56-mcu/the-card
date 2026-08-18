@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  hardware:
+    name: Hardware checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    container:
+      image: kicad/kicad:10.0.5@sha256:182c8005cb775a2c448a4c18681d489f1ff472a761885eba3e08b07e3c0564de
+    defaults:
+      run:
+        shell: bash
+        working-directory: hardware
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Show tool versions
+        run: |
+          python3 --version
+          kicad-cli --version
+
+      - name: Compile Python tooling
+        run: python3 -m compileall -q .
+
+      - name: Run unit tests
+        run: python3 -m unittest discover -v -s . -p "test_*.py"
+
+      - name: Run schematic ERC
+        run: |
+          mkdir -p ci-reports
+          kicad-cli sch erc \
+            --format json \
+            --output ci-reports/erc.json \
+            --severity-all \
+            --exit-code-violations \
+            the-card.kicad_sch
+
+      - name: Run PCB DRC and schematic parity
+        run: |
+          kicad-cli pcb drc \
+            --format json \
+            --output ci-reports/drc.json \
+            --severity-all \
+            --schematic-parity \
+            --exit-code-violations \
+            the-card.kicad_pcb
+
+      - name: Upload KiCad reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kicad-reports
+          path: hardware/ci-reports/*.json
+          if-no-files-found: warn
+          retention-days: 7

@@ -10,8 +10,6 @@ import tempfile
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
-import circuit
-
 
 HERE = Path(__file__).resolve().parent
 DEFAULT_SCHEMATIC = HERE / "the-card.kicad_sch"
@@ -42,6 +40,11 @@ def expected_connectivity() -> tuple[
   dict[Node, frozenset[Node]],
   NetNames,
 ]:
+  # Keep the pure comparison helpers importable in lightweight CI jobs. The
+  # electrical model and its generated symbol libraries are only required when
+  # verifying a real schematic.
+  import circuit
+
   design = circuit.nfc.circuit
   design.merge_net_names()
   design.merge_nets()

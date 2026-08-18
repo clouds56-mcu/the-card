@@ -71,8 +71,13 @@ dist/
 # ---- Misc logs ----
 *.log
 
-# ---- easyeda2kicad generated libs (regenerable via hardware/scripts/fetch_libs.sh) ----
-hardware/libraries/
+# ---- easyeda2kicad generated libraries ----
+# Keep reviewed 2D symbols/footprints reproducible; ignore fetched 3D models.
+hardware/libraries/*
+!hardware/libraries/*.kicad_sym
+!hardware/libraries/*.pretty/
+hardware/libraries/*.pretty/*
+!hardware/libraries/*.pretty/*.kicad_mod
 
 # ---- SKiDL temp/output artifacts ----
 hardware/skidl_REPL*

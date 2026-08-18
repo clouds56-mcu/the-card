@@ -1,5 +1,7 @@
 # The Card — E-Paper Smart Badge
 
+[![CI](https://github.com/clouds56-mcu/the-card/actions/workflows/ci.yml/badge.svg)](https://github.com/clouds56-mcu/the-card/actions/workflows/ci.yml)
+
 > An **ESP32-S3** based DIY/learning smart badge: e-paper wallpapers, Bluetooth, NFC, multi-button watch-style control, and on-board sensors, worn around the neck like an ID badge.
 
 ## 📋 Project Brief
