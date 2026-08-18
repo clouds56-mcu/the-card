@@ -27,7 +27,13 @@ import zipfile
 import yaml
 
 if __package__:
-  from .export_design_review import check_rasterizer, export_pcb, export_schematic
+  from .export_design_review import (
+    assert_pdfs_passive,
+    check_rasterizer,
+    export_pcb,
+    export_schematic,
+    sanitize_pdf,
+  )
   from .release_manifest import (
     ArtifactSpec,
     HARDWARE_REVISION_PATTERN,
@@ -35,7 +41,13 @@ if __package__:
   )
   from .release_manifest import write_release_manifest
 else:
-  from export_design_review import check_rasterizer, export_pcb, export_schematic
+  from export_design_review import (
+    assert_pdfs_passive,
+    check_rasterizer,
+    export_pcb,
+    export_schematic,
+    sanitize_pdf,
+  )
   from release_manifest import (
     ArtifactSpec,
     HARDWARE_REVISION_PATTERN,
@@ -974,6 +986,7 @@ def export_assembly_drawings(root: Path) -> None:
       pdf_command.append("--mirror")
     pdf_command.append(str(BOARD))
     run(pdf_command)
+    sanitize_pdf(pdf)
 
     svg = canonical / f"assembly-{side}.svg"
     svg_command = [
@@ -1321,6 +1334,7 @@ def build_release(
     assembly = export_bom(root)
     position_count = export_positions(root)
     export_preview(root, include_3d)
+    assert_pdfs_passive(root)
     write_category_archives(root, release_version, fabrication_files)
     write_release_metadata(
       root,

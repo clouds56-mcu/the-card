@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import sys
@@ -44,6 +45,11 @@ STABLE_ARTIFACTS = (
   "pcb-inner-1.png",
   "pcb-inner-2.png",
   "pcb-back.png",
+)
+PDF_NAME_DELIMITER = rb"(?=[\x00\x09\x0a\x0c\x0d ()<>\[\]{}/%])"
+PDF_JAVASCRIPT_NAMES = (
+  (re.compile(rb"/JavaScript" + PDF_NAME_DELIMITER), b"/JavaScrip_"),
+  (re.compile(rb"/JS" + PDF_NAME_DELIMITER), b"/J_"),
 )
 
 
@@ -132,6 +138,39 @@ def copy_artifact(source: Path, destination: Path) -> None:
   require_nonempty(destination)
 
 
+def sanitize_pdf(path: Path) -> int:
+  """Neutralize KiCad's document JavaScript without changing PDF offsets."""
+  require_nonempty(path)
+  contents = path.read_bytes()
+  replacements = 0
+  for pattern, replacement in PDF_JAVASCRIPT_NAMES:
+    contents, count = pattern.subn(replacement, contents)
+    replacements += count
+
+  if replacements:
+    temporary = path.with_name(f".{path.name}.sanitized")
+    temporary.write_bytes(contents)
+    temporary.replace(path)
+  assert_pdf_passive(path)
+  return replacements
+
+
+def assert_pdf_passive(path: Path) -> None:
+  require_nonempty(path)
+  contents = path.read_bytes()
+  for pattern, _ in PDF_JAVASCRIPT_NAMES:
+    if pattern.search(contents):
+      raise RuntimeError(f"active PDF JavaScript remained in {path}")
+
+
+def assert_pdfs_passive(root: Path) -> None:
+  pdfs = sorted(root.rglob("*.pdf"))
+  if not pdfs:
+    raise RuntimeError(f"expected PDF outputs below {root}")
+  for pdf in pdfs:
+    assert_pdf_passive(pdf)
+
+
 def rasterize(
   python: str,
   source: Path,
@@ -167,10 +206,12 @@ def export_schematic(
     "sch",
     "export",
     "pdf",
+    "--exclude-pdf-property-popups",
     "--output",
     str(pdf),
     str(SCHEMATIC),
   ])
+  sanitize_pdf(pdf)
   require_nonempty(pdf)
   copy_artifact(pdf, output / "schematic.pdf")
 
@@ -253,8 +294,10 @@ def export_pcb(
     "2",
     "--scale",
     "0",
+    "--no-property-popups",
     str(BOARD),
   ])
+  sanitize_pdf(pdf)
   require_nonempty(pdf)
 
 
@@ -321,6 +364,7 @@ def main() -> None:
     args.schematic_thumbnail_height,
   )
   export_pcb(kicad_cli, python, output, args.pcb_height)
+  assert_pdfs_passive(output)
   write_manifest(output, kicad_cli)
   print(f"design review written: {output}")
 

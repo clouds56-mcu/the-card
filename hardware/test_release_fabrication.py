@@ -136,6 +136,42 @@ class ReleaseFabricationTests(unittest.TestCase):
     with self.assertRaisesRegex(ValueError, "design_metadata.py"):
       release.assert_hardware_revision("B")
 
+  def test_pdf_sanitizer_neutralizes_javascript_names_in_place(self) -> None:
+    pdf = self.write(
+      "preview/schematic.pdf",
+      b"%PDF-1.7\n"
+      b"<< /Names << /JavaScript 4 0 R >> >>\n"
+      b"<< /Type /Action /S /JavaScript /JS (app.launchURL) >>\n"
+      b"%%EOF\n",
+    )
+    original_size = pdf.stat().st_size
+
+    replacements = release.sanitize_pdf(pdf)
+
+    contents = pdf.read_bytes()
+    self.assertEqual(replacements, 3)
+    self.assertEqual(pdf.stat().st_size, original_size)
+    self.assertNotIn(b"/JavaScript", contents)
+    self.assertNotRegex(contents, rb"/JS(?=[\s<>()\[\]{}/%])")
+    self.assertIn(b"/JavaScrip_", contents)
+    self.assertIn(b"/J_", contents)
+
+  def test_pdf_sanitizer_leaves_passive_pdf_unchanged(self) -> None:
+    pdf = self.write("preview/passive.pdf", b"%PDF-1.7\n%%EOF\n")
+
+    self.assertEqual(release.sanitize_pdf(pdf), 0)
+    self.assertEqual(pdf.read_bytes(), b"%PDF-1.7\n%%EOF\n")
+
+  def test_pdf_release_gate_rejects_missed_active_output(self) -> None:
+    self.write("preview/passive.pdf", b"%PDF-1.7\n%%EOF\n")
+    self.write(
+      "assembly/canonical/active.pdf",
+      b"%PDF-1.7\n<< /S /JavaScript /JS (alert) >>\n%%EOF\n",
+    )
+
+    with self.assertRaisesRegex(RuntimeError, "active PDF JavaScript"):
+      release.assert_pdfs_passive(self.root)
+
 
 if __name__ == "__main__":
   unittest.main()
