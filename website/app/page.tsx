@@ -1,22 +1,22 @@
 import Image from "next/image";
 import { LayerExplorer } from "./components/layer-explorer";
 import { candidate_paths } from "./data/paths";
-import { current_release } from "./data/release";
+import { current_design } from "./data/release";
 
 export const dynamic = "force-static";
 
 const specifications = [
   {
-    value: `${current_release.board.width_mm.toFixed(2)} × ${current_release.board.height_mm.toFixed(2)}`,
+    value: `${current_design.board.width_mm.toFixed(2)} × ${current_design.board.height_mm.toFixed(2)}`,
     label: "millimetres",
   },
-  { value: String(current_release.board.copper_layers), label: "copper layers" },
+  { value: String(current_design.board.copper_layers), label: "copper layers" },
   {
-    value: current_release.board.finished_thickness_mm.toFixed(2),
+    value: current_design.board.finished_thickness_mm.toFixed(2),
     label: "millimetre PCB",
   },
   {
-    value: String(current_release.assembly.placed_components),
+    value: String(current_design.assembly.placed_components),
     label: "placed components",
   },
 ];
@@ -116,7 +116,7 @@ export default function Home() {
           <a href="#status">Status</a>
         </nav>
         <div className="header-meta">
-          <span>Rev {current_release.hardware_revision} · Candidate</span>
+          <span>v{current_design.design_version} · Prototype candidate</span>
           <a href="https://github.com/clouds56-mcu/the-card">
             GitHub <span aria-hidden="true">↗</span>
           </a>
@@ -126,7 +126,7 @@ export default function Home() {
       <main>
       <section className="hero" id="top">
         <div className="hero-copy">
-          <p className="eyebrow">Open hardware · Revision {current_release.hardware_revision}</p>
+          <p className="eyebrow">Open hardware · Design v{current_design.design_version}</p>
           <h1>An open e-paper badge, down to the last trace.</h1>
           <p className="lede">
             A lanyard-sized ESP32-S3 platform with a 2.9-inch e-paper
@@ -137,7 +137,7 @@ export default function Home() {
           <div className="hero-actions">
             <a className="button button-primary" href="#layers">Explore the board</a>
             <a className="button button-secondary" href="#build">
-              Get Rev {current_release.hardware_revision} files
+              Get v{current_design.design_version} files
             </a>
           </div>
 
@@ -162,12 +162,12 @@ export default function Home() {
               width={1135}
               height={1800}
               priority
-              alt={`Front copper, solder mask, silkscreen, and outline plot for The Card Revision ${current_release.hardware_revision} PCB`}
+              alt={`Front copper, solder mask, silkscreen, and outline plot for The Card design v${current_design.design_version} PCB`}
             />
           </div>
           <figcaption>
             <span>Generated from the checked KiCad source</span>
-            <span>Source plot 1:1 · display scaled · Rev {current_release.hardware_revision}</span>
+            <span>Source plot 1:1 · display scaled · v{current_design.design_version}</span>
           </figcaption>
         </figure>
       </section>
@@ -209,15 +209,15 @@ export default function Home() {
           description="The browser is showing the same generated plots used for design review—front, both inner layers, and the mirrored bottom view."
         />
         <LayerExplorer
-          board_height_mm={current_release.board.height_mm}
-          board_width_mm={current_release.board.width_mm}
-          hardware_revision={current_release.hardware_revision}
+          board_height_mm={current_design.board.height_mm}
+          board_width_mm={current_design.board.width_mm}
+          design_version={current_design.design_version}
         />
         <div className="design-links">
           <a href={candidate_paths.pcb_pdf} target="_blank" rel="noreferrer">
             Open the 4-page PCB PDF <span aria-hidden="true">↗</span>
           </a>
-          <span>KiCad {current_release.kicad_version}</span>
+          <span>KiCad {current_design.kicad_version}</span>
         </div>
       </section>
 
@@ -229,9 +229,9 @@ export default function Home() {
             description="Power, USB, display drive, NFC, sensors, controls, and protection are grouped for review while retaining canonical net names back to the generated circuit model."
           />
           <dl className="schematic-facts">
-            <div><dt>Components</dt><dd>75</dd></div>
-            <div><dt>Modeled pins</dt><dd>286</dd></div>
-            <div><dt>Named nets</dt><dd>42</dd></div>
+            <div><dt>Components</dt><dd>78</dd></div>
+            <div><dt>Modeled pins</dt><dd>292</dd></div>
+            <div><dt>Named nets</dt><dd>43</dd></div>
           </dl>
           <a className="text-link" href={candidate_paths.schematic_pdf} target="_blank" rel="noreferrer">
             Open schematic PDF <span aria-hidden="true">↗</span>
@@ -245,12 +245,12 @@ export default function Home() {
           aria-label="Open the full schematic PDF"
         >
           <Image
-            alt={`Thumbnail of The Card Revision ${current_release.hardware_revision} complete schematic`}
+            alt={`Thumbnail of The Card design v${current_design.design_version} complete schematic`}
             height={900}
             src={candidate_paths.schematic_thumbnail}
             width={1273}
           />
-          <span>Complete schematic · Rev {current_release.hardware_revision}</span>
+          <span>Complete schematic · v{current_design.design_version}</span>
         </a>
       </section>
 
@@ -272,9 +272,9 @@ export default function Home() {
         <div className="source-strip">
           <p>
             <span>Current source</span>
-            <code>{current_release.git_commit.slice(0, 12)}</code>
+            <code>{current_design.git_commit.slice(0, 12)}</code>
           </p>
-          <a href={`https://github.com/clouds56-mcu/the-card/commit/${current_release.git_commit}`}>
+          <a href={`https://github.com/clouds56-mcu/the-card/commit/${current_design.git_commit}`}>
             Inspect commit <span aria-hidden="true">↗</span>
           </a>
         </div>
@@ -284,16 +284,16 @@ export default function Home() {
         <div className="release-heading">
           <SectionHeading
             eyebrow="05 / Build"
-            title={`Build Revision ${current_release.hardware_revision}.`}
+            title={`Build design v${current_design.design_version}.`}
             description="Choose the level you need: inspect the design, order a bare board, assemble it, or fork the source."
           />
           <dl className="release-meta">
-            <div><dt>Artifact version</dt><dd>v{current_release.release_version}</dd></div>
-            <div><dt>Hardware revision</dt><dd>{current_release.hardware_revision}</dd></div>
+            <div><dt>Design version</dt><dd>v{current_design.design_version}</dd></div>
             <div>
               <dt>Generated</dt>
-              <dd><time dateTime={current_release.generated_at}>{formatDate(current_release.generated_at)}</time></dd>
+              <dd><time dateTime={current_design.generated_at}>{formatDate(current_design.generated_at)}</time></dd>
             </div>
+            <div><dt>Source commit</dt><dd><code>{current_design.git_commit.slice(0, 12)}</code></dd></div>
           </dl>
         </div>
 
@@ -305,7 +305,7 @@ export default function Home() {
         </div>
 
         <div className="download-list">
-          {current_release.downloads.map((item, index) => (
+          {current_design.downloads.map((item, index) => (
             <article className="download-row" key={item.category}>
               <span className="download-index">0{index + 1}</span>
               <div className="download-title">
@@ -353,7 +353,7 @@ export default function Home() {
         </div>
 
         <div className="validation-grid" aria-label="Automated validation results">
-          {current_release.validation.map((check) => (
+          {current_design.validation.map((check) => (
             <div className="validation-check" key={check.label}>
               <span>{check.label}</span>
               <strong>{check.value}</strong>
@@ -365,10 +365,10 @@ export default function Home() {
         <div className="manual-gates">
           <div className="manual-gates-heading">
             <p>Manual approval</p>
-            <strong>{current_release.manual_approval_status}</strong>
+            <strong>{current_design.manual_approval_status}</strong>
           </div>
           <ol>
-            {current_release.manual_gates.map((gate, index) => (
+            {current_design.manual_gates.map((gate, index) => (
               <li key={gate}>
                 <span>0{index + 1}</span>
                 <p>{gate}</p>
@@ -382,7 +382,7 @@ export default function Home() {
         <SectionHeading
           eyebrow="07 / Roadmap"
           title="The design is public before the badge is finished."
-          description={`Revision ${current_release.hardware_revision} is a reviewable CAD candidate. The next meaningful milestone is a measured, physically assembled prototype.`}
+          description={`Design v${current_design.design_version} is a reviewable CAD candidate. The next meaningful milestone is a measured, physically assembled prototype.`}
         />
         <ol className="roadmap-list">
           {roadmap.map((item, index) => (
@@ -407,9 +407,9 @@ export default function Home() {
           <a href="https://github.com/clouds56-mcu/the-card/blob/main/LICENSE">MIT License ↗</a>
         </div>
         <div className="footer-meta">
-          <span>Hardware Rev {current_release.hardware_revision}</span>
-          <span>Artifact v{current_release.release_version}</span>
-          <span>{current_release.git_commit.slice(0, 12)}</span>
+          <span>Design v{current_design.design_version}</span>
+          <span>Prototype candidate</span>
+          <span>{current_design.git_commit.slice(0, 12)}</span>
         </div>
       </footer>
     </>

@@ -28,7 +28,7 @@ test("exports a complete project-path site for GitHub Pages", async () => {
   assert.match(html, /<title>The Card — Open E-Paper Badge<\/title>/i);
   assert.ok(html.includes(`rel="canonical" href="${site_url}"`));
   assert.ok(html.includes(`${site_url}og.png`));
-  assert.ok(html.includes(`${site_base_path}/hardware/candidates/v0.1.0/`));
+  assert.ok(html.includes(`${site_base_path}/hardware/candidates/v0.2.0/`));
   if (site_base_path) {
     assert.doesNotMatch(html, /(?:href|src)="\/(?:_next|hardware|og\.png)/);
   }

@@ -1,6 +1,4 @@
-import { withPublicBasePath } from "../../site-config";
-
-export const candidate_base = withPublicBasePath("/hardware/candidates/v0.1.0");
+import { candidate_base } from "./release";
 
 export const candidate_paths = {
   pcb_front: `${candidate_base}/preview/pcb-front.png`,

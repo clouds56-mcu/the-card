@@ -1,11 +1,15 @@
-import release_manifest from "../../public/hardware/candidates/v0.1.0/release.json";
-import { candidate_base } from "./paths";
+import release_manifest from "../../public/hardware/candidates/v0.2.0/release.json";
+import { withPublicBasePath } from "../../site-config";
 
 type ReleaseArtifact = (typeof release_manifest.artifacts)[number];
 
-if (release_manifest.schema_version !== 1) {
+if (release_manifest.schema_version !== 2) {
   throw new Error(`Unsupported release schema: ${release_manifest.schema_version}`);
 }
+
+export const candidate_base = withPublicBasePath(
+  `/hardware/candidates/v${release_manifest.design_version}`,
+);
 
 const bundle_content = {
   preview: {
@@ -52,17 +56,16 @@ function bundle(category: BundleCategory) {
   };
 }
 
-export const current_release = {
+export const current_design = {
   assembly: release_manifest.assembly,
   board: release_manifest.board,
   downloads: [bundle("preview"), bundle("fabrication"), bundle("assembly")],
   generated_at: release_manifest.generated_at,
   git_commit: release_manifest.git_commit,
-  hardware_revision: release_manifest.hardware_revision,
+  design_version: release_manifest.design_version,
   kicad_version: release_manifest.kicad_version,
   manual_approval_status: release_manifest.manual_approval.status,
   manual_gates: release_manifest.manual_approval.gates,
-  release_version: release_manifest.release_version,
   schema_version: release_manifest.schema_version,
   validation: [
     {

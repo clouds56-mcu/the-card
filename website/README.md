@@ -50,10 +50,12 @@ npm run test:pages
 
 ## Hardware assets
 
-The checked Revision A candidate is mirrored under
-`public/hardware/candidates/v0.1.0/`. Its `release.json` is the authoritative
-metadata and checksum index. The website intentionally labels these files as a
-prototype candidate until every manual release gate has physical evidence.
+The checked design v0.2.0 candidate is mirrored under
+`public/hardware/candidates/v0.2.0/`. Its `release.json` is the authoritative
+identity, metadata, and checksum index. The website intentionally labels these
+files as a prototype candidate until every manual release gate has physical
+evidence. The unbuilt v0.1.0 draft remains available through Git history only;
+it is not served as a fabrication download because v0.2.0 fixes its NFC design.
 
 Future releases should be promoted from a checked hardware-output artifact,
 then mirrored as an immutable directory rather than fetched from expiring

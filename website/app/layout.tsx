@@ -5,7 +5,7 @@ import {
   normalizeSiteOrigin,
   withPublicBasePath,
 } from "../site-config";
-import { current_release } from "./data/release";
+import { current_design } from "./data/release";
 import "./globals.css";
 
 const title = "The Card — Open E-Paper Badge";
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
       url: social_image,
       width: 1672,
       height: 941,
-      alt: `The Card open e-paper badge, Hardware Revision ${current_release.hardware_revision}`,
+      alt: `The Card open e-paper badge, design v${current_design.design_version}`,
     }],
   },
   twitter: {

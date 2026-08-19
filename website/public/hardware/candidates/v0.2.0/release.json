@@ -1,0 +1,817 @@
+{
+  "artifacts": [
+    {
+      "artifact_id": "assembly_readme_md_23ec748e3354",
+      "bytes": 248,
+      "category": "assembly",
+      "media_type": "text/markdown",
+      "path": "assembly/README.md",
+      "profile": "bundle",
+      "sha256": "33602063afe241f68d230afcac17fefdf817f87d8848986f37be91f1a468b084"
+    },
+    {
+      "artifact_id": "assembly_canonical_assembly_back_pdf_6539c3a7c727",
+      "bytes": 155142,
+      "category": "assembly",
+      "media_type": "application/pdf",
+      "path": "assembly/canonical/assembly-back.pdf",
+      "profile": "canonical",
+      "sha256": "686f263dafc8d9729979092c3a446cef77fccba08f28f56c25b76982d6c848a2"
+    },
+    {
+      "artifact_id": "assembly_canonical_assembly_back_png_387d141035d7",
+      "bytes": 251779,
+      "category": "assembly",
+      "media_type": "image/png",
+      "path": "assembly/canonical/assembly-back.png",
+      "profile": "canonical",
+      "sha256": "1a57ce334e449435998be1b9fee79be7ad0d9adaae0d96d35a7ed81bfe9c3985"
+    },
+    {
+      "artifact_id": "assembly_canonical_assembly_back_svg_010b19f1cfe8",
+      "bytes": 588458,
+      "category": "assembly",
+      "media_type": "image/svg+xml",
+      "path": "assembly/canonical/assembly-back.svg",
+      "profile": "canonical",
+      "sha256": "3de786f54f3d8c3b2876a2f4645f7d6ffd175601dbfedda390287eef261cd4f6"
+    },
+    {
+      "artifact_id": "assembly_canonical_assembly_front_pdf_ec381c0d0a92",
+      "bytes": 56438,
+      "category": "assembly",
+      "media_type": "application/pdf",
+      "path": "assembly/canonical/assembly-front.pdf",
+      "profile": "canonical",
+      "sha256": "9af7303375fc242a828d4a78d1c2e99902e8a993b94b78f2f84d76ed4d2975b7"
+    },
+    {
+      "artifact_id": "assembly_canonical_assembly_front_png_ee558bad94fe",
+      "bytes": 71303,
+      "category": "assembly",
+      "media_type": "image/png",
+      "path": "assembly/canonical/assembly-front.png",
+      "profile": "canonical",
+      "sha256": "8da4affa9155a4feaf4904e697a44e67691dce37edd27de124d6eb95a4096b8d"
+    },
+    {
+      "artifact_id": "assembly_canonical_assembly_front_svg_8171304e8433",
+      "bytes": 88573,
+      "category": "assembly",
+      "media_type": "image/svg+xml",
+      "path": "assembly/canonical/assembly-front.svg",
+      "profile": "canonical",
+      "sha256": "3100c15669a61d39e240870a7ffda74f433e3f24165a98341586288e43c046cf"
+    },
+    {
+      "artifact_id": "assembly_canonical_bom_csv_e9d1e2878c2d",
+      "bytes": 6100,
+      "category": "assembly",
+      "media_type": "text/csv",
+      "path": "assembly/canonical/bom.csv",
+      "profile": "canonical",
+      "sha256": "1915192bf4bd2c1cfeabff04a47db1c246a95a6753878382e887c127faededde"
+    },
+    {
+      "artifact_id": "assembly_canonical_bom_json_ba4970c70848",
+      "bytes": 13025,
+      "category": "assembly",
+      "media_type": "application/json",
+      "path": "assembly/canonical/bom.json",
+      "profile": "canonical",
+      "sha256": "a0f703ea6de4d009347f3f6be3ccd20b90924dc9d421cb675336974a38af2e52"
+    },
+    {
+      "artifact_id": "assembly_canonical_placements_csv_b571f7cb1abb",
+      "bytes": 4146,
+      "category": "assembly",
+      "media_type": "text/csv",
+      "path": "assembly/canonical/placements.csv",
+      "profile": "canonical",
+      "sha256": "870000d8ea385f8434aac0dd54976a9ff26ca64bbe059068e158249c692bcc73"
+    },
+    {
+      "artifact_id": "assembly_canonical_placements_json_423a63331b2d",
+      "bytes": 12913,
+      "category": "assembly",
+      "media_type": "application/json",
+      "path": "assembly/canonical/placements.json",
+      "profile": "canonical",
+      "sha256": "6fbc6e1f77dc83436f1ca00091283f68f1ee4405bd0805216541eee45052d95f"
+    },
+    {
+      "artifact_id": "assembly_jlcpcb_bom_csv_98d7939f4b84",
+      "bytes": 3551,
+      "category": "assembly",
+      "media_type": "text/csv",
+      "path": "assembly/jlcpcb/bom.csv",
+      "profile": "jlcpcb",
+      "sha256": "21065e2bf0250abc6ac7cf3c84bed849bf621e8d5601a84a7ddd2412857deb96"
+    },
+    {
+      "artifact_id": "assembly_jlcpcb_positions_csv_78123a3b11c9",
+      "bytes": 2965,
+      "category": "assembly",
+      "media_type": "text/csv",
+      "path": "assembly/jlcpcb/positions.csv",
+      "profile": "jlcpcb",
+      "sha256": "d0987b26ac6e1989599c0080615fe561909fbf84a41a32f0f1361482b541dc74"
+    },
+    {
+      "artifact_id": "assembly_the_card_hardware_v0_2_0_assembly_zip_c24ad0476889",
+      "bytes": 483483,
+      "category": "assembly",
+      "media_type": "application/zip",
+      "path": "assembly/the-card-hardware-v0.2.0-assembly.zip",
+      "profile": "bundle",
+      "sha256": "10d0ee9e1f314896b53d069af8f2721b62580b2761e3c3a770c1c16743c4eaa1"
+    },
+    {
+      "artifact_id": "fabrication_drill_the_card_npth_drl_bd7d06a1adb7",
+      "bytes": 356,
+      "category": "fabrication",
+      "media_type": "application/octet-stream",
+      "path": "fabrication/drill/the-card-NPTH.drl",
+      "sha256": "1560b6a65e3fc2dd293cd1d49c6b118113cb3509d4538068ac5abc647d512c9b"
+    },
+    {
+      "artifact_id": "fabrication_drill_the_card_pth_drl_abd360c89fc8",
+      "bytes": 3497,
+      "category": "fabrication",
+      "media_type": "application/octet-stream",
+      "path": "fabrication/drill/the-card-PTH.drl",
+      "sha256": "7bfa6abfc16897e1800d785cc1bed94682959c677c3967f5beb71c62fe374007"
+    },
+    {
+      "artifact_id": "fabrication_fabrication_notes_md_926f064c7a46",
+      "bytes": 8765,
+      "category": "fabrication",
+      "media_type": "text/markdown",
+      "path": "fabrication/fabrication-notes.md",
+      "sha256": "c25ec72e4fa8db55184175dd2e7eca620435e06ee02c48d1a4ec56a37fc43405"
+    },
+    {
+      "artifact_id": "fabrication_gerbers_the_card_b_cu_gbl_87b286b7746b",
+      "bytes": 338238,
+      "category": "fabrication",
+      "media_type": "application/octet-stream",
+      "path": "fabrication/gerbers/the-card-B_Cu.gbl",
+      "sha256": "1052bbebecdab657d2a116984bbd005ac02a94fe16da17713089c19f9729f44b"
+    },
+    {
+      "artifact_id": "fabrication_gerbers_the_card_b_mask_gbs_9bc81c09af0a",
+      "bytes": 12302,
+      "category": "fabrication",
+      "media_type": "application/octet-stream",
+      "path": "fabrication/gerbers/the-card-B_Mask.gbs",
+      "sha256": "dc1018c02af750373fd7b0684d3753c86c2df3002d5111c00d1b8e554f49ac3a"
+    },
+    {
+      "artifact_id": "fabrication_gerbers_the_card_b_paste_gbp_f0fb862f753e",
+      "bytes": 11758,
+      "category": "fabrication",
+      "media_type": "application/octet-stream",
+      "path": "fabrication/gerbers/the-card-B_Paste.gbp",
+      "sha256": "3f0b34fdcfcd9e1445407dd735f5e9078f78f04f91ff6fd6739a65ae467e0fe3"
+    },
+    {
+      "artifact_id": "fabrication_gerbers_the_card_b_silkscreen_gbo_b6b432ef59d5",
+      "bytes": 37228,
+      "category": "fabrication",
+      "media_type": "application/octet-stream",
+      "path": "fabrication/gerbers/the-card-B_Silkscreen.gbo",
+      "sha256": "ef27c9d11c7334f0ea904888e35ccdeede83dfacb76dc56d10e98138d0ad62bf"
+    },
+    {
+      "artifact_id": "fabrication_gerbers_the_card_edge_cuts_gm1_c0ffc78c7f59",
+      "bytes": 979,
+      "category": "fabrication",
+      "media_type": "application/octet-stream",
+      "path": "fabrication/gerbers/the-card-Edge_Cuts.gm1",
+      "sha256": "2392f03176715afb5788c27d6908bde3af14d26adfc85eac5ed07a3cac496703"
+    },
+    {
+      "artifact_id": "fabrication_gerbers_the_card_f_cu_gtl_b4f61745d8ad",
+      "bytes": 230038,
+      "category": "fabrication",
+      "media_type": "application/octet-stream",
+      "path": "fabrication/gerbers/the-card-F_Cu.gtl",
+      "sha256": "183edf88593ba4ea6767291b84bf30d69752eb8ed1d946c8612dd049a096bf90"
+    },
+    {
+      "artifact_id": "fabrication_gerbers_the_card_f_mask_gts_5ff975f2d1b0",
+      "bytes": 2359,
+      "category": "fabrication",
+      "media_type": "application/octet-stream",
+      "path": "fabrication/gerbers/the-card-F_Mask.gts",
+      "sha256": "452ec815587191384252ba81ac45aa722fccd77930ad8b0ae0b888c5326eec2b"
+    },
+    {
+      "artifact_id": "fabrication_gerbers_the_card_f_paste_gtp_5c80db18d62b",
+      "bytes": 2094,
+      "category": "fabrication",
+      "media_type": "application/octet-stream",
+      "path": "fabrication/gerbers/the-card-F_Paste.gtp",
+      "sha256": "4a876631b0930c67d688610e0dc541742fc13bc10eca494c8e8b1d6c80a704f9"
+    },
+    {
+      "artifact_id": "fabrication_gerbers_the_card_f_silkscreen_gto_9795462dba80",
+      "bytes": 10807,
+      "category": "fabrication",
+      "media_type": "application/octet-stream",
+      "path": "fabrication/gerbers/the-card-F_Silkscreen.gto",
+      "sha256": "cb959aecc0601093d34c5cf1d07de4b98751b1eeb82257f7be54561407ab1a8d"
+    },
+    {
+      "artifact_id": "fabrication_gerbers_the_card_in1_cu_g1_27a720a2f600",
+      "bytes": 208016,
+      "category": "fabrication",
+      "media_type": "application/octet-stream",
+      "path": "fabrication/gerbers/the-card-In1_Cu.g1",
+      "sha256": "a58d121c9a218af2d2b8a34da47fce9c3b674ce4c5e57b37f679fa9c6fef0445"
+    },
+    {
+      "artifact_id": "fabrication_gerbers_the_card_in2_cu_g2_59be1041a4a2",
+      "bytes": 243787,
+      "category": "fabrication",
+      "media_type": "application/octet-stream",
+      "path": "fabrication/gerbers/the-card-In2_Cu.g2",
+      "sha256": "69f5a1a804369bcb05aec5572b5aa6cb24d0369eef496e43775d817abbadfc2b"
+    },
+    {
+      "artifact_id": "fabrication_gerbers_the_card_job_gbrjob_1207530e5835",
+      "bytes": 3683,
+      "category": "fabrication",
+      "media_type": "application/json",
+      "path": "fabrication/gerbers/the-card-job.gbrjob",
+      "sha256": "af769e1ad0547cbb1d2a271ebc45522ccf14fc2df67336c2c7f503a6ce194078"
+    },
+    {
+      "artifact_id": "fabrication_the_card_hardware_v0_2_0_fabrication_zip_1a486b0432e6",
+      "bytes": 249994,
+      "category": "fabrication",
+      "media_type": "application/zip",
+      "path": "fabrication/the-card-hardware-v0.2.0-fabrication.zip",
+      "sha256": "f31e9809c45d60ca887af140995e3f5baf0fa9fc38b6ec4ef20c4da18c88f58c"
+    },
+    {
+      "artifact_id": "preview_drill_the_card_npth_drl_map_gbr_92a8bee9870b",
+      "bytes": 22710,
+      "category": "preview",
+      "media_type": "application/octet-stream",
+      "path": "preview/drill/the-card-NPTH-drl_map.gbr",
+      "sha256": "4d71c2667020a0c06819ae20fee16bc6d1b68f1825977e99cdc82f6da5989c7a"
+    },
+    {
+      "artifact_id": "preview_drill_the_card_pth_drl_map_gbr_8be259ec1664",
+      "bytes": 93567,
+      "category": "preview",
+      "media_type": "application/octet-stream",
+      "path": "preview/drill/the-card-PTH-drl_map.gbr",
+      "sha256": "82b994fa5e2b9ad37dd0719f981f546169468835e24d97bff2f393cf1379e8ae"
+    },
+    {
+      "artifact_id": "preview_layers_01_f_cu_png_42c4bcaaa762",
+      "bytes": 216330,
+      "category": "preview",
+      "media_type": "image/png",
+      "path": "preview/layers/01-f-cu.png",
+      "sha256": "098c396703b45f26ef1f2fee8ee0f14e2e8eb18eacd4c8cc5f1e0f1d9e76f9de"
+    },
+    {
+      "artifact_id": "preview_layers_01_f_cu_svg_7e0f982dfd40",
+      "bytes": 180411,
+      "category": "preview",
+      "media_type": "image/svg+xml",
+      "path": "preview/layers/01-f-cu.svg",
+      "sha256": "66d33cb6b327ebd06ccd5cb0cacc13fa7c2a072ad127d0ffd41ea58dc081b98c"
+    },
+    {
+      "artifact_id": "preview_layers_02_in1_cu_png_560ead856c13",
+      "bytes": 174880,
+      "category": "preview",
+      "media_type": "image/png",
+      "path": "preview/layers/02-in1-cu.png",
+      "sha256": "eb5432f232593c72bfe0314776956e3bbe9a60892eb9dccc2cf8ac5357bac488"
+    },
+    {
+      "artifact_id": "preview_layers_02_in1_cu_svg_2054abdba241",
+      "bytes": 156857,
+      "category": "preview",
+      "media_type": "image/svg+xml",
+      "path": "preview/layers/02-in1-cu.svg",
+      "sha256": "2cdf17c1bc3ce2590a554ee2b592ad5c643fd6169bb188cfa7d04107460eb4a7"
+    },
+    {
+      "artifact_id": "preview_layers_03_in2_cu_png_8bfdca5d06a7",
+      "bytes": 308667,
+      "category": "preview",
+      "media_type": "image/png",
+      "path": "preview/layers/03-in2-cu.png",
+      "sha256": "1b3adc7403729b7d3753aa7b37f41abdf47464a6671477f16dd711065c06712e"
+    },
+    {
+      "artifact_id": "preview_layers_03_in2_cu_svg_73a4d7e1e513",
+      "bytes": 184646,
+      "category": "preview",
+      "media_type": "image/svg+xml",
+      "path": "preview/layers/03-in2-cu.svg",
+      "sha256": "7023b006de56fd4c1b60c35a8fd352e62911e5089f979e229762746b2f31845e"
+    },
+    {
+      "artifact_id": "preview_layers_04_b_cu_bottom_view_png_30fa84b93060",
+      "bytes": 358216,
+      "category": "preview",
+      "media_type": "image/png",
+      "path": "preview/layers/04-b-cu-bottom-view.png",
+      "sha256": "08a849d556b816199e11e6d45c82fad120a87d9016a1dd5b09463794a739acb4"
+    },
+    {
+      "artifact_id": "preview_layers_04_b_cu_bottom_view_svg_5c3754ce3b70",
+      "bytes": 304957,
+      "category": "preview",
+      "media_type": "image/svg+xml",
+      "path": "preview/layers/04-b-cu-bottom-view.svg",
+      "sha256": "9ca13bfb93215da7b4d623a515100cc98d60913bd5fa1752055e02956143abfb"
+    },
+    {
+      "artifact_id": "preview_layers_05_f_paste_png_21f7328b480c",
+      "bytes": 22194,
+      "category": "preview",
+      "media_type": "image/png",
+      "path": "preview/layers/05-f-paste.png",
+      "sha256": "f025e3270d8af6ab94b64b7ff568926d66237ff7c2fd2d26eb33bf23aca4b8af"
+    },
+    {
+      "artifact_id": "preview_layers_05_f_paste_svg_ee2c71789c61",
+      "bytes": 8974,
+      "category": "preview",
+      "media_type": "image/svg+xml",
+      "path": "preview/layers/05-f-paste.svg",
+      "sha256": "8d57a270462cd723c14f944c1b0bec3ab325d336b75526db6fe314b28d3e6327"
+    },
+    {
+      "artifact_id": "preview_layers_06_b_paste_bottom_view_png_32d8a332fd95",
+      "bytes": 49415,
+      "category": "preview",
+      "media_type": "image/png",
+      "path": "preview/layers/06-b-paste-bottom-view.png",
+      "sha256": "86ef17dc736b5c29113c3b14fad75d061a022e1616b3f73798770c94c78b6e05"
+    },
+    {
+      "artifact_id": "preview_layers_06_b_paste_bottom_view_svg_8deca2a4e4d2",
+      "bytes": 65386,
+      "category": "preview",
+      "media_type": "image/svg+xml",
+      "path": "preview/layers/06-b-paste-bottom-view.svg",
+      "sha256": "3c5a499c842ec9cb63810e65a8b3b977f68f8e2205aa10247e4a812ff2c2077b"
+    },
+    {
+      "artifact_id": "preview_layers_07_f_mask_png_7b2d2860c26b",
+      "bytes": 22762,
+      "category": "preview",
+      "media_type": "image/png",
+      "path": "preview/layers/07-f-mask.png",
+      "sha256": "9057a5032d8e75fff64ce01d920dbad0b89ea85f3f2cee33d9178c654646c405"
+    },
+    {
+      "artifact_id": "preview_layers_07_f_mask_svg_48529ed9f059",
+      "bytes": 9842,
+      "category": "preview",
+      "media_type": "image/svg+xml",
+      "path": "preview/layers/07-f-mask.svg",
+      "sha256": "18cd29c743d2efd4e295c4d53d024584a085e8198f953b5eab4dad5eb06349d3"
+    },
+    {
+      "artifact_id": "preview_layers_08_b_mask_bottom_view_png_80cb05c1de36",
+      "bytes": 45899,
+      "category": "preview",
+      "media_type": "image/png",
+      "path": "preview/layers/08-b-mask-bottom-view.png",
+      "sha256": "0f4126eb422f04d3354da38af9978d85332692197d0b6fca8b670a8a312303f3"
+    },
+    {
+      "artifact_id": "preview_layers_08_b_mask_bottom_view_svg_223affb7c1f7",
+      "bytes": 66618,
+      "category": "preview",
+      "media_type": "image/svg+xml",
+      "path": "preview/layers/08-b-mask-bottom-view.svg",
+      "sha256": "0218e96cd6bd3fcc54a10605b8b77251de9ec49350ecdd332a16ffade73b3dd0"
+    },
+    {
+      "artifact_id": "preview_layers_09_f_silkscreen_png_08b8da7e78c0",
+      "bytes": 46702,
+      "category": "preview",
+      "media_type": "image/png",
+      "path": "preview/layers/09-f-silkscreen.png",
+      "sha256": "14bdcc5234b22736e984a27990ed11133aab71d919754a7a36d126e3e2b4293b"
+    },
+    {
+      "artifact_id": "preview_layers_09_f_silkscreen_svg_2cf783266fea",
+      "bytes": 12333,
+      "category": "preview",
+      "media_type": "image/svg+xml",
+      "path": "preview/layers/09-f-silkscreen.svg",
+      "sha256": "40ce85b55dc6fa73ca70484ba4874ddc88de373d83a753a84fe3a40812d4a6a8"
+    },
+    {
+      "artifact_id": "preview_layers_10_b_silkscreen_bottom_view_png_4a0d17640c27",
+      "bytes": 56485,
+      "category": "preview",
+      "media_type": "image/png",
+      "path": "preview/layers/10-b-silkscreen-bottom-view.png",
+      "sha256": "e032c268326cc01a2b20df514052d45984f0a2d0c2119f029320f6fe816c7d8d"
+    },
+    {
+      "artifact_id": "preview_layers_10_b_silkscreen_bottom_view_svg_b0e44eb8d6da",
+      "bytes": 30188,
+      "category": "preview",
+      "media_type": "image/svg+xml",
+      "path": "preview/layers/10-b-silkscreen-bottom-view.svg",
+      "sha256": "3a34cd931b70cede9f7c5ed164a4a29596e0be2bd5c173fb0e5d19a480ec8a04"
+    },
+    {
+      "artifact_id": "preview_layers_11_edge_cuts_png_7c8f39323397",
+      "bytes": 18966,
+      "category": "preview",
+      "media_type": "image/png",
+      "path": "preview/layers/11-edge-cuts.png",
+      "sha256": "8e7ea16617e3793c2c0bb9717b8b870149fce2f74ce4a19fd882c949ab84b3f4"
+    },
+    {
+      "artifact_id": "preview_layers_11_edge_cuts_svg_3004bb882b42",
+      "bytes": 1792,
+      "category": "preview",
+      "media_type": "image/svg+xml",
+      "path": "preview/layers/11-edge-cuts.svg",
+      "sha256": "ce4fbed01e2a95004851a26c42606bf0676dfece1962d662229464ddd79c0316"
+    },
+    {
+      "artifact_id": "preview_pcb_back_png_70e1de7a15b7",
+      "bytes": 399647,
+      "category": "preview",
+      "media_type": "image/png",
+      "path": "preview/pcb/back.png",
+      "sha256": "35e4e316a416519744675950379f4b9c29f708ff0741fe9559a5f2645fa04389"
+    },
+    {
+      "artifact_id": "preview_pcb_back_svg_34209e5490a7",
+      "bytes": 397730,
+      "category": "preview",
+      "media_type": "image/svg+xml",
+      "path": "preview/pcb/back.svg",
+      "sha256": "d72de12334aa929010fabd1e08b782ca4cdf893a667a60f83c607a3870600ba6"
+    },
+    {
+      "artifact_id": "preview_pcb_front_png_1f1d6d1b11c8",
+      "bytes": 248889,
+      "category": "preview",
+      "media_type": "image/png",
+      "path": "preview/pcb/front.png",
+      "sha256": "30420c09ccf10f87fc78d5dfb3a590fa74179cb673a78e6e41652539f9070591"
+    },
+    {
+      "artifact_id": "preview_pcb_front_svg_75f851a2de78",
+      "bytes": 198610,
+      "category": "preview",
+      "media_type": "image/svg+xml",
+      "path": "preview/pcb/front.svg",
+      "sha256": "cc5a4f6599fce692f8ed1fc22fae56e97ad5f343e5a9db7a0b2eb868b2af9dfd"
+    },
+    {
+      "artifact_id": "preview_pcb_inner_1_png_52bcd19201e8",
+      "bytes": 174880,
+      "category": "preview",
+      "media_type": "image/png",
+      "path": "preview/pcb/inner-1.png",
+      "sha256": "eb5432f232593c72bfe0314776956e3bbe9a60892eb9dccc2cf8ac5357bac488"
+    },
+    {
+      "artifact_id": "preview_pcb_inner_1_svg_a58cb9335304",
+      "bytes": 156855,
+      "category": "preview",
+      "media_type": "image/svg+xml",
+      "path": "preview/pcb/inner-1.svg",
+      "sha256": "19fac4380d80d6a101d106e702c880c235a3ae18b98327947e931c6b80c21828"
+    },
+    {
+      "artifact_id": "preview_pcb_inner_2_png_3d22fe74face",
+      "bytes": 308667,
+      "category": "preview",
+      "media_type": "image/png",
+      "path": "preview/pcb/inner-2.png",
+      "sha256": "1b3adc7403729b7d3753aa7b37f41abdf47464a6671477f16dd711065c06712e"
+    },
+    {
+      "artifact_id": "preview_pcb_inner_2_svg_acd65b4f33bd",
+      "bytes": 184644,
+      "category": "preview",
+      "media_type": "image/svg+xml",
+      "path": "preview/pcb/inner-2.svg",
+      "sha256": "c1dcd47b1652851b1568054dd8da849d90d324801adb9940ae5978163e8a2b1b"
+    },
+    {
+      "artifact_id": "preview_pcb_back_png_e911fc98297e",
+      "bytes": 399647,
+      "category": "preview",
+      "media_type": "image/png",
+      "path": "preview/pcb-back.png",
+      "sha256": "35e4e316a416519744675950379f4b9c29f708ff0741fe9559a5f2645fa04389"
+    },
+    {
+      "artifact_id": "preview_pcb_front_png_a724b13553b3",
+      "bytes": 248889,
+      "category": "preview",
+      "media_type": "image/png",
+      "path": "preview/pcb-front.png",
+      "sha256": "30420c09ccf10f87fc78d5dfb3a590fa74179cb673a78e6e41652539f9070591"
+    },
+    {
+      "artifact_id": "preview_pcb_inner_1_png_1cb4c139c680",
+      "bytes": 174880,
+      "category": "preview",
+      "media_type": "image/png",
+      "path": "preview/pcb-inner-1.png",
+      "sha256": "eb5432f232593c72bfe0314776956e3bbe9a60892eb9dccc2cf8ac5357bac488"
+    },
+    {
+      "artifact_id": "preview_pcb_inner_2_png_fbfff29f1e34",
+      "bytes": 308667,
+      "category": "preview",
+      "media_type": "image/png",
+      "path": "preview/pcb-inner-2.png",
+      "sha256": "1b3adc7403729b7d3753aa7b37f41abdf47464a6671477f16dd711065c06712e"
+    },
+    {
+      "artifact_id": "preview_pcb_pdf_e6f25d5b7b67",
+      "bytes": 335794,
+      "category": "preview",
+      "media_type": "application/pdf",
+      "path": "preview/pcb.pdf",
+      "sha256": "31761cf0a5a4d0b76fd99d128dd7a02c87fa4c71c35134d12bb59cf2b70e7df8"
+    },
+    {
+      "artifact_id": "preview_schematic_png_the_card_png_933045e23fe3",
+      "bytes": 872500,
+      "category": "preview",
+      "media_type": "image/png",
+      "path": "preview/schematic/png/the-card.png",
+      "sha256": "94b7be69ddb7c1aab376f265aecbeabac3c8fd611f92c4ffd41d18a107b268b0"
+    },
+    {
+      "artifact_id": "preview_schematic_svg_the_card_svg_05825c64afc3",
+      "bytes": 2703658,
+      "category": "preview",
+      "media_type": "image/svg+xml",
+      "path": "preview/schematic/svg/the-card.svg",
+      "sha256": "972d841401a2fbbb6e6ed9d37e63e144582155953e134224afbec836bf53a0fe"
+    },
+    {
+      "artifact_id": "preview_schematic_the_card_schematic_pdf_b4b30a74ae10",
+      "bytes": 177251,
+      "category": "preview",
+      "media_type": "application/pdf",
+      "path": "preview/schematic/the-card-schematic.pdf",
+      "sha256": "2a150136e4e30db7416b8fb8cc9126f7387f034f76fa306fed5146ca2f9d09a3"
+    },
+    {
+      "artifact_id": "preview_schematic_thumbnail_png_40bc886b1977",
+      "bytes": 163895,
+      "category": "preview",
+      "media_type": "image/png",
+      "path": "preview/schematic-thumbnail.png",
+      "sha256": "a00f38647f76f4840b26e58437ae7958e2ffa1dbda252c3e4921f1305a09ffce"
+    },
+    {
+      "artifact_id": "preview_schematic_pdf_1a19fa25dc7f",
+      "bytes": 177251,
+      "category": "preview",
+      "media_type": "application/pdf",
+      "path": "preview/schematic.pdf",
+      "sha256": "2a150136e4e30db7416b8fb8cc9126f7387f034f76fa306fed5146ca2f9d09a3"
+    },
+    {
+      "artifact_id": "preview_schematic_png_1f1d667555ad",
+      "bytes": 872500,
+      "category": "preview",
+      "media_type": "image/png",
+      "path": "preview/schematic.png",
+      "sha256": "94b7be69ddb7c1aab376f265aecbeabac3c8fd611f92c4ffd41d18a107b268b0"
+    },
+    {
+      "artifact_id": "preview_schematic_svg_566680ffadf6",
+      "bytes": 2703658,
+      "category": "preview",
+      "media_type": "image/svg+xml",
+      "path": "preview/schematic.svg",
+      "sha256": "972d841401a2fbbb6e6ed9d37e63e144582155953e134224afbec836bf53a0fe"
+    },
+    {
+      "artifact_id": "preview_the_card_hardware_v0_2_0_preview_zip_ac1b7959e3f6",
+      "bytes": 6876639,
+      "category": "preview",
+      "media_type": "application/zip",
+      "path": "preview/the-card-hardware-v0.2.0-preview.zip",
+      "sha256": "be47b610a64e3382bf8744af9a44b9c33825498d41b610df6560b3204251b02d"
+    },
+    {
+      "artifact_id": "reports_drc_json_41f53bb7a84d",
+      "bytes": 1166,
+      "category": "report",
+      "media_type": "application/json",
+      "path": "reports/drc.json",
+      "sha256": "bafc5a5d6cece0131a1d36b712f975ab9e5e08191e3e0d06c0cce6cda6e919a4"
+    },
+    {
+      "artifact_id": "reports_drill_report_txt_696f956f342d",
+      "bytes": 860,
+      "category": "report",
+      "media_type": "text/plain",
+      "path": "reports/drill-report.txt",
+      "sha256": "20127cff3977daa44ab0673c23dcc40aa318b2086d2c7e79b7cb50f8405bfbb5"
+    },
+    {
+      "artifact_id": "reports_erc_json_4696d9d741f8",
+      "bytes": 889,
+      "category": "report",
+      "media_type": "application/json",
+      "path": "reports/erc.json",
+      "sha256": "6bd2801f678ed354ca2b57a69837e67ebecdfbbf8ad50464ee7bd78fedfd369d"
+    }
+  ],
+  "assembly": {
+    "bom_lines": 33,
+    "components_needing_sourcing": 0,
+    "components_with_assigned_lcsc": 69,
+    "distributor_components": 1,
+    "jlc_bom_lines": 33,
+    "placed_components": 70,
+    "position_count": 70
+  },
+  "board": {
+    "copper_layers": 4,
+    "finished_thickness_mm": 0.8,
+    "height_mm": 85.6,
+    "width_mm": 53.98
+  },
+  "design_version": "0.2.0",
+  "generated_at": "2026-08-19T16:36:26.946983Z",
+  "generator": "hardware/scripts/release_fabrication.py",
+  "git_commit": "0e9a77213cf106cb199ce033bdaf28057121383b",
+  "kicad_version": "10.0.5",
+  "manual_approval": {
+    "gates": [
+      "Confirm display FPC pin 1, contact side, and fold direction with the physical panel.",
+      "Confirm battery connector polarity with a multimeter.",
+      "Confirm bare versus protected cell choice before populating the on-board protector.",
+      "Inspect U8 orientation and protection-path continuity before connecting a cell.",
+      "Import the assembly files and verify stock, package, side, rotation, pin 1, and polarized-part orientation.",
+      "With C29 DNP, measure NFC resonance and Q on the assembled prototype; fit the smallest measured C0G trim only if needed, then verify read/write range with multiple phones and retest in the final enclosure. Treat more than about 15-18 pF, poor Q, or inadequate range as a respin signal."
+    ],
+    "status": "pending"
+  },
+  "project": "the-card",
+  "provenance": {
+    "dirty_worktree": false,
+    "source_file_groups": {
+      "design_generators": [
+        "hardware/gen_hierarchical_schematic.py",
+        "hardware/gen_pcb.py",
+        "hardware/pcb_router.py",
+        "hardware/nfc_antenna.py",
+        "hardware/scripts/fetch_libs.sh",
+        "hardware/scripts/normalize_libraries.py"
+      ],
+      "library_assets": [
+        "hardware/libraries/the-card.kicad_sym",
+        "hardware/libraries/passives.kicad_sym",
+        "hardware/libraries/the-card.pretty/CONN-SMD_P2.00_S2B-PH-SM4-TB-LF-SN.kicad_mod",
+        "hardware/libraries/the-card.pretty/DFN-4_L1.5-W1.5-P0.80-TL-EP.kicad_mod",
+        "hardware/libraries/the-card.pretty/ESOP-8_L4.9-W3.9-P1.27-LS6.0-BL-EP.kicad_mod",
+        "hardware/libraries/the-card.pretty/FPC-SMD_AFC24-S14FIA-00.kicad_mod",
+        "hardware/libraries/the-card.pretty/FPC-SMD_FPC-0.5-24P-LTH2.0.kicad_mod",
+        "hardware/libraries/the-card.pretty/Hirose_FH12-24S-0.5SH_1x24-2MP_P0.50mm_Horizontal.kicad_mod",
+        "hardware/libraries/the-card.pretty/IND-SMD_L5.0-W5.0_XRNR5020.kicad_mod",
+        "hardware/libraries/the-card.pretty/LED-SMD_4P-L3.5-W3.5-TL_WS2812B.kicad_mod",
+        "hardware/libraries/the-card.pretty/LGA-14_L3.0-W2.5-P0.50-TL.kicad_mod",
+        "hardware/libraries/the-card.pretty/SO-8_L4.9-W3.9-P1.27-LS6.0-BL.kicad_mod",
+        "hardware/libraries/the-card.pretty/SOT-23-3_L3.0-W1.7-P0.95-LS2.9-BR.kicad_mod",
+        "hardware/libraries/the-card.pretty/SOT-23-5_L3.0-W1.7-P0.95-LS2.8-BL.kicad_mod",
+        "hardware/libraries/the-card.pretty/SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BL.kicad_mod",
+        "hardware/libraries/the-card.pretty/SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BR.kicad_mod",
+        "hardware/libraries/the-card.pretty/SW-SMD_4P-L5.1-W5.1-P3.70-LS6.5-TL_H1.5.kicad_mod",
+        "hardware/libraries/the-card.pretty/TDFN-8_L2.0-W2.0-P0.50-BL-EP1.2.kicad_mod",
+        "hardware/libraries/the-card.pretty/TSSOP-8_L4.4-W3.0-P0.65-LS6.4-BL-2.kicad_mod",
+        "hardware/libraries/the-card.pretty/USB-C_SMD-TYPE-C-31-M-12_1.kicad_mod",
+        "hardware/libraries/the-card.pretty/WIRELM-SMD_ESP32-S3-WROOM-1.kicad_mod"
+      ],
+      "release_inputs": [
+        "hardware/the-card.kicad_pcb",
+        "hardware/the-card.kicad_pro",
+        "hardware/the-card.kicad_sch",
+        "hardware/parts.yaml",
+        "hardware/design_metadata.py",
+        "hardware/the-card.kicad_dru"
+      ],
+      "release_tools": [
+        "hardware/scripts/release_fabrication.py",
+        "hardware/scripts/export_design_review.py",
+        "hardware/scripts/release_manifest.py",
+        "hardware/scripts/rasterize_svg.py",
+        "hardware/FABRICATION.md",
+        ".github/workflows/ci.yml",
+        ".github/workflows/hardware-output.yml",
+        "hardware/pyproject.toml",
+        "hardware/uv.lock",
+        "hardware/fp-lib-table",
+        "hardware/sym-lib-table"
+      ],
+      "verification_inputs": [
+        "hardware/circuit.py",
+        "hardware/verify_schematic.py",
+        "hardware/verify_nfc_design.py",
+        "hardware/libraries/the-card.kicad_sym",
+        "hardware/libraries/passives.kicad_sym"
+      ]
+    },
+    "source_files": {
+      ".github/workflows/ci.yml": "9c188e7e26aeb8cffe61c4abcd8a7b35c9409f35b92232944ab7a884cc10933f",
+      ".github/workflows/hardware-output.yml": "aa92a0b62a37f51ee87dacf2da2b7e5bf6a087def42446a814fb84aaa0491783",
+      "hardware/FABRICATION.md": "c25ec72e4fa8db55184175dd2e7eca620435e06ee02c48d1a4ec56a37fc43405",
+      "hardware/circuit.py": "3fcd24ae94fabe3b9b741f739d9b8b67599982f03d4742c98da9de4cf5e1199c",
+      "hardware/design_metadata.py": "9c21c771e81689e661e156a4ce52c6753806e21392a1e431b9ad1f5d6f62751c",
+      "hardware/fp-lib-table": "7680f43f14fa5c5e111f719e23f8fb77f0b466bd82c271a2a72b05fe9f92f816",
+      "hardware/gen_hierarchical_schematic.py": "161e906bddbd00b4db66e1f1dfbc0dc924f626a28d2ac1870529078dabe173f5",
+      "hardware/gen_pcb.py": "72c5f218a267da06fa55cc9c538fae11b7fa77145513194c2db8d09b395f06f5",
+      "hardware/libraries/passives.kicad_sym": "7dee1e1971c5239bd582a2950e780d9d859a08fb5c77777080e2e82e18dafbea",
+      "hardware/libraries/the-card.kicad_sym": "4395d0467213898ab1e988c5c5ab32b95a98ad512a45e65fde02c2ab4d265a05",
+      "hardware/libraries/the-card.pretty/CONN-SMD_P2.00_S2B-PH-SM4-TB-LF-SN.kicad_mod": "751f89cacdec9f4d4686358241bd5d780438431dd32f1f5894b8765e4845098b",
+      "hardware/libraries/the-card.pretty/DFN-4_L1.5-W1.5-P0.80-TL-EP.kicad_mod": "d6051a3fc7a3accd301fa6cfcd0a18783c8ddb3e8e776db4cf9ac561c3df18d2",
+      "hardware/libraries/the-card.pretty/ESOP-8_L4.9-W3.9-P1.27-LS6.0-BL-EP.kicad_mod": "17a45ad8a3dd4d966c3570fae658e5e0ce94446e48adcb21ec78d58dbbca87ff",
+      "hardware/libraries/the-card.pretty/FPC-SMD_AFC24-S14FIA-00.kicad_mod": "ffdd81a61f20ea171268a1f8bdc6c58783debc29018ec85331eeee9863e8a006",
+      "hardware/libraries/the-card.pretty/FPC-SMD_FPC-0.5-24P-LTH2.0.kicad_mod": "24d3bc517cd114817751e189bfb9be1e3e14c4c6a6d264986e15d6fc3c14429e",
+      "hardware/libraries/the-card.pretty/Hirose_FH12-24S-0.5SH_1x24-2MP_P0.50mm_Horizontal.kicad_mod": "cc187bfe78d110ebf9a5f68812c2a18cfb474158e2417e5c328a7f03726cbce9",
+      "hardware/libraries/the-card.pretty/IND-SMD_L5.0-W5.0_XRNR5020.kicad_mod": "d65b694b9db5442679d2ec17644a3f1ecfe1e037670ac8a7712b70342ea72151",
+      "hardware/libraries/the-card.pretty/LED-SMD_4P-L3.5-W3.5-TL_WS2812B.kicad_mod": "635dde827f66e28758dfea72e4e201223bace9a89ad22e2328dc61f04a9e15e6",
+      "hardware/libraries/the-card.pretty/LGA-14_L3.0-W2.5-P0.50-TL.kicad_mod": "029ad7482882de70a9647cfbd3e0666e9f2d8ce2fbcc1d65def8e9688a1d1c82",
+      "hardware/libraries/the-card.pretty/SO-8_L4.9-W3.9-P1.27-LS6.0-BL.kicad_mod": "31f6cc0578171fa55a445457a4470a3553de08f6198c459592960ceb364ee76e",
+      "hardware/libraries/the-card.pretty/SOT-23-3_L3.0-W1.7-P0.95-LS2.9-BR.kicad_mod": "e42af3a8f132d4dab4413cd5a9a374e4e458cdb89809eded5cbb2be82aab10ac",
+      "hardware/libraries/the-card.pretty/SOT-23-5_L3.0-W1.7-P0.95-LS2.8-BL.kicad_mod": "1f7e58c326636df318c801d221c464618e2a34c178df396b9e08ed514b9acc76",
+      "hardware/libraries/the-card.pretty/SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BL.kicad_mod": "06630e0ccf8ed443bf96aa6ecca3d06745dc3fff286a41cca5c72f8b77161c5c",
+      "hardware/libraries/the-card.pretty/SOT-23-6_L2.9-W1.6-P0.95-LS2.8-BR.kicad_mod": "8a9f0324966dcd1c2dfab7925d4f75d596a5967dcc0a811f4868e2ca92b63c47",
+      "hardware/libraries/the-card.pretty/SW-SMD_4P-L5.1-W5.1-P3.70-LS6.5-TL_H1.5.kicad_mod": "b62051176ae50a0bcfe2f057b7aa19fc63875447d29924b6594e5822e44876f4",
+      "hardware/libraries/the-card.pretty/TDFN-8_L2.0-W2.0-P0.50-BL-EP1.2.kicad_mod": "0b79c560c4fbc6007d160fd2926346ef603049585e1677aefd9034ffb1d1fbea",
+      "hardware/libraries/the-card.pretty/TSSOP-8_L4.4-W3.0-P0.65-LS6.4-BL-2.kicad_mod": "7019e04628520d376fe7d0796b002d662af852047c21ee4bb271085ba6c43df3",
+      "hardware/libraries/the-card.pretty/USB-C_SMD-TYPE-C-31-M-12_1.kicad_mod": "1cd9f769b348819517c8180917b768aef3e67d1fc748b263356eec79629d6829",
+      "hardware/libraries/the-card.pretty/WIRELM-SMD_ESP32-S3-WROOM-1.kicad_mod": "3c5ba109a13dd11b6829251b045df64effe089071369d237794bd839740a6219",
+      "hardware/nfc_antenna.py": "f4bdb7ac1aee6d0629b8da5cafe148e56f9257466d1d8382e6a6c00edad1307d",
+      "hardware/parts.yaml": "99245d8d014604de6701005369df5c742899b4c472ba754d11ec30a8a5317e0a",
+      "hardware/pcb_router.py": "6472b7024921f746e0c882a51a62dd26a190703e23132ca9bdb15b100243b269",
+      "hardware/pyproject.toml": "1b0b8f5b8f216ba850db85fb6e2d0e627e1f4a3d8426081959647a76bc15e7b8",
+      "hardware/scripts/export_design_review.py": "f90844071469d1a57a6bd3ce6691143ef87aab211c85adc08856112a7b8c4c02",
+      "hardware/scripts/fetch_libs.sh": "eaf3a6a8b3a609de80235e4987e213bcbb6ed8a1a86995e05ffa6fab55f2162a",
+      "hardware/scripts/normalize_libraries.py": "7a864eb47e23223c37d1f9d3275c609ec8b5f5d4be3a3cd82247c9ae5ce0f6e1",
+      "hardware/scripts/rasterize_svg.py": "e19db6a07156e3b0f4e3575f444fc974b3b2a4a4cd5e0d2685f724d37328b905",
+      "hardware/scripts/release_fabrication.py": "0ed346b973371ebd3aa28afaa42af9505aa0730c818f9f50916257271606e6a1",
+      "hardware/scripts/release_manifest.py": "12dfe9746864e1a0549a7ea95363ca529f03af949c933446814c7014e4d31989",
+      "hardware/sym-lib-table": "8514dbd2941ed52e3d768f4c631b7d93e601e8609a77a78e33ce8ee99b7f2f16",
+      "hardware/the-card.kicad_dru": "5169d8d5e7e5589b8fc1997432f2bc8873c09f67984c13db62a44b6a91331923",
+      "hardware/the-card.kicad_pcb": "d249698277f0c3fcec4b16a0f952ce2b9e5db39b3b109a56e7d4353a704c45f4",
+      "hardware/the-card.kicad_pro": "55cbdbdb8fca74d8f834a8809b1162a0fe8738536d77b5b2ce1f5281efaa584e",
+      "hardware/the-card.kicad_sch": "ffd835a86df58a8bc7a9684a3201c50e1c5c110b74049155ae30380558f3068f",
+      "hardware/uv.lock": "a5fea490a8de9c44b2ffe75fb61283204f09e6dd2790aef05521f76e6c2030c2",
+      "hardware/verify_nfc_design.py": "6a6730c21d3eaf4c43761c4a1ad6469eab01b1b5f91a2541dc293080cf08fff9",
+      "hardware/verify_schematic.py": "d65a6efc9265998ac608e3b20999aa9a719bed511acc0755690088692c8f04c3"
+    },
+    "toolchain": {
+      "kicad_cli": {
+        "path": "/Applications/KiCad/KiCad.app/Contents/MacOS/kicad-cli",
+        "version": "10.0.5"
+      },
+      "python": {
+        "executable": "/Users/clouds/.local/share/uv/python/cpython-3.13.7-macos-aarch64-none/bin/python3.13",
+        "version": "3.13.7"
+      },
+      "python_packages": {
+        "PyYAML": "6.0.3",
+        "skidl": "2.3.0"
+      },
+      "rasterizer_python": "/Applications/KiCad/KiCad.app/Contents/Frameworks/Python.framework/Versions/3.9/bin/python3.9"
+    }
+  },
+  "schema_version": 2,
+  "validation": {
+    "connectivity_verifier": true,
+    "drc_violations": 0,
+    "erc_violations": 0,
+    "gerber_job_copper_layers": 4,
+    "gerber_job_design_version": "0.2.0",
+    "gerber_job_height_mm": 85.65,
+    "gerber_job_project": "the-card",
+    "gerber_job_thickness_mm": 0.8,
+    "gerber_job_width_mm": 54.03,
+    "nfc_design_verifier": true,
+    "schematic_parity_violations": 0,
+    "unconnected_items": 0
+  }
+}

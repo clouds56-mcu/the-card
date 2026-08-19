@@ -42,13 +42,13 @@ const layers = [
 interface LayerExplorerProps {
   board_height_mm: number;
   board_width_mm: number;
-  hardware_revision: string;
+  design_version: string;
 }
 
 export function LayerExplorer({
   board_height_mm,
   board_width_mm,
-  hardware_revision,
+  design_version,
 }: LayerExplorerProps) {
   const [active_id, setActiveId] = useState<(typeof layers)[number]["id"]>("front");
   const active_layer = layers.find((layer) => layer.id === active_id) ?? layers[0];
@@ -79,7 +79,7 @@ export function LayerExplorer({
         </div>
         <div className="layer-image-shell">
           <Image
-            alt={`${active_layer.label} copper plot for The Card Revision ${hardware_revision}: ${active_layer.description}`}
+            alt={`${active_layer.label} copper plot for The Card design v${design_version}: ${active_layer.description}`}
             className="layer-image"
             height={1800}
             key={active_layer.id}

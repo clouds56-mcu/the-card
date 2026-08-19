@@ -5,7 +5,7 @@ import test from "node:test";
 
 const project_root = new URL("../", import.meta.url);
 const release_root = new URL(
-  "../public/hardware/candidates/v0.1.0/",
+  "../public/hardware/candidates/v0.2.0/",
   import.meta.url,
 );
 
@@ -50,12 +50,13 @@ test("renders the finished hardware website and candidate status", async () => {
   assert.match(html, /CAD candidate/);
   assert.match(html, /physical approval pending/);
   assert.match(html, /See every copper layer\./);
-  assert.match(html, /Build Revision A\./);
+  assert.match(html, /Build design v0\.2\.0\./);
   assert.match(html, /Prototype candidate—not production approved\./);
   assert.match(html, /CAD checks pass\./);
-  assert.match(html, /hardware\/candidates\/v0\.1\.0\/fabrication/);
+  assert.match(html, /hardware\/candidates\/v0\.2\.0\/fabrication/);
   assert.match(html, /53\.98 × 85\.60/);
-  assert.match(html, /69<\/strong><span>placed components/);
+  assert.match(html, /70<\/strong><span>placed components/);
+  assert.doesNotMatch(html, /(?:Rev|Revision) [AB]\b/);
   assert.doesNotMatch(html, /codex-preview|SkeletonPreview|react-loading-skeleton/);
 });
 
@@ -85,13 +86,19 @@ test("mirrored candidate tree matches the public release manifest and checksums"
   const manifest = JSON.parse(
     await readFile(new URL("release.json", release_root), "utf8"),
   );
-  assert.equal(manifest.schema_version, 1);
-  assert.equal(manifest.release_version, "0.1.0");
-  assert.equal(manifest.hardware_revision, "A");
+  assert.equal(manifest.schema_version, 2);
+  assert.equal(manifest.design_version, "0.2.0");
+  assert.ok(
+    release_root.pathname.endsWith(`/v${manifest.design_version}/`),
+    "candidate directory must match design_version",
+  );
+  assert.equal("release_version" in manifest, false);
+  assert.equal("hardware_revision" in manifest, false);
   assert.equal(manifest.manual_approval.status, "pending");
   assert.equal(manifest.validation.erc_violations, 0);
   assert.equal(manifest.validation.drc_violations, 0);
   assert.equal(manifest.validation.schematic_parity_violations, 0);
+  assert.equal(manifest.validation.nfc_design_verifier, true);
 
   const response = await render();
   const html = await response.text();
@@ -131,7 +138,7 @@ test("mirrored candidate tree matches the public release manifest and checksums"
   assert.equal(bundles.length, 3);
   for (const bundle of bundles) {
     assert.ok(
-      html.includes(`/hardware/candidates/v0.1.0/${bundle.path}`),
+      html.includes(`/hardware/candidates/v0.2.0/${bundle.path}`),
       bundle.path,
     );
     assert.ok(html.includes(bundle.sha256.slice(0, 10)), bundle.sha256);
