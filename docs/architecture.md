@@ -68,7 +68,7 @@
 The IC supports energy harvesting, but `V_EH` is intentionally left unconnected
 in the current design to keep the power architecture simple.
 
-Rev B connects the ST25DV's open-drain GPO through mandatory 10 kΩ pull-up R17
+Design v0.2.0 connects the ST25DV's open-drain GPO through mandatory 10 kΩ pull-up R17
 to `NFC_IRQ` on RTC-capable GPIO21; GPIO3 is no longer used because it is a
 strap-sensitive pin. The antenna uses distinct `NFC_AC0`/`NFC_AC1` nets, a
 nine-turn 0.20 mm F.Cu etched coil (L2), and an all-four-copper-layer RF quiet

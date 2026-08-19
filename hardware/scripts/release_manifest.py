@@ -12,7 +12,7 @@ import re
 from typing import Any, Iterable, Mapping, Sequence
 
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 ARTIFACT_CATEGORIES = frozenset({
   "assembly",
   "fabrication",
@@ -28,7 +28,6 @@ SEMANTIC_VERSION = re.compile(
   r"(?:\.(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*))*)?"
   r"(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?"
 )
-HARDWARE_REVISION_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]*")
 GIT_COMMIT = re.compile(r"(?:[0-9a-f]{40}|[0-9a-f]{64})")
 
 
@@ -114,8 +113,7 @@ def build_release_manifest(
   root: Path,
   *,
   project: str,
-  release_version: str,
-  hardware_revision: str,
+  design_version: str,
   git_commit: str,
   generator: str,
   kicad_version: str,
@@ -131,10 +129,8 @@ def build_release_manifest(
   """Build and validate the stable public release-manifest representation."""
   if not project:
     raise ValueError("project must not be empty")
-  if not SEMANTIC_VERSION.fullmatch(release_version):
-    raise ValueError(f"release_version is not semantic: {release_version!r}")
-  if not HARDWARE_REVISION_PATTERN.fullmatch(hardware_revision):
-    raise ValueError(f"invalid hardware_revision: {hardware_revision!r}")
+  if not SEMANTIC_VERSION.fullmatch(design_version):
+    raise ValueError(f"design_version is not semantic: {design_version!r}")
   if not GIT_COMMIT.fullmatch(git_commit):
     raise ValueError(f"invalid git_commit: {git_commit!r}")
   if manual_approval_status not in APPROVAL_STATUSES:
@@ -157,8 +153,7 @@ def build_release_manifest(
   return {
     "schema_version": SCHEMA_VERSION,
     "project": project,
-    "release_version": release_version,
-    "hardware_revision": hardware_revision,
+    "design_version": design_version,
     "git_commit": git_commit,
     "generated_at": _generated_at(generated_at),
     "generator": generator,

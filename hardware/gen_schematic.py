@@ -16,7 +16,7 @@ import re
 import uuid
 
 import circuit
-from design_metadata import HARDWARE_REVISION, PROJECT_NAME
+from design_metadata import DESIGN_VERSION, PROJECT_NAME
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 LIBS = os.path.join(HERE, "libraries")
@@ -196,7 +196,7 @@ ROOT = U()
 L = [f'(kicad_sch\n\t(version 20250114)\n\t(generator "eeschema")\n\t'
      f'(generator_version "10.0")\n\t(uuid "{ROOT}")\n\t(paper "{PAPER}")',
      '\t(title_block\n\t\t(title "the-card")\n\t\t(date "2026-08-06")\n'
-     f'\t\t(rev "{HARDWARE_REVISION}")\n\t\t'
+     f'\t\t(rev "{DESIGN_VERSION}")\n\t\t'
      '(company "ESP32-S3 e-paper smart badge")\n\t)']
 
 power_used = {pin["net"] for p in parts for pin in p["pins"] if pin["net"] in POWER_NETS}

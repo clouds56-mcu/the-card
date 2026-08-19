@@ -4,13 +4,13 @@
 
 ## Status
 
-🟢 **Rev B single-page schematic and routed four-layer PCB source generated
+🟢 **Design v0.2.0 single-page schematic and routed four-layer PCB source generated
    (KiCad 10, 78 parts).** The revision adds the mandatory NFC GPO pull-up, moves
    its interrupt off a strap pin, and replaces the provisional antenna with a
    tunable nine-turn coil in an all-layer RF quiet area. Automated ERC/DRC and
    connectivity checks are release gates; antenna resonance and range remain
-   mandatory measurements on the first assembled board. The published website
-   v0.1.0/Rev A artifact is immutable and is not silently replaced by Rev B.
+   mandatory measurements on the first assembled board. The earlier v0.1.0
+   draft remains available through Git history, not as a fabrication download.
 
 ---
 
@@ -28,7 +28,7 @@ watch-style buttons, on-board sensors, lanyard form factor. Open-source, MIT.
 
 Headline numbers: component BOM ~$21.5 (@100), landed ~$28/unit. The corrected
 datasheet-based daily-use model is about 5.4 months theoretical on a 1000 mAh
-cell, with 4–5 months used only as a planning range until Rev B is measured.
+cell, with 4–5 months used only as a planning range until v0.2.0 is measured.
 
 ### 3. Repository
 Local git repo, MIT license, `main` branch.
@@ -80,7 +80,7 @@ Using Exa web search + the Good Display datasheet PDF:
   added them: R9 100 Ω (VCC←B+), R10 1 kΩ (VM←P-), C7 100 nF (VCC-VSS). Gate
   assignment DOUT→G1 / COUT→G2 and S1=B- / S2=P- is verified.
 - **ST25DV04KC** ✓ — SO-8 pinout matches the symbol. Its GPO is open-drain, so
-  Rev B adds mandatory 10 kΩ pull-up R17 and connects `NFC_IRQ` to RTC-capable,
+  Design v0.2.0 adds mandatory 10 kΩ pull-up R17 and connects `NFC_IRQ` to RTC-capable,
   non-strapping GPIO21 instead of GPIO3. The 28.5 pF internal tuning capacitance
   is modeled with distinct `NFC_AC0`/`NFC_AC1` nets, etched-coil model L2, and a
   DNP 0–22 pF C0G/NP0 tuning footprint C29. The SO-8 device has no LPD pin and is
@@ -163,7 +163,7 @@ Remaining items are first-prototype validation risks, not CAD blockers:
 
 - **DW01A+FS8205A** — topology and routing are complete; verify U8 orientation
   and negative-path continuity before connecting a cell.
-- **ST25DV04KC antenna** — Rev B uses a nine-turn, 0.20 mm F.Cu spiral in an
+- **ST25DV04KC antenna** — design v0.2.0 uses a nine-turn, 0.20 mm F.Cu spiral in an
   all-copper-layer quiet area. The ST square-equivalent heuristic gives about
   4.52 µH, while an NXP rectangular-coil cross-check brackets about
   3.19–3.98 µH. That lower bracket implies roughly 6.1–14.7 pF nominal added

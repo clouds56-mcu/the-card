@@ -8,7 +8,7 @@
 	)
 	(paper "A4")
 	(title_block
-		(rev "B")
+		(rev "0.2.0")
 	)
 	(layers
 		(0 "F.Cu" signal)
@@ -17080,7 +17080,7 @@
 			(justify mirror)
 		)
 	)
-	(gr_text "REV B - 4L / 0.8 mm"
+	(gr_text "HW 0.2 - 4L / 0.8 mm"
 		(at 47 48.5 0)
 		(layer "B.SilkS")
 		(uuid "178dd708-2e68-498c-aa4a-e64d3fe15724")

@@ -13,7 +13,7 @@
 | **Positioning** | DIY / open learning platform (open-source, flashable, well-documented) |
 | **MCU** | ESP32-S3-WROOM-1-N16R8 (16 MB Flash + 8 MB Octal PSRAM) |
 | **Display** | 2.9" e-paper 296×128 (SSD1680, partial refresh / 4-gray) |
-| **Wireless** | Bluetooth 5 LE (on-module) + NFC (ST25DV04KC dynamic tag, etched Rev B antenna) |
+| **Wireless** | Bluetooth 5 LE (on-module) + NFC (ST25DV04KC dynamic tag, etched v0.2 antenna) |
 | **Input** | 4× tactile buttons (up/down/select/menu, watch-style) |
 | **Sensors** | 6-axis IMU (LSM6DSO) + Temp/Humidity (SHT40) |
 | **Power** | 3.7 V Li-Po + USB-C charging + fuel gauge |

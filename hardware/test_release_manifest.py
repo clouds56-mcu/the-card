@@ -30,8 +30,7 @@ class ReleaseManifestTests(unittest.TestCase):
   def values(self) -> dict[str, object]:
     return {
       "project": "the-card",
-      "release_version": "0.1.0",
-      "hardware_revision": "A",
+      "design_version": "0.2.0",
       "git_commit": COMMIT,
       "generated_at": GENERATED_AT,
       "generator": "hardware/scripts/release_fabrication.py",
@@ -68,9 +67,10 @@ class ReleaseManifestTests(unittest.TestCase):
   def test_builds_versioned_manifest_with_verified_artifact_metadata(self) -> None:
     manifest = build_release_manifest(self.root, **self.values())
 
-    self.assertEqual(manifest["schema_version"], 1)
-    self.assertEqual(manifest["release_version"], "0.1.0")
-    self.assertEqual(manifest["hardware_revision"], "A")
+    self.assertEqual(manifest["schema_version"], 2)
+    self.assertEqual(manifest["design_version"], "0.2.0")
+    self.assertNotIn("release_version", manifest)
+    self.assertNotIn("hardware_revision", manifest)
     self.assertEqual(manifest["generated_at"], "2026-08-18T12:30:00Z")
     self.assertEqual(manifest["assembly"], {"placed_components": 69})
     self.assertFalse(manifest["provenance"]["dirty_worktree"])
@@ -215,8 +215,8 @@ class ReleaseManifestTests(unittest.TestCase):
 
   def test_rejects_unknown_category_and_invalid_version(self) -> None:
     values = self.values()
-    values["release_version"] = "rev-a"
-    with self.assertRaisesRegex(ValueError, "release_version is not semantic"):
+    values["design_version"] = "rev-a"
+    with self.assertRaisesRegex(ValueError, "design_version is not semantic"):
       build_release_manifest(self.root, **values)
 
     values = self.values()
@@ -239,12 +239,12 @@ class ReleaseManifestTests(unittest.TestCase):
       "1.0.0+001",
       "1.0.0-alpha+build.001",
     )
-    for release_version in valid_versions:
-      with self.subTest(release_version=release_version):
+    for design_version in valid_versions:
+      with self.subTest(design_version=design_version):
         values = self.values()
-        values["release_version"] = release_version
+        values["design_version"] = design_version
         manifest = build_release_manifest(self.root, **values)
-        self.assertEqual(manifest["release_version"], release_version)
+        self.assertEqual(manifest["design_version"], design_version)
 
     invalid_versions = (
       "01.0.0",
@@ -255,11 +255,11 @@ class ReleaseManifestTests(unittest.TestCase):
       "1.0.0-",
       "1.0.0+",
     )
-    for release_version in invalid_versions:
-      with self.subTest(release_version=release_version):
+    for design_version in invalid_versions:
+      with self.subTest(design_version=design_version):
         values = self.values()
-        values["release_version"] = release_version
-        with self.assertRaisesRegex(ValueError, "release_version is not semantic"):
+        values["design_version"] = design_version
+        with self.assertRaisesRegex(ValueError, "design_version is not semantic"):
           build_release_manifest(self.root, **values)
 
   def test_requires_timezone_aware_generation_time(self) -> None:

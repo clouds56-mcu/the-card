@@ -7,13 +7,13 @@ installed; the schematic opens in eeschema and is ERC-clean (0 errors).
 ```
 hardware/
 ├── parts.yaml              # parts/procurement manifest, kept in sync with circuit.py
-├── design_metadata.py      # shared project name and physical hardware revision
+├── design_metadata.py      # sole project/design SemVer identity
 ├── pyproject.toml + uv.lock# uv project: skidl + easyeda2kicad (+ pypdf dev)
 ├── circuit.py              # the design in SKiDL (connectivity) -> the-card.net
 ├── gen_hierarchical_schematic.py # current deterministic A2 layout generator
 ├── gen_pcb.py              # deterministic placement, routing, planes, and keepouts
 ├── pcb_router.py           # board-specific fanout and deterministic maze routing
-├── nfc_antenna.py          # Rev B coil geometry and first-order RF model
+├── nfc_antenna.py          # v0.2 coil geometry and first-order RF model
 ├── verify_schematic.py     # compare every KiCad pin's peers with circuit.py
 ├── gen_schematic.py        # legacy flat-layout generator; not used currently
 ├── the-card.kicad_pro      # KiCad 10 project
@@ -51,7 +51,7 @@ kicad-cli sch erc --severity-all --output /tmp/erc.json --format json the-card.k
 
 The verifier exports the complete KiCad schematic and compares both the peer
 set of every component pin and every explicitly named net with the canonicalized
-SKiDL circuit. The expected Rev B result is 78 components and 292 component
+SKiDL circuit. The expected v0.2.0 result is 78 components and 292 component
 pins with identical connectivity across 43 canonical named nets. KiCad ERC has 0
 violations.
 
@@ -96,22 +96,17 @@ Build a manufacturing handoff into a new directory after generation:
 
 ```bash
 uv run python scripts/release_fabrication.py \
-  --release-version 0.2.0 \
-  --hardware-revision B \
   --output ../outputs/the-card-hardware-v0.2.0
 ```
 
-The physical `--hardware-revision` must match `HARDWARE_REVISION` in
-`design_metadata.py`, which is rendered into both KiCad title blocks and the PCB
-silkscreen. When manufactured bare boards must be distinguished, update that
-source value and regenerate the schematic and PCB before building the matching
-release. The semantic `--release-version` identifies an artifact handoff and
-can advance for corrected exports, sourcing data, documentation, or release
-tooling without renaming an unchanged PCB revision.
-
-The tracked source is now Rev B. The website's published v0.1.0/Rev A candidate
-is an immutable historical artifact; a Rev B handoff must use a new release
-identity rather than changing those Rev A files in place.
+`DESIGN_VERSION` in `design_metadata.py` is the sole maintained identity. It is
+written in full to both KiCad title blocks and release metadata; the constrained
+PCB silkscreen derives the matching major/minor mark (`HW 0.2`). Before 1.0, a
+physical/electrical/mechanical PCB change advances the minor version, while an
+artifact-only correction may advance the patch version. Never overwrite an
+already published version. The first physically validated design can become
+v1.0.0. The earlier v0.1.0 draft is retained only in Git history because it was
+never ordered and contains the NFC issue corrected in v0.2.0.
 
 The release command refuses to overwrite an existing directory or use a dirty
 worktree. It runs the connectivity and canonical-net-name verifier, then
@@ -184,7 +179,7 @@ SSD1680 booster, 25 V pump capacitors, and 50 V rail bypass network are now
 present on the host PCB. Residual
 PCB-layout items are:
 
-- **ST25DV04KC antenna** — Rev B uses a nine-turn, 0.20 mm F.Cu spiral in the
+- **ST25DV04KC antenna** — design v0.2.0 uses a nine-turn, 0.20 mm F.Cu spiral in the
   front-left strip, with a dedicated quiet area on all four copper layers. The
   ST square-equivalent heuristic gives about 4.52 µH; an NXP rectangular-coil
   cross-check brackets about 3.19–3.98 µH and implies roughly 6.1–14.7 pF of
@@ -213,7 +208,7 @@ G2 on the pack-negative side.
   layout generator handles KiCad's screen-coordinate rotations explicitly.
 - **ESP32-S3-WROOM-1-N16R8** uses GPIO33–37 for its Octal PSRAM;
   `circuit.py` leaves GPIO35–37 unconnected and uses GPIO16 for `EPD_PWR_EN`.
-- The ST25DV SO-8 GPO is open-drain. Rev B adds its required 10 kΩ pull-up R17
+- The ST25DV SO-8 GPO is open-drain. Design v0.2.0 adds its required 10 kΩ pull-up R17
   and routes `NFC_IRQ` to GPIO21; GPIO3 is deliberately unused because it is a
   strap-sensitive pin.
 - The generator sets embedded part pins to `passive` because several EasyEDA

@@ -2,15 +2,6 @@ name: Hardware output
 
 on:
   workflow_dispatch:
-    inputs:
-      release_version:
-        description: Semantic artifact version, for example 0.2.0
-        required: true
-        type: string
-      hardware_revision:
-        description: Physical PCB revision marked on the board, for example B
-        required: true
-        type: string
 
 permissions:
   contents: read
@@ -47,16 +38,11 @@ jobs:
           enable-cache: true
 
       - name: Build fabrication, preview, and assembly output
-        env:
-          RELEASE_VERSION: ${{ inputs.release_version }}
-          HARDWARE_REVISION: ${{ inputs.hardware_revision }}
         run: |
           uv run --no-project \
             --with pyyaml==6.0.3 \
             --with skidl==2.3.0 \
             python scripts/release_fabrication.py \
-              --release-version "$RELEASE_VERSION" \
-              --hardware-revision "$HARDWARE_REVISION" \
               --output ../outputs/hardware-output
 
       - name: Upload checked hardware output

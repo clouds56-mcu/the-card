@@ -36,7 +36,6 @@ if __package__:
   )
   from .release_manifest import (
     ArtifactSpec,
-    HARDWARE_REVISION_PATTERN,
     SEMANTIC_VERSION,
   )
   from .release_manifest import write_release_manifest
@@ -50,7 +49,6 @@ else:
   )
   from release_manifest import (
     ArtifactSpec,
-    HARDWARE_REVISION_PATTERN,
     SEMANTIC_VERSION,
   )
   from release_manifest import write_release_manifest
@@ -221,16 +219,6 @@ def parse_args() -> argparse.Namespace:
     required=True,
     type=Path,
     help="New release directory; the command refuses to overwrite it.",
-  )
-  parser.add_argument(
-    "--release-version",
-    required=True,
-    help="Semantic output version, for example 0.2.0.",
-  )
-  parser.add_argument(
-    "--hardware-revision",
-    required=True,
-    help="Physical PCB revision, for example B.",
   )
   parser.add_argument(
     "--include-3d",
@@ -422,7 +410,7 @@ def load_design_metadata() -> dict[str, str]:
   namespace = runpy.run_path(str(DESIGN_METADATA))
   metadata = {
     "project_name": namespace.get("PROJECT_NAME"),
-    "hardware_revision": namespace.get("HARDWARE_REVISION"),
+    "design_version": namespace.get("DESIGN_VERSION"),
   }
   invalid = {
     name: value
@@ -460,16 +448,62 @@ def assert_no_excluded_assembly_references(
     )
 
 
-def assert_hardware_revision(requested: str) -> None:
-  configured = load_design_metadata()["hardware_revision"]
-  if requested != configured:
+def configured_design_version() -> str:
+  design_version = load_design_metadata()["design_version"]
+  if not SEMANTIC_VERSION.fullmatch(design_version):
     raise ValueError(
-      "requested hardware revision does not match design_metadata.py: "
-      f"requested={requested!r}, configured={configured!r}"
+      f"design_metadata.py DESIGN_VERSION is not semantic: {design_version!r}"
+    )
+  return design_version
+
+
+def design_series(design_version: str) -> str:
+  return ".".join(design_version.split(".")[:2])
+
+
+def title_block_revision(path: Path) -> str:
+  contents = path.read_text(encoding="utf-8")
+  title_block = contents.partition("(title_block")[2].partition("\n\t)")[0]
+  match = re.search(r'\(rev\s+"([^"]+)"\)', title_block)
+  if not match:
+    raise ValueError(f"missing title-block revision in {path}")
+  return match.group(1)
+
+
+def assert_design_identity(design_version: str) -> None:
+  revisions = {
+    SCHEMATIC.name: title_block_revision(SCHEMATIC),
+    BOARD.name: title_block_revision(BOARD),
+  }
+  mismatches = {
+    name: revision
+    for name, revision in revisions.items()
+    if revision != design_version
+  }
+  if mismatches:
+    raise ValueError(
+      "generated title-block versions do not match DESIGN_VERSION: "
+      f"expected={design_version!r}, actual={mismatches}"
     )
 
+  board_text = BOARD.read_text(encoding="utf-8")
+  expected = f"HW {design_series(design_version)} - 4L / 0.8 mm"
+  marker = f'(gr_text "{expected}"'
+  if board_text.count(marker) != 1:
+    raise ValueError(
+      f"expected exactly one PCB silkscreen identity {expected!r}"
+    )
+  marker_block = board_text.split(marker, 1)[1][:500]
+  if '(layer "B.SilkS")' not in marker_block or '(hide yes)' in marker_block:
+    raise ValueError(
+      "PCB identity must be visible on B.SilkS: " + expected
+    )
+  stale_markers = sorted(set(re.findall(r'REV\s+[A-Z0-9._-]+', board_text)))
+  if stale_markers:
+    raise ValueError(f"stale PCB revision markers remain: {stale_markers}")
 
-def assert_inputs(hardware_revision: str) -> None:
+
+def assert_inputs() -> None:
   required = (
     *RELEASE_INPUT_FILES,
     *VERIFICATION_INPUT_FILES,
@@ -484,7 +518,8 @@ def assert_inputs(hardware_revision: str) -> None:
   if missing:
     raise FileNotFoundError(f"release inputs missing: {', '.join(map(str, missing))}")
 
-  assert_hardware_revision(hardware_revision)
+  design_version = configured_design_version()
+  assert_design_identity(design_version)
   project = json.loads(PROJECT.read_text())
   rules = project["board"]["design_settings"]["rules"]
   mismatches = {
@@ -567,13 +602,20 @@ def export_reports(root: Path) -> dict[str, Any]:
 
 def validate_gerber_job(
   gerber_job: dict[str, Any],
-  hardware_revision: str,
+  design_version: str,
 ) -> dict[str, float | int | str]:
-  plotted_revision = gerber_job["ProjectId"]["Revision"]
-  if plotted_revision != hardware_revision:
+  project_name = load_design_metadata()["project_name"]
+  plotted_project = gerber_job["ProjectId"]["Name"]
+  if plotted_project != project_name:
     raise RuntimeError(
-      "requested hardware revision does not match the PCB title block: "
-      f"requested={hardware_revision!r}, plotted={plotted_revision!r}"
+      "Gerber project name does not match design_metadata.py: "
+      f"configured={project_name!r}, plotted={plotted_project!r}"
+    )
+  plotted_revision = gerber_job["ProjectId"]["Revision"]
+  if plotted_revision != design_version:
+    raise RuntimeError(
+      "design version does not match the PCB title block: "
+      f"configured={design_version!r}, plotted={plotted_revision!r}"
     )
 
   plotted_size = gerber_job["Size"]
@@ -592,13 +634,34 @@ def validate_gerber_job(
     "gerber_job_height_mm": plotted_size["Y"],
     "gerber_job_copper_layers": gerber_job["LayerNumber"],
     "gerber_job_thickness_mm": gerber_job["BoardThickness"],
-    "gerber_job_revision": plotted_revision,
+    "gerber_job_project": plotted_project,
+    "gerber_job_design_version": plotted_revision,
   }
+
+
+def validate_gerber_headers(
+  gerbers: Iterable[Path],
+  project_name: str,
+  design_version: str,
+) -> None:
+  expected = re.compile(
+    r"%TF\.ProjectId,"
+    + re.escape(project_name)
+    + r",[^,\r\n]+,"
+    + re.escape(design_version)
+    + r"\*%"
+  )
+  for gerber in gerbers:
+    contents = gerber.read_text(encoding="utf-8", errors="strict")
+    if len(expected.findall(contents)) != 1:
+      raise RuntimeError(
+        f"Gerber X2 design identity mismatch in {gerber.name}"
+      )
 
 
 def export_fabrication(
   root: Path,
-  hardware_revision: str,
+  design_version: str,
 ) -> tuple[list[Path], dict[str, float | int | str]]:
   fabrication = root / "fabrication"
   gerbers = fabrication / "gerbers"
@@ -666,7 +729,12 @@ def export_fabrication(
     raise RuntimeError(f"expected separate PTH and NPTH drill files, found {len(drill_files)}")
 
   gerber_job = json.loads(gerber_jobs[0].read_text())["GeneralSpecs"]
-  plot_checks = validate_gerber_job(gerber_job, hardware_revision)
+  plot_checks = validate_gerber_job(gerber_job, design_version)
+  validate_gerber_headers(
+    layer_gerbers,
+    load_design_metadata()["project_name"],
+    design_version,
+  )
   return gerber_files + drill_files, plot_checks
 
 
@@ -1155,10 +1223,10 @@ def write_deterministic_archive(
 
 def write_category_archives(
   root: Path,
-  release_version: str,
+  design_version: str,
   fabrication_files: Iterable[Path],
 ) -> tuple[Path, Path, Path]:
-  prefix = f"the-card-hardware-v{release_version}"
+  prefix = f"the-card-hardware-v{design_version}"
   fabrication = root / "fabrication"
   fabrication_archive = write_deterministic_archive(
     fabrication / f"{prefix}-fabrication.zip",
@@ -1292,8 +1360,7 @@ def artifact_spec(root: Path, path: Path) -> ArtifactSpec:
 
 def write_release_metadata(
   root: Path,
-  release_version: str,
-  hardware_revision: str,
+  design_version: str,
   checks: dict[str, Any],
   assembly: dict[str, int],
   position_count: int,
@@ -1330,8 +1397,7 @@ def write_release_metadata(
   manifest_path = write_release_manifest(
     root,
     project=load_design_metadata()["project_name"],
-    release_version=release_version,
-    hardware_revision=hardware_revision,
+    design_version=design_version,
     git_commit=git_state["commit"],
     generator="hardware/scripts/release_fabrication.py",
     kicad_version=toolchain["kicad_cli"]["version"],
@@ -1358,18 +1424,13 @@ def write_release_metadata(
 
 def build_release(
   output: Path,
-  release_version: str,
-  hardware_revision: str,
   include_3d: bool,
 ) -> None:
-  if not SEMANTIC_VERSION.fullmatch(release_version):
-    raise ValueError(f"release version is not semantic: {release_version!r}")
-  if not HARDWARE_REVISION_PATTERN.fullmatch(hardware_revision):
-    raise ValueError(f"invalid hardware revision: {hardware_revision!r}")
   output = output.resolve()
   if output.exists():
     raise FileExistsError(f"refusing to overwrite existing release directory: {output}")
-  assert_inputs(hardware_revision)
+  assert_inputs()
+  design_version = configured_design_version()
   output.parent.mkdir(parents=True, exist_ok=True)
   source_groups = release_source_groups(include_3d)
   source_hashes = capture_source_hashes(flatten_source_groups(source_groups))
@@ -1388,18 +1449,17 @@ def build_release(
     checks["nfc_design_verifier"] = True
     fabrication_files, plot_checks = export_fabrication(
       root,
-      hardware_revision,
+      design_version,
     )
     checks.update(plot_checks)
     assembly = export_bom(root)
     position_count = export_positions(root)
     export_preview(root, include_3d)
     assert_pdfs_passive(root)
-    write_category_archives(root, release_version, fabrication_files)
+    write_category_archives(root, design_version, fabrication_files)
     write_release_metadata(
       root,
-      release_version,
-      hardware_revision,
+      design_version,
       checks,
       assembly,
       position_count,
@@ -1413,8 +1473,7 @@ def build_release(
 
   print(json.dumps({
     "release": str(output),
-    "release_version": release_version,
-    "hardware_revision": hardware_revision,
+    "design_version": design_version,
     "checks": checks,
     "assembly": assembly,
     "position_count": position_count,
@@ -1425,7 +1484,5 @@ if __name__ == "__main__":
   arguments = parse_args()
   build_release(
     arguments.output,
-    arguments.release_version,
-    arguments.hardware_revision,
     arguments.include_3d,
   )

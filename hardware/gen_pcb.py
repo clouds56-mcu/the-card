@@ -25,8 +25,9 @@ import xml.etree.ElementTree as ET
 import pcbnew
 
 from design_metadata import (
+  DESIGN_SERIES,
+  DESIGN_VERSION,
   DNP_REFERENCES,
-  HARDWARE_REVISION,
   NON_ASSEMBLY_REFERENCES,
 )
 from nfc_antenna import ANTENNA_NETS, QUIET_AREA, RULE_AREA_NAME
@@ -655,7 +656,7 @@ def add_mechanics(board: pcbnew.BOARD) -> None:
   add_text(board, "THE CARD", 27.0, 84.0, pcbnew.F_SilkS, 1.0)
   add_text(
     board,
-    f"REV {HARDWARE_REVISION} - 4L / 0.8 mm",
+    f"HW {DESIGN_SERIES} - 4L / 0.8 mm",
     27.0,
     28.5,
     pcbnew.B_SilkS,
@@ -728,7 +729,7 @@ def generate() -> None:
   pcbnew.KIID.SeedGenerator(0x54484344)
   netlist = export_netlist()
   board = pcbnew.BOARD()
-  board.GetTitleBlock().SetRevision(HARDWARE_REVISION)
+  board.GetTitleBlock().SetRevision(DESIGN_VERSION)
   netclasses = configure_board(board)
   nets, pad_nets = add_nets(board, netlist, netclasses)
   add_footprints(board, netlist, nets, pad_nets)

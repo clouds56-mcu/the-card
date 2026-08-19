@@ -7,7 +7,7 @@
 	(title_block
 		(title "the-card - ESP32-S3 e-paper smart badge")
 		(date "2026-08-09")
-		(rev "B")
+		(rev "0.2.0")
 		(company "the-card")
 		(comment 1 "Single-page functional schematic")
 		(comment 2 "Connectivity generated from circuit.py")

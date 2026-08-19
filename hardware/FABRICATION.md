@@ -9,7 +9,7 @@ order or finished thickness.
 - Four copper layers, 0.80 mm finished thickness, FR-4.
 - Layer use: F.Cu signals/GND pour; In1.Cu primary GND; In2.Cu primary +3V3 and
   longer signals; B.Cu signals/GND pour.
-- The Rev B NFC antenna is a nine-turn, 0.20 mm F.Cu spiral. Its marked quiet
+- The v0.2.0 NFC antenna is a nine-turn, 0.20 mm F.Cu spiral. Its marked quiet
   area must remain free of unrelated pads, tracks, vias, and filled zones on
   **all four copper layers**; do not let a board-house review refill that void.
 - Use the board house's 0.8 mm four-layer stackup with approximately 0.10 mm
@@ -59,7 +59,7 @@ though it is not the 480 Mb/s high-speed USB mode.
 ## NFC physical acceptance
 
 Passing ERC and DRC proves connectivity and spacing, not RF performance. On an
-assembled Rev B board, with the real display, battery, and enclosure present:
+assembled v0.2.0 board, with the real display, battery, and enclosure present:
 
 1. Keep C29 DNP and measure antenna resonance and Q. The ST square-equivalent
    heuristic gives about 4.52 µH, while an independent NXP rectangular-coil
@@ -82,28 +82,24 @@ violations, KiCad DRC has zero violations, zero unconnected items, and zero
 schematic parity issues, and the Gerber/drill preview matches the
 53.98 x 85.60 mm outline.
 
-The physical hardware revision and release version identify different things:
+The project has one design identity: `DESIGN_VERSION` in `design_metadata.py`.
+The release tool reads it directly; there is no independent revision or release
+version argument to mistype. The full value appears in both KiCad title blocks,
+the Gerber metadata, and `release.json`. The limited board silkscreen derives a
+major/minor mark from it, such as `HW 0.2` for v0.2.0.
 
-- `--hardware-revision B` identifies the current fabricated PCB source and must
-  match both the revision marked on the board and the PCB title-block revision
-  carried into the Gerber job. When the bare-board design requires a new
-  identity, update `HARDWARE_REVISION` in `design_metadata.py`, regenerate the
-  schematic and PCB, and then pass that same revision to the release command.
-- `--release-version 0.2.0` identifies one semantic-versioned artifact handoff.
-  It may advance when the same hardware revision receives corrected exports,
-  sourcing data, documentation, or release tooling.
-
-Do not use successive release versions as substitute PCB revisions, and do not
-advance the hardware revision merely because the handoff was regenerated.
-The website's v0.1.0/Rev A candidate is immutable historical output; never
-overwrite it with files generated from the current Rev B source.
+Before v1.0.0, advance the minor version for any electrical, copper, stackup,
+outline, footprint, connector, or other physical change. A package-only fix
+that does not change the board may advance the patch version; its silkscreen
+therefore still identifies the same major/minor PCB family. Never overwrite an
+already published version. v1.0.0 is reserved for the first physically
+assembled and accepted design. The unbuilt v0.1.0 draft remains in Git history
+only and must not be offered as a fabrication download.
 
 Build the handoff into a new directory from `hardware/`:
 
 ```bash
 uv run python scripts/release_fabrication.py \
-  --release-version 0.2.0 \
-  --hardware-revision B \
   --output ../outputs/the-card-hardware-v0.2.0
 ```
 

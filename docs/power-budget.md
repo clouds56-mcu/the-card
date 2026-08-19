@@ -3,7 +3,7 @@
 > Target battery: **3.7 V 1000 mAh Li-Po** (~900 mAh usable at 90% derating).
 > Units: current mA / charge mAh. Battery life = usable capacity ÷ daily consumption.
 > These are planning estimates from bundled component datasheets, not measured
-> Rev B results; firmware duty cycle, cell quality, temperature, and regulator
+> v0.2.0 results; firmware duty cycle, cell quality, temperature, and regulator
 > dropout will change the real runtime.
 
 ---
@@ -83,7 +83,7 @@ baseline total      ~169 µA  →  4.06 mAh/day
 | **Daily total** | | | | **~5.5 mAh/day** |
 
 **Life** = 900 / 5.5 ≈ **164 days (5.4 months theoretical)**. Use roughly
-**4–5 months** as a first planning range; only measurements on an assembled Rev B
+**4–5 months** as a first planning range; only measurements on an assembled v0.2.0
 board with production firmware can establish a real runtime.
 
 ### Scenario B — light use (display-focused, rare OTA)

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify the Rev B NFC schematic and PCB invariants.
+"""Verify the v0.2.0 NFC schematic and PCB invariants.
 
 The KiCad DRC remains authoritative. This checker adds focused, readable
 failures for the electrical connections that made the GPO usable and for any
@@ -1024,7 +1024,7 @@ def verify(
   ]
   if problems:
     raise RuntimeError(
-      "Rev B NFC verification failed:\n  - " + "\n  - ".join(problems)
+      "NFC design verification failed:\n  - " + "\n  - ".join(problems)
     )
   print(
     "NFC design OK: GPIO21 pull-up, split AC nets, "

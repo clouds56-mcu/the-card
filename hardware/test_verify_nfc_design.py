@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Focused tests for the Rev B NFC design verifier."""
+"""Focused tests for the v0.2.0 NFC design verifier."""
 
 from __future__ import annotations
 

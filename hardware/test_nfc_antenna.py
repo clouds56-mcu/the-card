@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Regression tests for the reviewed Rev B NFC antenna geometry."""
+"""Regression tests for the reviewed v0.2.0 NFC antenna geometry."""
 
 from __future__ import annotations
 

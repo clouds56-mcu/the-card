@@ -2,7 +2,7 @@
 
 The ST25DV04KC contains a nominal 28.5 pF tuning capacitance. ST AN2972's
 modified-Wheeler expression is useful for square coils but is optimistic when
-the same expression is reduced to this design's long, narrow rectangle. Rev B
+the same expression is reduced to this design's long, narrow rectangle. v0.2.0
 therefore records that square-equivalent heuristic alongside an independent
 rectangular-coil bracket from NXP AN11276. Neither estimate includes the final
 display/battery loading or replaces ST eDesignSuite and physical measurement.
@@ -102,7 +102,7 @@ def estimated_square_equivalent_inductance_uh() -> float:
   """Apply ST AN2972's square-coil expression as an optimistic heuristic.
 
   The long rectangle is reduced to mean outer and inner diameters. The result
-  is retained as an upper sanity check, not as the predicted Rev B inductance.
+  is retained as an upper sanity check, not as the predicted v0.2.0 inductance.
   """
   outer_width, outer_height, inner_width, inner_height = (
     centerline_dimensions_mm()

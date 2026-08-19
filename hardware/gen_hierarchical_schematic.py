@@ -23,8 +23,8 @@ from pathlib import Path
 
 import circuit
 from design_metadata import (
+  DESIGN_VERSION,
   DNP_REFERENCES,
-  HARDWARE_REVISION,
   NON_ASSEMBLY_REFERENCES,
   PROJECT_NAME,
 )
@@ -1261,7 +1261,7 @@ def render_single_page(
     "\t(title_block",
     f"\t\t(title \"{TITLE}\")",
     f"\t\t(date \"{DATE}\")",
-    f"\t\t(rev \"{HARDWARE_REVISION}\")",
+    f"\t\t(rev \"{DESIGN_VERSION}\")",
     f"\t\t(company \"{PROJECT_NAME}\")",
     "\t\t(comment 1 \"Single-page functional schematic\")",
     "\t\t(comment 2 \"Connectivity generated from circuit.py\")",

@@ -63,8 +63,7 @@ class ReleaseFabricationTests(unittest.TestCase):
 
     release.write_release_metadata(
       self.root,
-      "0.1.0",
-      "A",
+      "0.2.0",
       {"erc_violations": 0, "drc_violations": 0},
       {"placed_components": 1},
       1,
@@ -81,6 +80,10 @@ class ReleaseFabricationTests(unittest.TestCase):
     )
 
     manifest = json.loads((self.root / "release.json").read_text())
+    self.assertEqual(manifest["schema_version"], 2)
+    self.assertEqual(manifest["design_version"], "0.2.0")
+    self.assertNotIn("release_version", manifest)
+    self.assertNotIn("hardware_revision", manifest)
     artifacts = {
       artifact["path"]: artifact
       for artifact in manifest["artifacts"]
@@ -117,25 +120,95 @@ class ReleaseFabricationTests(unittest.TestCase):
       r"^preview_pcb_front_png_[0-9a-f]{12}$",
     )
 
-  def test_gerber_job_revision_must_match_requested_hardware(self) -> None:
+  def test_gerber_job_identity_must_match_design_metadata(self) -> None:
     gerber_job = {
-      "ProjectId": {"Revision": "A"},
+      "ProjectId": {"Name": "the-card", "Revision": "0.2.0"},
       "Size": {"X": 54.03, "Y": 85.65},
       "LayerNumber": 4,
       "BoardThickness": 0.8,
     }
 
-    checks = release.validate_gerber_job(gerber_job, "A")
-    self.assertEqual(checks["gerber_job_revision"], "A")
+    checks = release.validate_gerber_job(gerber_job, "0.2.0")
+    self.assertEqual(checks["gerber_job_project"], "the-card")
+    self.assertEqual(checks["gerber_job_design_version"], "0.2.0")
 
     with self.assertRaisesRegex(RuntimeError, "title block"):
-      release.validate_gerber_job(gerber_job, "B")
+      release.validate_gerber_job(gerber_job, "0.3.0")
 
-  def test_requested_revision_must_match_design_metadata(self) -> None:
-    release.assert_hardware_revision("B")
+    gerber_job["ProjectId"]["Name"] = "other-project"
+    with self.assertRaisesRegex(RuntimeError, "project name"):
+      release.validate_gerber_job(gerber_job, "0.2.0")
 
-    with self.assertRaisesRegex(ValueError, "design_metadata.py"):
-      release.assert_hardware_revision("A")
+  def test_design_version_comes_from_design_metadata(self) -> None:
+    self.assertEqual(release.configured_design_version(), "0.2.0")
+    with mock.patch.object(
+      release,
+      "load_design_metadata",
+      return_value={"project_name": "the-card", "design_version": "draft-b"},
+    ):
+      with self.assertRaisesRegex(ValueError, "DESIGN_VERSION is not semantic"):
+        release.configured_design_version()
+
+  def test_generated_sources_must_share_the_design_identity(self) -> None:
+    schematic = self.write(
+      "the-card.kicad_sch",
+      b'(kicad_sch\n\t(title_block\n\t\t(rev "0.2.0")\n\t)\n)',
+    )
+    board = self.write(
+      "the-card.kicad_pcb",
+      b'(kicad_pcb\n\t(title_block\n\t\t(rev "0.2.0")\n\t)\n'
+      b'\t(gr_text "HW 0.2 - 4L / 0.8 mm"\n'
+      b'\t\t(layer "B.SilkS")\n\t)\n)',
+    )
+    with (
+      mock.patch.object(release, "SCHEMATIC", schematic),
+      mock.patch.object(release, "BOARD", board),
+    ):
+      release.assert_design_identity("0.2.0")
+      with self.assertRaisesRegex(ValueError, "title-block versions"):
+        release.assert_design_identity("0.3.0")
+
+  def test_gerber_headers_must_share_the_design_identity(self) -> None:
+    first = self.write(
+      "gerbers/front.gtl",
+      b"%TF.ProjectId,the-card,guid,0.2.0*%\n",
+    )
+    second = self.write(
+      "gerbers/back.gbl",
+      b"%TF.ProjectId,the-card,guid,0.2.0*%\n",
+    )
+    release.validate_gerber_headers(
+      [first, second],
+      "the-card",
+      "0.2.0",
+    )
+    second.write_text("%TF.ProjectId,the-card,guid,0.1.0*%\n")
+    with self.assertRaisesRegex(RuntimeError, "back.gbl"):
+      release.validate_gerber_headers(
+        [first, second],
+        "the-card",
+        "0.2.0",
+      )
+
+  def test_category_archive_names_use_the_design_version(self) -> None:
+    fabrication_file = self.write("fabrication/gerbers/front.gtl")
+    self.write("assembly/canonical/bom.csv")
+    self.write("preview/schematic.pdf")
+
+    archives = release.write_category_archives(
+      self.root,
+      "0.2.0",
+      [fabrication_file],
+    )
+
+    self.assertEqual(
+      [archive.name for archive in archives],
+      [
+        "the-card-hardware-v0.2.0-fabrication.zip",
+        "the-card-hardware-v0.2.0-assembly.zip",
+        "the-card-hardware-v0.2.0-preview.zip",
+      ],
+    )
 
   def test_dnp_and_non_assembly_parts_are_explicitly_excluded(self) -> None:
     self.assertEqual(
@@ -196,7 +269,7 @@ class ReleaseFabricationTests(unittest.TestCase):
       mock.patch.object(release, "export_reports") as export_reports,
     ):
       with self.assertRaisesRegex(RuntimeError, "foreign copper"):
-        release.build_release(output, "0.1.0", "B", False)
+        release.build_release(output, False)
 
     export_reports.assert_not_called()
 
