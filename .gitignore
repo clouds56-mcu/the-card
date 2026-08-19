@@ -86,6 +86,7 @@ hardware/*.erc
 hardware/circuit.log
 hardware/*_sklib.py
 hardware/*.net
+/*_sklib.py
 
 # ---- datasheet text extractions (temp verify artifacts) ----
 hardware/.verify/

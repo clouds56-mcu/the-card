@@ -9,6 +9,9 @@ order or finished thickness.
 - Four copper layers, 0.80 mm finished thickness, FR-4.
 - Layer use: F.Cu signals/GND pour; In1.Cu primary GND; In2.Cu primary +3V3 and
   longer signals; B.Cu signals/GND pour.
+- The Rev B NFC antenna is a nine-turn, 0.20 mm F.Cu spiral. Its marked quiet
+  area must remain free of unrelated pads, tracks, vias, and filled zones on
+  **all four copper layers**; do not let a board-house review refill that void.
 - Use the board house's 0.8 mm four-layer stackup with approximately 0.10 mm
   prepreg between F.Cu and In1.Cu (JLCPCB's 3313-family option is the reference).
 - Outer copper 1 oz and inner copper 0.5 oz.
@@ -38,6 +41,8 @@ though it is not the 480 Mb/s high-speed USB mode.
    but duplicates cut-off circuitry and can complicate recovery behavior.
 4. Inspect U8 orientation and verify continuity before connecting a cell:
    S1 side to `BAT_NEG`, S2 side to system GND, and the common drains internal.
+5. Confirm C29 is **not populated** for the initial antenna measurement. L2 is
+   etched PCB copper/net-tie metadata, not an assembly-line inductor.
 
 ## First power-up
 
@@ -48,6 +53,26 @@ though it is not the 480 Mb/s high-speed USB mode.
 3. Confirm charge current and TP4056 temperature before a long charge test.
 4. Bring up the display only after +3V3 and the switched `EPD_VCI` rail are
    correct. Check the e-paper high-voltage rails with an appropriate probe.
+5. Confirm `NFC_IRQ` idles high through R17 and that an RF event can pull the
+   ST25DV open-drain GPO low without disturbing boot behavior.
+
+## NFC physical acceptance
+
+Passing ERC and DRC proves connectivity and spacing, not RF performance. On an
+assembled Rev B board, with the real display, battery, and enclosure present:
+
+1. Keep C29 DNP and measure antenna resonance and Q. The ST square-equivalent
+   heuristic gives about 4.52 µH, while an independent NXP rectangular-coil
+   cross-check brackets about 3.19–3.98 µH. These calculations omit final
+   assembly loading and are sanity bounds, not acceptance measurements.
+2. If resonance is above 13.56 MHz, calculate and fit the smallest suitable
+   0–22 pF C0G/NP0 value at C29, then measure again. Do not populate a guessed
+   value from the model alone; needing more than about 15–18 pF is a PCB-respin
+   review trigger rather than automatic approval to fit 22 pF.
+3. Verify NFC reads and writes with multiple representative phones, at several
+   orientations, and record reliable range. Repeat after final assembly.
+4. Treat failed tuning, poor Q, or inadequate range as a PCB-spin issue even if
+   the automated release gates remain green.
 
 ## Release gate
 
@@ -59,25 +84,27 @@ schematic parity issues, and the Gerber/drill preview matches the
 
 The physical hardware revision and release version identify different things:
 
-- `--hardware-revision A` identifies the fabricated PCB design and must match
-  both the revision marked on the board and the PCB title-block revision carried
-  into the Gerber job. When the bare-board design requires a new identity, update
-  `HARDWARE_REVISION` in `design_metadata.py`, regenerate the schematic and PCB,
-  and then pass that same revision to the release command.
-- `--release-version 0.1.0` identifies one semantic-versioned artifact handoff.
+- `--hardware-revision B` identifies the current fabricated PCB source and must
+  match both the revision marked on the board and the PCB title-block revision
+  carried into the Gerber job. When the bare-board design requires a new
+  identity, update `HARDWARE_REVISION` in `design_metadata.py`, regenerate the
+  schematic and PCB, and then pass that same revision to the release command.
+- `--release-version 0.2.0` identifies one semantic-versioned artifact handoff.
   It may advance when the same hardware revision receives corrected exports,
   sourcing data, documentation, or release tooling.
 
 Do not use successive release versions as substitute PCB revisions, and do not
 advance the hardware revision merely because the handoff was regenerated.
+The website's v0.1.0/Rev A candidate is immutable historical output; never
+overwrite it with files generated from the current Rev B source.
 
 Build the handoff into a new directory from `hardware/`:
 
 ```bash
 uv run python scripts/release_fabrication.py \
-  --release-version 0.1.0 \
-  --hardware-revision A \
-  --output ../outputs/the-card-hardware-v0.1.0
+  --release-version 0.2.0 \
+  --hardware-revision B \
+  --output ../outputs/the-card-hardware-v0.2.0
 ```
 
 The command refuses to overwrite an existing output directory or release from a
@@ -90,29 +117,29 @@ fabrication files.
 The generated handoff is organized by audience:
 
 ```text
-the-card-hardware-v0.1.0/
+the-card-hardware-v0.2.0/
 ├── fabrication/
 │   ├── gerbers/                       # production Gerbers
 │   ├── drill/                         # separate PTH/NPTH Excellon files
 │   ├── fabrication-notes.md           # stackup and ordering cautions
-│   └── the-card-hardware-v0.1.0-fabrication.zip
+│   └── the-card-hardware-v0.2.0-fabrication.zip
 ├── preview/
 │   ├── schematic.pdf + schematic.svg + schematic.png
 │   ├── schematic-thumbnail.png
 │   ├── pcb.pdf + pcb-front.png + two inner PNGs + pcb-back.png
 │   ├── schematic/ + pcb/ + layers/ + drill/
 │   ├── 3d/                            # only with --include-3d
-│   └── the-card-hardware-v0.1.0-preview.zip
+│   └── the-card-hardware-v0.2.0-preview.zip
 ├── assembly/
 │   ├── canonical/                     # normalized CSV/JSON + assembly drawings
 │   ├── jlcpcb/                        # upload-ready BOM and position CSVs
-│   └── the-card-hardware-v0.1.0-assembly.zip
+│   └── the-card-hardware-v0.2.0-assembly.zip
 ├── reports/                           # ERC, DRC/parity, and drill reports
 ├── release.json                       # versioned manifest and provenance
 └── SHA256SUMS                         # hashes every published file above
 ```
 
-`fabrication/the-card-hardware-v0.1.0-fabrication.zip` contains only the
+`fabrication/the-card-hardware-v0.2.0-fabrication.zip` contains only the
 Gerbers and separate PTH/NPTH drill files intended for the board house. The
 assembly data, reports, checksums, manifest, and review material remain outside
 that ZIP. Do not upload the whole release directory, preview archive, or

@@ -25,7 +25,7 @@ An em dash means the distributor quote has not yet been captured.
 | 8 | Charger | Li-ion charger, configured for ~500 mA | TP4056 (TPOWER) | C382139 | 1 | 0.20 | **0.12** | 0.10 |
 | 9 | Protection | Battery protection IC | DW01A | C18164398 | 1 | 0.10 | 0.06 | 0.05 |
 | 10 | Protection | Dual N-MOSFET | FS8205A | C16052 | 1 | 0.12 | 0.07 | 0.06 |
-| 11 | Regulator | LDO 3.3 V 500 mA low-IQ | ME6211C33M5G | C82942 | 1 | 0.15 | 0.10 | 0.08 |
+| 11 | Regulator | LDO 3.3 V 500 mA | ME6211C33M5G | C82942 | 1 | 0.15 | 0.10 | 0.08 |
 | 12 | Switch | P-MOSFET (branch-rail gate) | SI2301 | C10487 | 2 | 0.20 | **0.12** | 0.10 |
 | 13 | LED | RGB status | WS2812B-Mini | C527089 | 1 | 0.20 | 0.12 | 0.10 |
 | 14 | Connector | USB-C receptacle 6P | TYPE-C-31-M-12 | C165948 | 1 | 0.25 | 0.15 | 0.12 |

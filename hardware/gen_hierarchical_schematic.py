@@ -22,7 +22,12 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import circuit
-from design_metadata import HARDWARE_REVISION, PROJECT_NAME
+from design_metadata import (
+  DNP_REFERENCES,
+  HARDWARE_REVISION,
+  NON_ASSEMBLY_REFERENCES,
+  PROJECT_NAME,
+)
 
 
 HERE = Path(__file__).resolve().parent
@@ -209,11 +214,14 @@ SHEETS = (
     key="sensors_nfc",
     refs=frozenset({
       "U2", "C_nfc", "U3", "C_imu1", "C_imu2", "U4", "C_sht",
-      "R_scl", "R_sda",
+      "R_scl", "R_sda", "R_nfc_irq", "C_nfc_tune", "L2",
     }),
     placements={
       "U2": p(50, 45),
       "C_nfc": p(78, 45, 270),
+      "R_nfc_irq": p(88, 58, 270),
+      "L2": p(35, 45, 90),
+      "C_nfc_tune": p(35, 58, 270),
       "U3": p(52, 96),
       "C_imu1": p(82, 84, 270),
       "C_imu2": p(96, 96, 270),
@@ -229,7 +237,7 @@ SHEETS = (
     ),
     passive_callouts=(
       (
-        "C11 -> U2: NFC bypass",
+        "C11 -> U2: NFC bypass; R17 -> GPO pull-up; C29 -> RF trim (DNP)",
         g(12), g(22), 1.0,
       ),
       (
@@ -376,7 +384,8 @@ SINGLE_PAGE_OFFSETS = {
 # These widely separated or intentionally symbolic endpoints are clearer as
 # repeated named stubs than as long wires.
 LABEL_EACH_NETS = {
-  ("sensors_nfc", "NFC_ANTENNA"),
+  ("sensors_nfc", "NFC_AC0"),
+  ("sensors_nfc", "NFC_AC1"),
   ("sensors_nfc", "I2C_SCL"),
   ("sensors_nfc", "I2C_SDA"),
 }
@@ -964,9 +973,9 @@ def build_parts() -> tuple[list[dict], dict[str, set[str]], set[str]]:
     footprint = getattr(skidl_part, "footprint", None) or symbol_field(
       skidl_part.name, "Footprint"
     )
-    datasheet = getattr(skidl_part, "datasheet", None) or symbol_field(
-      skidl_part.name, "Datasheet"
-    )
+    datasheet = getattr(skidl_part, "datasheet", None)
+    if datasheet is None:
+      datasheet = symbol_field(skidl_part.name, "Datasheet")
     parts.append({
       "ref": skidl_part.ref,
       "name": skidl_part.name,
@@ -978,6 +987,8 @@ def build_parts() -> tuple[list[dict], dict[str, set[str]], set[str]]:
         str(name): str(value)
         for name, value in skidl_part.fields.items()
       },
+      "in_bom": skidl_part.ref not in NON_ASSEMBLY_REFERENCES,
+      "dnp": skidl_part.ref in DNP_REFERENCES,
       "pins": pins,
       "sheet": sheet.key,
       "x": placement.x + offset_x,
@@ -1018,7 +1029,12 @@ def part_instance(part: dict, sheet: SheetSpec) -> str:
     value_angle = value_layout[2]
   reference_size, value_size = PROPERTY_FONT_SIZES.get(part["ref"], (1.2, 1.0))
   path = f"/{ROOT_UUID}"
-  in_bom = "no" if part["ref"].startswith("TP") else "yes"
+  in_bom = (
+    "no"
+    if part["ref"].startswith("TP") or not part["in_bom"]
+    else "yes"
+  )
+  dnp = "yes" if part["dnp"] else "no"
   lines = [
     "\t(symbol",
     f"\t\t(lib_id \"{part['library']}:{part['name']}\")",
@@ -1027,7 +1043,7 @@ def part_instance(part: dict, sheet: SheetSpec) -> str:
     "\t\t(exclude_from_sim no)",
     f"\t\t(in_bom {in_bom})",
     "\t\t(on_board yes)",
-    "\t\t(dnp no)",
+    f"\t\t(dnp {dnp})",
     f"\t\t(uuid \"{uid('part', part['ref'])}\")",
     f"\t\t(property \"Reference\" \"{esc(part['ref'])}\"",
     f"\t\t\t(at {fmt(reference_x)} {fmt(reference_y)} {reference_angle})",

@@ -66,7 +66,16 @@
 - ⚠️ Type 5 (ISO15693); modern phones support NDEF fine; only very old devices are slightly less compatible than Type 2
 
 The IC supports energy harvesting, but `V_EH` is intentionally left unconnected
-in this first revision to keep the power architecture simple.
+in the current design to keep the power architecture simple.
+
+Rev B connects the ST25DV's open-drain GPO through mandatory 10 kΩ pull-up R17
+to `NFC_IRQ` on RTC-capable GPIO21; GPIO3 is no longer used because it is a
+strap-sensitive pin. The antenna uses distinct `NFC_AC0`/`NFC_AC1` nets, a
+nine-turn 0.20 mm F.Cu etched coil (L2), and an all-four-copper-layer RF quiet
+area. DNP C29 accepts 0–22 pF C0G/NP0 only after measurement shows how far the
+assembled antenna sits above 13.56 MHz. Parallel capacitance can lower a high
+resonance, but it cannot correct an antenna that already resonates below the
+target.
 
 ### 2.4 Sensor Subsystem
 
@@ -93,7 +102,7 @@ in this first revision to keep the power architecture simple.
 
 - **Charge:** TP4056 (~500 mA CC/CV from 2.2 kΩ RPROG, thermal regulation)
 - **Protection:** DW01A (over-charge / over-discharge / short) + FS8205A dual MOSFET
-- **Regulation:** ME6211C33 (3.3 V, IQ ~3 µA, 500 mA)
+- **Regulation:** ME6211C33 (3.3 V, 60 µA typical enabled supply current, 500 mA)
 - **Fuel gauge:** MAX17048 (ModelGauge algorithm, 3 µA, I2C, no sense resistor) → accurate % on screen
 - **Key:** the WS2812 sits on a **switchable branch rail** (P-MOSFET), fully cut
   in deep sleep. The sensors share always-on +3V3 with the I²C pullups so the bus
@@ -113,8 +122,8 @@ in this first revision to keep the power architecture simple.
 ## 3. GPIO Pin Map (ESP32-S3-WROOM-1-N16R8)
 
 > Module memory occupies GPIO26–37; GPIO33–37 are specifically unavailable
-> because N16R8 uses Octal PSRAM. GPIO19/20 carry USB, and GPIO0/45/46 are
-> strapping pins that must be used carefully.
+> because N16R8 uses Octal PSRAM. GPIO19/20 carry USB, and GPIO0/3/45/46 are
+> strap-sensitive pins that must be used carefully.
 
 | GPIO | Function | Dir | Notes |
 |---|---|---|---|
@@ -129,7 +138,7 @@ in this first revision to keep the power architecture simple.
 | GPIO8  | I2C_SCL | OUT/OD | Bus clock |
 | GPIO18 | I2C_SDA | I/O/OD | Bus data |
 | **—— Interrupt inputs ——** | | | |
-| GPIO3  | NFC_IRQ | IN | ST25DV GPO wake |
+| GPIO21 | NFC_IRQ | IN | ST25DV open-drain GPO wake; external 10 kΩ pull-up R17 |
 | GPIO2  | IMU_INT | IN | LSM6DSO motion/flip interrupt |
 | GPIO15 | CHRG_STAT | IN | TP4056 charge status |
 | **—— Buttons (deep-sleep wake, internal pull-up) ——** | | | |
@@ -147,7 +156,8 @@ in this first revision to keep the power architecture simple.
 | **—— Battery monitor ——** | | | |
 | GPIO1  | VBATT_DIV | IN(ADC1_CH0) | Divider sample (backup; MAX17048 is primary) |
 | **—— Reserved expansion ——** | | | |
-| GPIO17/21/38–46 | Expansion | — | Unconnected; GPIO18 is used by I2C and GPIO35–37 by Octal PSRAM |
+| GPIO3 | Reserved strap | — | Left unconnected; do not use for NFC wake |
+| GPIO17/38–46 | Expansion | — | Unconnected; GPIO18 is used by I2C and GPIO35–37 by Octal PSRAM |
 
 > ⚠️ On ESP32-S3, ADC2 is unavailable while WiFi is on, so battery-voltage sampling must use **ADC1 (GPIO1–10)**. The table above already respects this.
 
@@ -159,7 +169,7 @@ in this first revision to keep the power architecture simple.
 |---|---|---|
 | 1 | WROOM module, not bare die | No RF design, DIY-friendly, easier certification |
 | 2 | N16R8 (16 MB Flash + 8 MB Octal PSRAM) | Better OTA/image headroom and current sourcing with no PCB change |
-| 3 | NFC uses dynamic tag ST25DV04KC | MCU rewrite + GPO wake; `V_EH` is deferred |
+| 3 | NFC uses dynamic tag ST25DV04KC with a tunable etched coil | MCU rewrite + pulled-up GPIO21 wake; `V_EH` is deferred; physical resonance/range testing is required |
 | 4 | Native USB, no CH340 | Saves a chip, space, and cost |
 | 5 | Gate the WS2812, keep I²C sensors on +3V3 | Removes LED leakage without I²C back-power paths |
 | 6 | 2.9" monochrome e-paper (not color) | Color is slow (11 s) and pricier; mono partial refresh 0.3 s feels great |

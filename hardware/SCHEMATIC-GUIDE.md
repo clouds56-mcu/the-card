@@ -65,7 +65,8 @@ or intentionally symbolic connections where a long wire would reduce clarity.
 | C8, C9 | U9 | LDO input bypass and output stability |
 | C10 | U5 | Fuel-gauge supply bypass |
 | R11, R12 | Q1 / Q2 / U1 | Switched-rail gate pull-ups; both rails default off |
-| C11, R13, R14 | U2 / shared I2C bus | NFC bypass and I2C clock/data pull-ups |
+| C11, R13, R14, R17 | U2 / shared I2C bus | NFC bypass, I2C clock/data pull-ups, and mandatory GPO pull-up |
+| L2, C29 (DNP) | U2 AC0/AC1 | Etched PCB antenna model and optional C0G resonance trim |
 | C12, C13, C14 | U3 / U4 | IMU bypass and bulk storage; humidity-sensor bypass |
 | C15 | D1 / AUX_3V3 | Addressable-LED supply bypass |
 | C16-C19 | SW1-SW4 / U1 | Hardware button debounce |
@@ -106,11 +107,12 @@ TP1–TP4 · power passives.
 - USB: IO19=`USB_DM`, IO20=`USB_DP` (from the power region).
 - E-ink SPI: IO9=MOSI, IO10=SCLK, IO11=BUSY, IO12=CS, IO13=DC, IO14=RST.
 - I²C: IO8=SCL, IO18=SDA (+ 4.7 k pullups to +3V3 in the sensor region).
-- IRQs/status: IO3=`NFC_IRQ`, IO2=`IMU_INT`, IO15=`~CHRG`.
+- IRQs/status: IO21=`NFC_IRQ`, IO2=`IMU_INT`, IO15=`~CHRG`.
 - Buttons: IO4=UP, IO5=DOWN, IO6=SEL, IO7=MENU.
 - Controls: IO47=`PWR_AUX`, IO16=`EPD_PWR_EN`, IO48=`LED_DIN`.
 - Vbat divider: IO1 ← midpoint of 1 M / 300 k from +BAT to GND (+ 100 nF).
-- Spare (IO21, IO38–42, IO45/46, RXD0/TXD0): left unconnected for future revisions.
+- Spare (IO3, IO38–42, IO45/46, RXD0/TXD0): left unconnected for future
+  revisions. GPIO3 is strap-sensitive and must not replace GPIO21 for NFC wake;
   IO35–37 are reserved by the N16R8 module's Octal PSRAM.
 
 ## Region 3 — E-ink panel (J2, 24-pin FPC)
@@ -130,9 +132,18 @@ design). Wire from the J2 connector:
 ## Region 4 — NFC + IMU + Temp/Humidity (I²C bus)
 
 - I²C pullups: 4.7 k on `I2C_SCL` and `I2C_SDA` to +3V3.
-- U2 (ST25DV04KC): VCC→+3V3, VSS→GND, SCL/SDA→I²C, GPO→`NFC_IRQ`, V_EH NC.
-  AC0 and AC1 share `NFC_ANTENNA`, which the PCB turns into one continuous loop;
-  the IC variant has internal tuning capacitance, so no external capacitor is fitted.
+- U2 (ST25DV04KC): VCC→+3V3, VSS→GND, SCL/SDA→I²C, V_EH NC. GPO is
+  open-drain, so R17 provides its mandatory 10 kΩ pull-up to +3V3 before
+  `NFC_IRQ` reaches GPIO21.
+- AC0 and AC1 remain distinct as `NFC_AC0` and `NFC_AC1`. L2 is the schematic
+  model/net tie for the nine-turn F.Cu antenna etched into the PCB. C29 is a
+  DNP 0–22 pF C0G/NP0 footprint across the two antenna nets; leave it
+  unpopulated until assembled resonance is measured.
+- The ST square-equivalent heuristic gives about 4.52 µH, while an NXP
+  rectangular-coil cross-check brackets about 3.19–3.98 µH. The PCB reserves a
+  quiet area through all four copper layers, but these estimates omit assembly
+  loading and do not replace measuring resonance, Q, and phone read/write range
+  in the final enclosure.
 - U3 (LSM6DSO): VDD+VDDIO→`+3V3`, GND→GND, SCL/SDA→I²C, INT1→`IMU_INT`,
   CS→`+3V3` (=high→I²C mode), SDO/SA0→GND (addr 0x6A); 100 nF + 10 µF on +3V3.
 - U4 (SHT40): VDD→`+3V3`, VSS→GND, exposed pad NC, SCL/SDA→I²C; 100 nF on VDD.
@@ -148,7 +159,7 @@ bus from back-powering an unpowered sensor. `AUX_3V3` therefore powers only D1.
 ## After layout changes
 
 - Regenerate from the script; do not maintain one-off generated-file edits.
-- Run `verify_schematic.py`; expect 75 components and 286 pins with identical
-  peer sets and canonical net names from `circuit.py`.
+- Run `verify_schematic.py`; expect 78 components and 292 pins with identical
+  peer sets across 43 canonical named nets from `circuit.py`.
 - Run **Inspect → Electrical Rules Checker** in eeschema. Expect 0 violations.
 - Then **Tools → Update PCB from Schematic** (or import `the-card.net`) to start layout.

@@ -2,12 +2,19 @@
 
 > Target battery: **3.7 V 1000 mAh Li-Po** (~900 mAh usable at 90% derating).
 > Units: current mA / charge mAh. Battery life = usable capacity ÷ daily consumption.
+> These are planning estimates from bundled component datasheets, not measured
+> Rev B results; firmware duty cycle, cell quality, temperature, and regulator
+> dropout will change the real runtime.
 
 ---
 
 ## 1. Per-state Current Model (ESP32-S3-WROOM-1-N16R8)
 
-Sources: ESP32-S3 datasheet + Espressif official power-measurement guide + community measurements.
+Sources: ESP32-S3 datasheet + Espressif official power-measurement guide +
+community measurements. The corrected always-on figures come from the bundled
+[ST25DV04KC datasheet](../hardware/datasheets/ST25DV04KC_ST.pdf) (DS13519 Rev 3,
+Table 249) and [ME6211 datasheet](../hardware/datasheets/ME6211_Microne.pdf)
+(ME6211C33 electrical-characteristics table).
 
 | State | Module current | Notes |
 |---|---|---|
@@ -25,11 +32,11 @@ Sources: ESP32-S3 datasheet + Espressif official power-measurement guide + commu
 | Peripheral | Standby / active current | Notes |
 |---|---|---|
 | E-paper SSD1680 | static **0 µA** (bistable) / ~3 mA during refresh (host boost stage) | during refresh the ESP is also Active, total ~30 mA |
-| ST25DV04KC NFC | ~1 µA (standby, no RF field) | under RF field, powered by the phone |
+| ST25DV04KC NFC | **0.076 mA typ, 0.100 mA max** (static standby at 3.3 V, up to 85 °C) | the selected SO-8 package has no LPD pin; RF operation can be field-powered |
 | LSM6DSO IMU | LP 0.012 mA / shutdown 3 µA | |
 | SHT40 T/RH | 0.0004 mA standby / 1.2 mA × 2 ms | negligible at 1/min sampling |
 | MAX17048 fuel gauge | **0.003 mA (always on)** | can't be cut; always resident |
-| ME6211 LDO | 0.003 mA | always resident |
+| ME6211C33 LDO | **0.060 mA typ supply current** | CE is tied high, so the 0.1 µA CE-low standby value does not apply |
 | TP4056 (not charging) | ~0.005 mA (BAT side) | |
 | WS2812 (**~0.6 mA even when off**) | **must be MOSFET-gated** | ⚠️ the biggest leakage killer |
 | AUX branch rail after MOSFET cut | 0 µA | status LED fully cut; sensors remain on +3V3 |
@@ -43,16 +50,21 @@ Always-on devices summed (MCU in deep sleep, branch rail cut):
 ```
 ESP32-S3 deep sleep   10 µA
 MAX17048 fuel gauge    3 µA
-ST25DV04KC standby     1 µA
+ST25DV04KC standby    76 µA
 LSM6DSO LP mode       12 µA (or 3 µA shutdown)
 SHT40 standby          0.4 µA
-LDO/TP4056 leakage     5 µA
-divider network       ~5 µA (1 MΩ high-value → ~1 µA)
+ME6211C33 enabled      60 µA
+TP4056 BAT current     ~5 µA
+divider network       ~2.8 µA (1 MΩ + 300 kΩ at ~3.7 V)
 ─────────────────────────
-baseline total       ~36 µA  →  0.86 mAh/day
+baseline total      ~169 µA  →  4.06 mAh/day
 ```
 
-> With the IMU in shutdown (button-wake instead of motion-wake) and a 1 MΩ divider, the baseline drops to **~15–20 µA (0.4 mAh/day)**.
+> With the IMU in shutdown (button-wake instead of motion-wake), the baseline is
+> still about **160 µA (3.85 mAh/day)**. The always-enabled ME6211 and the SO-8
+> ST25DV now dominate the estimate. The ST25DV datasheet's 1.3 µA low-power-down
+> figure at 3.3 V is not available on the selected package because it has no LPD
+> pin.
 
 ---
 
@@ -63,27 +75,30 @@ baseline total       ~36 µA  →  0.86 mAh/day
 
 | Event | Times/day | Duration | Current | mAh/day |
 |---|---|---|---|---|
-| Deep-sleep baseline | — | 24 h | 36 µA | 0.86 |
+| Deep-sleep baseline | — | 24 h | 169 µA | 4.06 |
 | Button wake + UI render | 10 | 4 s | 40 mA | 0.44 |
 | E-paper full refresh | 3 | 3 s | 30 mA | 0.075 |
 | BLE sync (wallpaper push) | 2 | 15 s | 8 mA (avg) | 0.067 |
 | WiFi OTA check | 1 | 20 s | 150 mA (avg) | 0.833 |
-| **Daily total** | | | | **~2.3 mAh/day** |
+| **Daily total** | | | | **~5.5 mAh/day** |
 
-**Life** = 900 / 2.3 ≈ **390 days (theoretical)** → after Li-ion self-discharge (~3%/month), **~6–9 months real-world**.
+**Life** = 900 / 5.5 ≈ **164 days (5.4 months theoretical)**. Use roughly
+**4–5 months** as a first planning range; only measurements on an assembled Rev B
+board with production firmware can establish a real runtime.
 
 ### Scenario B — light use (display-focused, rare OTA)
 > Only change wallpaper, daily OTA off, BLE sync ~1×/week.
 
 | Item | mAh/day |
 |---|---|
-| Deep-sleep baseline | 0.86 |
+| Deep-sleep baseline | 4.06 |
 | Wake + render ×5 | 0.22 |
 | Full refresh ×2 | 0.05 |
 | BLE sync (weekly avg) | 0.01 |
-| **Total** | **~1.1 mAh/day** |
+| **Total** | **~4.3 mAh/day** |
 
-**Life** ≈ **800 days theoretical / ~12 months real-world** (self-discharge dominates).
+**Life** ≈ **207 days (6.8 months theoretical)**; roughly **5–6 months** is a
+reasonable planning range before prototype measurements.
 
 ### Scenario C — heavy development (radios always on)
 > Persistent WiFi + serial logging + frequent refresh.
@@ -99,7 +114,8 @@ baseline total       ~36 µA  →  0.86 mAh/day
 ### Scenario D — pure standby (factory state)
 > Deep sleep only, wake once daily via RTC to refresh the clock.
 
-**Life** ≈ 900 / 0.9 ≈ **1000 days theoretical**, but in practice the cell self-discharges first (~18–24 months; the battery ages out before it drains).
+With the IMU shut down, **life** ≈ 900 / 3.85 ≈ **234 days (7.7 months
+theoretical)**. This is an electrical-load estimate, not a shelf-life guarantee.
 
 ---
 
@@ -107,14 +123,15 @@ baseline total       ~36 µA  →  0.86 mAh/day
 
 | # | Measure | Saving | Difficulty |
 |---|---|---|---|
-| 1 | **MOSFET-gate WS2812 / sensors** | saves ~14 mAh/day (leakage) | ⭐ must-do |
+| 1 | **Keep the WS2812 MOSFET-gated** | saves ~14 mAh/day of LED leakage | ⭐ must-do |
 | 2 | Wake by RTC timer + buttons, not motion | saves IMU 0.3 mAh/day | ⭐ |
 | 3 | Use 1 MΩ high-value VBATT divider, or sample only when awake | saves ~0.1 mAh/day | ⭐ |
-| 4 | Stretch BLE connection interval to 1–4 s (tolerable for wallpaper push) | big BLE average drop | ⭐⭐ |
-| 5 | Lower OTA-check frequency (daily → weekly) | saves ~0.8 mAh/day | ⭐ |
-| 6 | Use partial refresh instead of full (0.3 s vs 1.5 s) | 5× lower refresh energy | ⭐⭐ |
-| 7 | Underclock CPU to 80/160 MHz (enough for rendering) | ~30% lower active current | ⭐⭐ |
-| 8 | ULP co-processor polls buttons/sensors | saves MCU wake overhead | ⭐⭐⭐ advanced |
+| 4 | Consider an LPD-capable ST25DV package in a later hardware revision | about 1.8 mAh/day versus SO-8 static standby | ⭐⭐⭐ redesign |
+| 5 | Stretch BLE connection interval to 1–4 s (tolerable for wallpaper push) | big BLE average drop | ⭐⭐ |
+| 6 | Lower OTA-check frequency (daily → weekly) | saves ~0.8 mAh/day | ⭐ |
+| 7 | Use partial refresh instead of full (0.3 s vs 1.5 s) | 5× lower refresh energy | ⭐⭐ |
+| 8 | Underclock CPU to 80/160 MHz (enough for rendering) | ~30% lower active current | ⭐⭐ |
+| 9 | ULP co-processor polls buttons/sensors | saves MCU wake overhead | ⭐⭐⭐ advanced |
 
 ---
 
@@ -122,13 +139,14 @@ baseline total       ~36 µA  →  0.86 mAh/day
 
 | Capacity | Size (ref.) | Scenario A life | Trade-off |
 |---|---|---|---|
-| 500 mAh | 502030 (~5 mm) | ~3 months | ultra-thin, short runtime |
-| **1000 mAh** ✅ | 603048 (~6 mm) | ~6–9 months | **recommended, balanced** |
-| 1500 mAh | 803040 (~8 mm) | ~10–12 months | thicker, OK for a lanyard |
-| 2000 mAh | 904050 (~9 mm) | ~14 months | bulky/heavy |
+| 500 mAh | 502030 (~5 mm) | ~2 months | ultra-thin, short runtime |
+| **1000 mAh** ✅ | 603048 (~6 mm) | ~4–5 months | **recommended, balanced** |
+| 1500 mAh | 803040 (~8 mm) | ~6–7 months | thicker, OK for a lanyard |
+| 2000 mAh | 904050 (~9 mm) | ~8–10 months | bulky/heavy |
 
-> Badge thickness should stay ≤8 mm → **1000–1500 mAh is the sweet spot**.
-> Note: past ~6 months, **Li-ion self-discharge (2–3%/month) dominates**, so bigger cells give diminishing returns.
+> Badge thickness should stay ≤8 mm → **1000–1500 mAh is the practical size
+> range**. Runtime figures above are estimates and do not include a measured
+> cell self-discharge curve.
 
 ---
 

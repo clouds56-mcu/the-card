@@ -7,7 +7,7 @@
 	(title_block
 		(title "the-card - ESP32-S3 e-paper smart badge")
 		(date "2026-08-09")
-		(rev "A")
+		(rev "B")
 		(company "the-card")
 		(comment 1 "Single-page functional schematic")
 		(comment 2 "Connectivity generated from circuit.py")
@@ -2110,6 +2110,184 @@
       )
     )
   )
+(symbol "Device:L"
+		(pin_numbers
+			(hide yes)
+		)
+		(pin_names
+			(offset 1.016)
+			(hide yes)
+		)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(duplicate_pin_numbers_are_jumpers no)
+		(property "Reference" "L"
+			(at -1.27 0 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "L"
+			(at 1.905 0 90)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "Inductor"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_keywords" "inductor choke coil reactor magnetic"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "ki_fp_filters" "Choke_* *Coil* Inductor_* L_*"
+			(at 0 0 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(hide yes)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(symbol "L_0_1"
+			(arc
+				(start 0 2.54)
+				(mid 0.6323 1.905)
+				(end 0 1.27)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(arc
+				(start 0 1.27)
+				(mid 0.6323 0.635)
+				(end 0 0)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(arc
+				(start 0 0)
+				(mid 0.6323 -0.635)
+				(end 0 -1.27)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+			(arc
+				(start 0 -1.27)
+				(mid 0.6323 -1.905)
+				(end 0 -2.54)
+				(stroke
+					(width 0)
+					(type default)
+				)
+				(fill
+					(type none)
+				)
+			)
+		)
+		(symbol "L_1_1"
+			(pin passive line
+				(at 0 3.81 270)
+				(length 1.27)
+				(name "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "1"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 0 -3.81 90)
+				(length 1.27)
+				(name "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+		)
+		(embedded_fonts no)
+	)
 (symbol "the-card:LSM6DSOTR"
     (in_bom yes)
     (on_board yes)
@@ -2826,184 +3004,6 @@
       )
     )
   )
-(symbol "Device:L"
-		(pin_numbers
-			(hide yes)
-		)
-		(pin_names
-			(offset 1.016)
-			(hide yes)
-		)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(in_pos_files yes)
-		(duplicate_pin_numbers_are_jumpers no)
-		(property "Reference" "L"
-			(at -1.27 0 90)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "L"
-			(at 1.905 0 90)
-			(show_name no)
-			(do_not_autoplace no)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 0 0 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Datasheet" ""
-			(at 0 0 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Description" "Inductor"
-			(at 0 0 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "ki_keywords" "inductor choke coil reactor magnetic"
-			(at 0 0 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "ki_fp_filters" "Choke_* *Coil* Inductor_* L_*"
-			(at 0 0 0)
-			(show_name no)
-			(do_not_autoplace no)
-			(hide yes)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(symbol "L_0_1"
-			(arc
-				(start 0 2.54)
-				(mid 0.6323 1.905)
-				(end 0 1.27)
-				(stroke
-					(width 0)
-					(type default)
-				)
-				(fill
-					(type none)
-				)
-			)
-			(arc
-				(start 0 1.27)
-				(mid 0.6323 0.635)
-				(end 0 0)
-				(stroke
-					(width 0)
-					(type default)
-				)
-				(fill
-					(type none)
-				)
-			)
-			(arc
-				(start 0 0)
-				(mid 0.6323 -0.635)
-				(end 0 -1.27)
-				(stroke
-					(width 0)
-					(type default)
-				)
-				(fill
-					(type none)
-				)
-			)
-			(arc
-				(start 0 -1.27)
-				(mid 0.6323 -1.905)
-				(end 0 -2.54)
-				(stroke
-					(width 0)
-					(type default)
-				)
-				(fill
-					(type none)
-				)
-			)
-		)
-		(symbol "L_1_1"
-			(pin passive line
-				(at 0 3.81 270)
-				(length 1.27)
-				(name "1"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "1"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-			(pin passive line
-				(at 0 -3.81 90)
-				(length 1.27)
-				(name "2"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "2"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-		)
-		(embedded_fonts no)
-	)
 (symbol "Transistor_FET:Q_NMOS_GSD"
 		(pin_names
 			(offset 0)
@@ -7389,12 +7389,12 @@
 		(uuid "4edf3833-bdb3-5376-93b3-3f61eddcb42b")
 	)
 	(no_connect
-		(at 300.99 308.61)
-		(uuid "e9369a84-04d5-504c-ae20-3f3d0f4871dd")
+		(at 298.45 308.61)
+		(uuid "ee3f8ae1-018e-5be1-b91d-387f6609c21c")
 	)
 	(no_connect
-		(at 318.77 308.61)
-		(uuid "c8da6ca0-6d27-5042-b2c3-6fca960b0c02")
+		(at 300.99 308.61)
+		(uuid "e9369a84-04d5-504c-ae20-3f3d0f4871dd")
 	)
 	(no_connect
 		(at 326.39 308.61)
@@ -8127,15 +8127,15 @@
 		(uuid "ccc7a029-e022-5f1d-b258-31eae677141d")
 	)
 	(wire
-		(pts (xy 298.45 308.61) (xy 298.45 314.96))
+		(pts (xy 318.77 308.61) (xy 318.77 314.96))
 		(stroke (width 0) (type default))
-		(uuid "b14316b2-d793-5cb5-811b-fd4b7d8750e6")
+		(uuid "1a881683-f646-56b5-a249-63307e1f9a31")
 	)
 	(global_label "NFC_IRQ"
 		(shape bidirectional)
-		(at 298.45 314.96 270)
+		(at 318.77 314.96 270)
 		(effects (font (size 0.8 0.8)) (justify right))
-		(uuid "85be81cb-64e3-553f-836f-7a9f1af07202")
+		(uuid "f7c7f366-ff35-54ed-b048-0ec91b4fb697")
 	)
 	(wire
 		(pts (xy 321.31 308.61) (xy 321.31 314.96))
@@ -8199,11 +8199,11 @@
 		(effects (font (size 1.8 1.8) (bold yes)) (justify left bottom))
 		(uuid "8597ffab-7fe9-5f9a-95ad-000219ea83ce")
 	)
-	(text "C11 -> U2: NFC bypass"
+	(text "C11 -> U2: NFC bypass; R17 -> GPO pull-up; C29 -> RF trim (DNP)"
 		(exclude_from_sim no)
 		(at 351.79 27.94 0)
 		(effects (font (size 1 1)) (justify left bottom))
-		(uuid "6a759dff-9c32-5ab4-82a7-ef6bdc92bc28")
+		(uuid "acca2e61-8707-5a85-bc67-ad3e57f5a255")
 	)
 	(text "R13/R14 -> I2C bus U1-U5: SCL/SDA pull-ups"
 		(exclude_from_sim no)
@@ -8300,6 +8300,44 @@
 			(reference "R14") (unit 1))))
 	)
 	(symbol
+		(lib_id "passives:0402WGF1002TCE")
+		(at 448.31 73.66 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "3ec1406c-2c0d-5455-8e81-16c8e1e08e1e")
+		(property "Reference" "R17"
+			(at 444.5 73.66 90)
+			(effects (font (size 1.2 1.2) (bold yes)))
+		)
+		(property "Value" "10k"
+			(at 452.12 73.66 90)
+			(effects (font (size 1 1)))
+		)
+		(property "Footprint" "Resistor_SMD:R_0402_1005Metric"
+			(at 448.31 73.66 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Datasheet" "https://lcsc.com/product-detail/Chip-Resistor-Surface-Mount-UniOhm_10KR-1002-1_C25744.html"
+			(at 448.31 73.66 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Function" "NFC open-drain GPO pull-up to +3V3"
+			(at 448.31 73.66 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "U2 GPO / U1 IO21"
+			(at 448.31 73.66 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(pin "2" (uuid "5c808a12-618e-5da4-ba95-f6ab75085e37"))
+		(pin "1" (uuid "e0c32e85-446b-5a06-9989-9818e70b19a5"))
+		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943"
+			(reference "R17") (unit 1))))
+	)
+	(symbol
 		(lib_id "the-card:ST25DV04KC-IE8S3")
 		(at 400.05 57.15 0)
 		(unit 1)
@@ -8334,6 +8372,82 @@
 		(pin "8" (uuid "a94ab6ca-4ebf-55a9-8228-1da5c3a814b0"))
 		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943"
 			(reference "U2") (unit 1))))
+	)
+	(symbol
+		(lib_id "Device:L")
+		(at 381 57.15 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(uuid "a8fd81d5-7d5c-54c5-9c25-457ff93d6c53")
+		(property "Reference" "L2"
+			(at 377.19 57.15 90)
+			(effects (font (size 1.2 1.2) (bold yes)))
+		)
+		(property "Value" "PCB NFC antenna"
+			(at 384.81 57.15 90)
+			(effects (font (size 1 1)))
+		)
+		(property "Footprint" "NetTie:NetTie-2_SMD_Pad0.5mm"
+			(at 381 57.15 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Datasheet" ""
+			(at 381 57.15 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Function" "Etched 13.56MHz NFC antenna net tie"
+			(at 381 57.15 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "U2 AC0/AC1"
+			(at 381 57.15 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(pin "1" (uuid "e35d1fcb-9288-55f2-a5ae-fe82b95a9566"))
+		(pin "2" (uuid "f8829b65-857c-5de5-9fc5-e3970266faf7"))
+		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943"
+			(reference "L2") (unit 1))))
+	)
+	(symbol
+		(lib_id "passives:CL05B104KO5NNNC")
+		(at 381 73.66 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp yes)
+		(uuid "fab5499f-7cd6-57c4-8ae5-65e9926b1e7e")
+		(property "Reference" "C29"
+			(at 377.19 73.66 90)
+			(effects (font (size 1.2 1.2) (bold yes)))
+		)
+		(property "Value" "DNP 0-22pF C0G/NP0"
+			(at 384.81 73.66 90)
+			(effects (font (size 1 1)))
+		)
+		(property "Footprint" "Capacitor_SMD:C_0402_1005Metric"
+			(at 381 73.66 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Datasheet" ""
+			(at 381 73.66 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Function" "DNP C0G footprint for measured NFC resonance trimming"
+			(at 381 73.66 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Related To" "U2 AC0/AC1 / L2"
+			(at 381 73.66 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(pin "2" (uuid "b7f1d885-fd83-54a6-8e43-29cde92b9637"))
+		(pin "1" (uuid "d7c62289-66d6-586f-ba2c-420f2c00c0e7"))
+		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943"
+			(reference "C29") (unit 1))))
 	)
 	(symbol
 		(lib_id "passives:CL05B104KO5NNNC")
@@ -8657,6 +8771,39 @@
 		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943" (reference "#PWR0302") (unit 1))))
 	)
 	(wire
+		(pts (xy 448.31 68.58) (xy 448.31 63.5))
+		(stroke (width 0) (type default))
+		(uuid "1bf14f3f-7c18-5b86-8404-6c4aa9af3791")
+	)
+	(global_label "+3V3"
+		(shape bidirectional)
+		(at 448.31 63.5 0)
+		(effects (font (size 0.01 0.01)) (hide yes))
+		(uuid "cdbebeea-35b3-5acc-a127-ffbad0d63794")
+	)
+	(symbol
+		(lib_id "power:+3V3")
+		(at 448.31 63.5 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(uuid "7a104560-7a28-54a1-950a-2b2aef9eb99f")
+		(property "Reference" "#PWR0303"
+			(at 448.31 63.5 0)
+			(effects (font (size 1 1)) (hide yes))
+		)
+		(property "Value" "+3V3"
+			(at 448.31 60.96 0)
+			(effects (font (size 1 1)))
+		)
+		(property "Footprint" "" (at 448.31 63.5 0) (effects (font (size 1 1)) (hide yes)))
+		(property "Datasheet" "" (at 448.31 63.5 0) (effects (font (size 1 1)) (hide yes)))
+		(pin "1" (uuid "5b53a5a6-2d68-5911-b01b-f4abf6f4acb6"))
+		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943" (reference "#PWR0303") (unit 1))))
+	)
+	(wire
 		(pts (xy 410.21 53.34) (xy 415.29 53.34))
 		(stroke (width 0) (type default))
 		(uuid "bbbfa994-1489-5dc5-bae6-2d3d48a38a10")
@@ -8675,8 +8822,8 @@
 		(in_bom no)
 		(on_board yes)
 		(dnp no)
-		(uuid "9f3caa1a-f77d-5815-b4f2-a3f6fe2171c4")
-		(property "Reference" "#PWR0303"
+		(uuid "2de135ec-d2d7-5712-9fde-e004efc0b978")
+		(property "Reference" "#PWR0304"
 			(at 415.29 53.34 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
@@ -8686,8 +8833,8 @@
 		)
 		(property "Footprint" "" (at 415.29 53.34 0) (effects (font (size 1 1)) (hide yes)))
 		(property "Datasheet" "" (at 415.29 53.34 0) (effects (font (size 1 1)) (hide yes)))
-		(pin "1" (uuid "19e2b24e-4633-51b4-90e9-2662c75f968f"))
-		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943" (reference "#PWR0303") (unit 1))))
+		(pin "1" (uuid "2a8e7048-98a6-5ece-8496-9f71ae39a562"))
+		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943" (reference "#PWR0304") (unit 1))))
 	)
 	(wire
 		(pts (xy 435.61 52.07) (xy 435.61 46.99))
@@ -8708,8 +8855,8 @@
 		(in_bom no)
 		(on_board yes)
 		(dnp no)
-		(uuid "b5ee5032-f19e-5e43-8d65-a745caa44195")
-		(property "Reference" "#PWR0304"
+		(uuid "90cf01b2-8bc1-55c7-848d-1c3b1bffbfec")
+		(property "Reference" "#PWR0305"
 			(at 435.61 46.99 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
@@ -8719,8 +8866,8 @@
 		)
 		(property "Footprint" "" (at 435.61 46.99 0) (effects (font (size 1 1)) (hide yes)))
 		(property "Datasheet" "" (at 435.61 46.99 0) (effects (font (size 1 1)) (hide yes)))
-		(pin "1" (uuid "7f12729e-39a8-51d3-a80f-0ee8360da5c5"))
-		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943" (reference "#PWR0304") (unit 1))))
+		(pin "1" (uuid "e0489039-3774-5677-8661-068480c08aa4"))
+		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943" (reference "#PWR0305") (unit 1))))
 	)
 	(wire
 		(pts (xy 386.08 124.46) (xy 381 124.46))
@@ -8741,8 +8888,8 @@
 		(in_bom no)
 		(on_board yes)
 		(dnp no)
-		(uuid "b4ae7869-222e-5cb6-95c7-0175c0e397fd")
-		(property "Reference" "#PWR0305"
+		(uuid "1fe340a0-90b3-57d3-b87e-391958797e51")
+		(property "Reference" "#PWR0306"
 			(at 381 124.46 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
@@ -8752,8 +8899,8 @@
 		)
 		(property "Footprint" "" (at 381 124.46 0) (effects (font (size 1 1)) (hide yes)))
 		(property "Datasheet" "" (at 381 124.46 0) (effects (font (size 1 1)) (hide yes)))
-		(pin "1" (uuid "5f9fbea5-4831-51b8-82a2-1952de453956"))
-		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943" (reference "#PWR0305") (unit 1))))
+		(pin "1" (uuid "6a845722-d4fc-542a-9e23-82113527a6ab"))
+		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943" (reference "#PWR0306") (unit 1))))
 	)
 	(wire
 		(pts (xy 419.1 129.54) (xy 424.18 129.54))
@@ -8774,8 +8921,8 @@
 		(in_bom no)
 		(on_board yes)
 		(dnp no)
-		(uuid "b890a78b-28ef-5e8c-be2d-75fb72d2ffe5")
-		(property "Reference" "#PWR0306"
+		(uuid "988e387a-cb42-5db6-a5e6-63681c1b52c0")
+		(property "Reference" "#PWR0307"
 			(at 424.18 129.54 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
@@ -8785,8 +8932,8 @@
 		)
 		(property "Footprint" "" (at 424.18 129.54 0) (effects (font (size 1 1)) (hide yes)))
 		(property "Datasheet" "" (at 424.18 129.54 0) (effects (font (size 1 1)) (hide yes)))
-		(pin "1" (uuid "ae712274-3e70-532e-bf63-d20d96978e02"))
-		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943" (reference "#PWR0306") (unit 1))))
+		(pin "1" (uuid "9b47323f-704a-52e1-8cad-d5dacddfc7e4"))
+		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943" (reference "#PWR0307") (unit 1))))
 	)
 	(wire
 		(pts (xy 419.1 119.38) (xy 424.18 119.38))
@@ -8807,8 +8954,8 @@
 		(in_bom no)
 		(on_board yes)
 		(dnp no)
-		(uuid "9685381d-63eb-55cc-8eb4-e2634960b654")
-		(property "Reference" "#PWR0307"
+		(uuid "b6057849-085d-50ef-bc8f-3cc429cccd56")
+		(property "Reference" "#PWR0308"
 			(at 424.18 119.38 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
@@ -8818,8 +8965,8 @@
 		)
 		(property "Footprint" "" (at 424.18 119.38 0) (effects (font (size 1 1)) (hide yes)))
 		(property "Datasheet" "" (at 424.18 119.38 0) (effects (font (size 1 1)) (hide yes)))
-		(pin "1" (uuid "464a9b82-6b59-575c-83a2-d89584f1cca8"))
-		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943" (reference "#PWR0307") (unit 1))))
+		(pin "1" (uuid "2ff68047-7652-537e-84aa-c986f7cb2506"))
+		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943" (reference "#PWR0308") (unit 1))))
 	)
 	(wire
 		(pts (xy 440.69 101.6) (xy 440.69 96.52))
@@ -8840,8 +8987,8 @@
 		(in_bom no)
 		(on_board yes)
 		(dnp no)
-		(uuid "848718e1-ed74-55b5-af94-31957ccdf571")
-		(property "Reference" "#PWR0308"
+		(uuid "ff136bf6-ecde-5cf6-a60c-b15cc456860a")
+		(property "Reference" "#PWR0309"
 			(at 440.69 96.52 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
@@ -8851,8 +8998,8 @@
 		)
 		(property "Footprint" "" (at 440.69 96.52 0) (effects (font (size 1 1)) (hide yes)))
 		(property "Datasheet" "" (at 440.69 96.52 0) (effects (font (size 1 1)) (hide yes)))
-		(pin "1" (uuid "4e8043af-a926-5768-b1e4-94b6155476bc"))
-		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943" (reference "#PWR0308") (unit 1))))
+		(pin "1" (uuid "c0fada17-a1d5-5eb9-b9de-421a4ab00cc5"))
+		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943" (reference "#PWR0309") (unit 1))))
 	)
 	(wire
 		(pts (xy 458.47 116.84) (xy 458.47 111.76))
@@ -8873,8 +9020,8 @@
 		(in_bom no)
 		(on_board yes)
 		(dnp no)
-		(uuid "fea51a8c-6702-58cf-a7ee-66dea2d2b1fa")
-		(property "Reference" "#PWR0309"
+		(uuid "3c7c24bc-f9a5-5a6c-b762-1f8b6fe6b96b")
+		(property "Reference" "#PWR0310"
 			(at 458.47 111.76 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
@@ -8884,8 +9031,8 @@
 		)
 		(property "Footprint" "" (at 458.47 111.76 0) (effects (font (size 1 1)) (hide yes)))
 		(property "Datasheet" "" (at 458.47 111.76 0) (effects (font (size 1 1)) (hide yes)))
-		(pin "1" (uuid "94e4f9ee-1f68-5a84-9024-8c8ed039dc43"))
-		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943" (reference "#PWR0309") (unit 1))))
+		(pin "1" (uuid "4a4f9437-4709-5fc4-811e-3415f5d0f19d"))
+		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943" (reference "#PWR0310") (unit 1))))
 	)
 	(wire
 		(pts (xy 505.46 124.46) (xy 510.54 124.46))
@@ -8906,8 +9053,8 @@
 		(in_bom no)
 		(on_board yes)
 		(dnp no)
-		(uuid "f3987552-cfe7-5f58-8f70-052352d2d171")
-		(property "Reference" "#PWR0310"
+		(uuid "0d555281-92ab-5471-8655-d043704d0a7b")
+		(property "Reference" "#PWR0311"
 			(at 510.54 124.46 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
@@ -8917,8 +9064,8 @@
 		)
 		(property "Footprint" "" (at 510.54 124.46 0) (effects (font (size 1 1)) (hide yes)))
 		(property "Datasheet" "" (at 510.54 124.46 0) (effects (font (size 1 1)) (hide yes)))
-		(pin "1" (uuid "1fac6342-9546-5a00-8159-2cefbbbdd1bc"))
-		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943" (reference "#PWR0310") (unit 1))))
+		(pin "1" (uuid "3ec705fa-4916-57af-a4b9-7746c74437fb"))
+		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943" (reference "#PWR0311") (unit 1))))
 	)
 	(wire
 		(pts (xy 527.05 116.84) (xy 527.05 111.76))
@@ -8939,8 +9086,8 @@
 		(in_bom no)
 		(on_board yes)
 		(dnp no)
-		(uuid "9c057b69-478d-511f-89d6-0c42583178f5")
-		(property "Reference" "#PWR0311"
+		(uuid "b3dc09a8-e69a-5f11-94e9-8d27e7ac89fa")
+		(property "Reference" "#PWR0312"
 			(at 527.05 111.76 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
@@ -8950,8 +9097,8 @@
 		)
 		(property "Footprint" "" (at 527.05 111.76 0) (effects (font (size 1 1)) (hide yes)))
 		(property "Datasheet" "" (at 527.05 111.76 0) (effects (font (size 1 1)) (hide yes)))
-		(pin "1" (uuid "bf9f2739-a624-5e23-88dd-dd6018d890bd"))
-		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943" (reference "#PWR0311") (unit 1))))
+		(pin "1" (uuid "2a217e84-31d8-5341-a4b1-12a0650f1006"))
+		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943" (reference "#PWR0312") (unit 1))))
 	)
 	(wire
 		(pts (xy 389.89 60.96) (xy 384.81 60.96))
@@ -8972,8 +9119,8 @@
 		(in_bom no)
 		(on_board yes)
 		(dnp no)
-		(uuid "3a3c8efa-cce9-5f5c-95c6-410cb3b85b53")
-		(property "Reference" "#PWR0312"
+		(uuid "e837e24a-3f7e-57eb-8679-9500d7e5adb0")
+		(property "Reference" "#PWR0313"
 			(at 384.81 60.96 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
@@ -8983,8 +9130,8 @@
 		)
 		(property "Footprint" "" (at 384.81 60.96 0) (effects (font (size 1 1)) (hide yes)))
 		(property "Datasheet" "" (at 384.81 60.96 0) (effects (font (size 1 1)) (hide yes)))
-		(pin "1" (uuid "fec20449-35b5-5dfb-b554-f27584a0331f"))
-		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943" (reference "#PWR0312") (unit 1))))
+		(pin "1" (uuid "39c21ead-83dc-5d76-945c-9d1392484252"))
+		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943" (reference "#PWR0313") (unit 1))))
 	)
 	(wire
 		(pts (xy 435.61 62.23) (xy 435.61 67.31))
@@ -9005,8 +9152,8 @@
 		(in_bom no)
 		(on_board yes)
 		(dnp no)
-		(uuid "8bda0cf3-2706-52d3-9002-a91052c696c3")
-		(property "Reference" "#PWR0313"
+		(uuid "33b3a7fa-8869-52c3-b223-5405fd3175a4")
+		(property "Reference" "#PWR0314"
 			(at 435.61 67.31 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
@@ -9016,8 +9163,8 @@
 		)
 		(property "Footprint" "" (at 435.61 67.31 0) (effects (font (size 1 1)) (hide yes)))
 		(property "Datasheet" "" (at 435.61 67.31 0) (effects (font (size 1 1)) (hide yes)))
-		(pin "1" (uuid "68f7342c-2824-50d8-b99b-20a7881013b3"))
-		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943" (reference "#PWR0313") (unit 1))))
+		(pin "1" (uuid "77267628-6483-58c9-97b3-d399be943d5e"))
+		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943" (reference "#PWR0314") (unit 1))))
 	)
 	(wire
 		(pts (xy 386.08 114.3) (xy 381 114.3))
@@ -9038,8 +9185,8 @@
 		(in_bom no)
 		(on_board yes)
 		(dnp no)
-		(uuid "c60ac5e2-1a6f-5334-a0b0-af50f0ad67c6")
-		(property "Reference" "#PWR0314"
+		(uuid "b0cd9ba0-39ec-5c38-9c16-265cc52c0cbc")
+		(property "Reference" "#PWR0315"
 			(at 381 114.3 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
@@ -9049,8 +9196,8 @@
 		)
 		(property "Footprint" "" (at 381 114.3 0) (effects (font (size 1 1)) (hide yes)))
 		(property "Datasheet" "" (at 381 114.3 0) (effects (font (size 1 1)) (hide yes)))
-		(pin "1" (uuid "f6cba409-a2fa-5529-a0d9-78457c367a9e"))
-		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943" (reference "#PWR0314") (unit 1))))
+		(pin "1" (uuid "939113d8-b001-5dda-9603-a00743e5fcb7"))
+		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943" (reference "#PWR0315") (unit 1))))
 	)
 	(wire
 		(pts (xy 386.08 127) (xy 381 127))
@@ -9071,8 +9218,8 @@
 		(in_bom no)
 		(on_board yes)
 		(dnp no)
-		(uuid "86313c64-9688-50d1-bb88-d333e8585106")
-		(property "Reference" "#PWR0315"
+		(uuid "9890d70d-36d2-52a0-a46c-e62ed644f819")
+		(property "Reference" "#PWR0316"
 			(at 381 127 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
@@ -9082,8 +9229,8 @@
 		)
 		(property "Footprint" "" (at 381 127 0) (effects (font (size 1 1)) (hide yes)))
 		(property "Datasheet" "" (at 381 127 0) (effects (font (size 1 1)) (hide yes)))
-		(pin "1" (uuid "19d59e63-e97a-5d6a-9ec6-a09c642c4050"))
-		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943" (reference "#PWR0315") (unit 1))))
+		(pin "1" (uuid "2b66fa96-b699-5107-b36f-68c1292763e1"))
+		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943" (reference "#PWR0316") (unit 1))))
 	)
 	(wire
 		(pts (xy 386.08 129.54) (xy 381 129.54))
@@ -9104,8 +9251,8 @@
 		(in_bom no)
 		(on_board yes)
 		(dnp no)
-		(uuid "f6b15fd7-edb5-5721-b94e-407b4abfab23")
-		(property "Reference" "#PWR0316"
+		(uuid "c207702c-59f0-579c-99e9-9859c2b3c7de")
+		(property "Reference" "#PWR0317"
 			(at 381 129.54 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
@@ -9115,8 +9262,8 @@
 		)
 		(property "Footprint" "" (at 381 129.54 0) (effects (font (size 1 1)) (hide yes)))
 		(property "Datasheet" "" (at 381 129.54 0) (effects (font (size 1 1)) (hide yes)))
-		(pin "1" (uuid "1c130b20-bf76-51b4-8944-f0352f59be8f"))
-		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943" (reference "#PWR0316") (unit 1))))
+		(pin "1" (uuid "f52144aa-dca9-509e-aa7f-117b184d019d"))
+		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943" (reference "#PWR0317") (unit 1))))
 	)
 	(wire
 		(pts (xy 440.69 111.76) (xy 440.69 116.84))
@@ -9137,8 +9284,8 @@
 		(in_bom no)
 		(on_board yes)
 		(dnp no)
-		(uuid "94630934-a288-54a5-8482-46c61b1c275b")
-		(property "Reference" "#PWR0317"
+		(uuid "5486108b-6f70-585d-9c8b-9641e0b2cc0e")
+		(property "Reference" "#PWR0318"
 			(at 440.69 116.84 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
@@ -9148,8 +9295,8 @@
 		)
 		(property "Footprint" "" (at 440.69 116.84 0) (effects (font (size 1 1)) (hide yes)))
 		(property "Datasheet" "" (at 440.69 116.84 0) (effects (font (size 1 1)) (hide yes)))
-		(pin "1" (uuid "a61184b6-5357-51c5-8119-8447098b55a8"))
-		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943" (reference "#PWR0317") (unit 1))))
+		(pin "1" (uuid "dc9d2ffc-6471-536b-b261-723d3df2be78"))
+		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943" (reference "#PWR0318") (unit 1))))
 	)
 	(wire
 		(pts (xy 458.47 127) (xy 458.47 132.08))
@@ -9170,8 +9317,8 @@
 		(in_bom no)
 		(on_board yes)
 		(dnp no)
-		(uuid "911bca61-d0b1-5f39-a66a-552fd9cfe84c")
-		(property "Reference" "#PWR0318"
+		(uuid "d55a0449-436d-5573-9d13-2a011deeba76")
+		(property "Reference" "#PWR0319"
 			(at 458.47 132.08 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
@@ -9181,8 +9328,8 @@
 		)
 		(property "Footprint" "" (at 458.47 132.08 0) (effects (font (size 1 1)) (hide yes)))
 		(property "Datasheet" "" (at 458.47 132.08 0) (effects (font (size 1 1)) (hide yes)))
-		(pin "1" (uuid "c30699f3-c286-50f9-ad24-25f9148e8862"))
-		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943" (reference "#PWR0318") (unit 1))))
+		(pin "1" (uuid "e4c228a2-3555-5e17-a19e-bb5d780b1b91"))
+		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943" (reference "#PWR0319") (unit 1))))
 	)
 	(wire
 		(pts (xy 505.46 121.92) (xy 510.54 121.92))
@@ -9203,8 +9350,8 @@
 		(in_bom no)
 		(on_board yes)
 		(dnp no)
-		(uuid "5354a79b-1799-57fc-a9e9-5319d7c6f774")
-		(property "Reference" "#PWR0319"
+		(uuid "1e20c4cb-5f55-5693-a42b-c34f9f49b268")
+		(property "Reference" "#PWR0320"
 			(at 510.54 121.92 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
@@ -9214,8 +9361,8 @@
 		)
 		(property "Footprint" "" (at 510.54 121.92 0) (effects (font (size 1 1)) (hide yes)))
 		(property "Datasheet" "" (at 510.54 121.92 0) (effects (font (size 1 1)) (hide yes)))
-		(pin "1" (uuid "7f5831cd-6a0b-5cdc-a78f-6a0d8708046b"))
-		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943" (reference "#PWR0319") (unit 1))))
+		(pin "1" (uuid "38f85fba-7e65-52b0-9726-c8cd93089bd0"))
+		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943" (reference "#PWR0320") (unit 1))))
 	)
 	(wire
 		(pts (xy 527.05 127) (xy 527.05 132.08))
@@ -9236,8 +9383,8 @@
 		(in_bom no)
 		(on_board yes)
 		(dnp no)
-		(uuid "0642f50a-b0d3-5e90-a0e2-54e807d9d618")
-		(property "Reference" "#PWR0320"
+		(uuid "2f2ff2d5-78f5-5ea3-b444-2f763dc8720e")
+		(property "Reference" "#PWR0321"
 			(at 527.05 132.08 0)
 			(effects (font (size 1 1)) (hide yes))
 		)
@@ -9247,8 +9394,8 @@
 		)
 		(property "Footprint" "" (at 527.05 132.08 0) (effects (font (size 1 1)) (hide yes)))
 		(property "Datasheet" "" (at 527.05 132.08 0) (effects (font (size 1 1)) (hide yes)))
-		(pin "1" (uuid "8d56ec49-d89f-5f4a-a678-8c62b1f8e0ed"))
-		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943" (reference "#PWR0320") (unit 1))))
+		(pin "1" (uuid "371ff81d-6253-5a39-858b-adb8936eaaa6"))
+		(instances (project "the-card" (path "/46c60ea8-8fa1-58ec-bd53-17ce943b4943" (reference "#PWR0321") (unit 1))))
 	)
 	(wire
 		(pts (xy 478.79 53.34) (xy 478.79 58.42))
@@ -9352,35 +9499,89 @@
 	(wire
 		(pts (xy 389.89 55.88) (xy 384.81 55.88))
 		(stroke (width 0) (type default))
-		(uuid "e71cd329-bbee-5623-9215-cf3a93ddb5ea")
+		(uuid "698ad7da-8e56-55bc-8101-264565a17a04")
 	)
-	(global_label "NFC_ANTENNA"
+	(global_label "NFC_AC0"
 		(shape bidirectional)
 		(at 384.81 55.88 180)
 		(effects (font (size 1 1)) (justify right))
-		(uuid "5cb484c0-4aa0-5c8c-b345-9a069fc3e9a0")
+		(uuid "abfce04f-d596-56b6-b281-d612233e18bf")
+	)
+	(wire
+		(pts (xy 377.19 57.15) (xy 372.11 57.15))
+		(stroke (width 0) (type default))
+		(uuid "8d8ac4ed-c729-57d7-9f1f-e5513cf7413a")
+	)
+	(global_label "NFC_AC0"
+		(shape bidirectional)
+		(at 372.11 57.15 180)
+		(effects (font (size 1 1)) (justify right))
+		(uuid "42aef866-8424-59c8-80d5-27d2dae356a0")
+	)
+	(wire
+		(pts (xy 381 68.58) (xy 381 63.5))
+		(stroke (width 0) (type default))
+		(uuid "cda462a0-ed9a-53eb-8079-02e2c805f9fc")
+	)
+	(global_label "NFC_AC0"
+		(shape bidirectional)
+		(at 381 63.5 90)
+		(effects (font (size 1 1)) (justify left))
+		(uuid "5875eed5-d869-51de-9f92-8c888f48dee4")
 	)
 	(wire
 		(pts (xy 389.89 58.42) (xy 384.81 58.42))
 		(stroke (width 0) (type default))
-		(uuid "465e8f6e-f8d0-5b81-9c86-0a2b52cb011f")
+		(uuid "0147ed02-4c61-5163-9a0b-cfcd31c24645")
 	)
-	(global_label "NFC_ANTENNA"
+	(global_label "NFC_AC1"
 		(shape bidirectional)
 		(at 384.81 58.42 180)
 		(effects (font (size 1 1)) (justify right))
-		(uuid "26be06bc-3cdf-59de-a4cc-6fc5418faf83")
+		(uuid "8ab5df2a-6550-5ae4-87d0-9ac85f25f86c")
 	)
 	(wire
-		(pts (xy 410.21 55.88) (xy 415.29 55.88))
+		(pts (xy 384.81 57.15) (xy 389.89 57.15))
 		(stroke (width 0) (type default))
-		(uuid "a2de4679-28a8-5df0-880f-05af6ad3d8ae")
+		(uuid "5de58d7d-2895-5a93-b2da-7fa907c3f07c")
+	)
+	(global_label "NFC_AC1"
+		(shape bidirectional)
+		(at 389.89 57.15 0)
+		(effects (font (size 1 1)) (justify left))
+		(uuid "f13f2548-4158-511e-9fe5-dd0edc1402d0")
+	)
+	(wire
+		(pts (xy 381 78.74) (xy 381 83.82))
+		(stroke (width 0) (type default))
+		(uuid "50e2ce60-28a7-5f23-ac56-9c74815e6661")
+	)
+	(global_label "NFC_AC1"
+		(shape bidirectional)
+		(at 381 83.82 270)
+		(effects (font (size 1 1)) (justify right))
+		(uuid "97dbf32b-e3f4-5fa5-9fec-0f33b21536fd")
+	)
+	(wire
+		(pts (xy 448.31 78.74) (xy 410.21 78.74))
+		(stroke (width 0) (type default))
+		(uuid "e837be86-6aa5-5e94-b151-e643043c42bf")
+	)
+	(wire
+		(pts (xy 410.21 78.74) (xy 410.21 55.88))
+		(stroke (width 0) (type default))
+		(uuid "2a5099b0-c9f9-5951-8cf4-a7fc9a949a76")
+	)
+	(wire
+		(pts (xy 448.31 78.74) (xy 448.31 83.82))
+		(stroke (width 0) (type default))
+		(uuid "721195c6-6c26-5f9b-9b0f-843d8fd5dd10")
 	)
 	(global_label "NFC_IRQ"
 		(shape bidirectional)
-		(at 415.29 55.88 0)
-		(effects (font (size 1 1)) (justify left))
-		(uuid "5205b2d8-8e79-5ca1-96e6-c26daee79f48")
+		(at 448.31 83.82 270)
+		(effects (font (size 1 1)) (justify right))
+		(uuid "11a085d6-8761-502c-aba3-8dfe926496da")
 	)
 	(text "GDEY029T94 24-pin FPC interface"
 		(exclude_from_sim no)

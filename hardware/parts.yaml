@@ -161,7 +161,7 @@ assembly_parts:
     lcsc: C28323
     role: 1uF 50V X7R 0805 e-paper rail capacitor
     source_hint: JLCPCB Basic
-  - refs: [R1-R2, R8, R11-R12]
+  - refs: [R1-R2, R8, R11-R12, R17]
     name: 0402WGF1002TCE
     lcsc: C25744
     role: 10k 1% 0402 resistor
@@ -225,6 +225,14 @@ standard_parts:
     name: TestPoint
     role: Battery, 3.3V, ground, reset, and boot bring-up access
     footprint: "TestPoint:TestPoint_Pad_D1.0mm"
+  - ref: L2
+    name: PCB antenna net tie
+    role: Etched 13.56 MHz NFC coil; excluded from BOM and placement files
+    footprint: "NetTie:NetTie-2_SMD_Pad0.5mm"
+  - ref: C29
+    name: NFC tuning capacitor
+    role: DNP 0-22pF 0402 C0G/NP0 footprint for measured resonance trimming
+    footprint: "Capacitor_SMD:C_0402_1005Metric"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # E-ink panel — represented as connector netlist (no LCSC fetch)
@@ -352,6 +360,6 @@ rails:
 # TODO at layout time
 # ─────────────────────────────────────────────────────────────────────────────
 todo:
-  - NFC antenna geometry (continuous PCB loop on NFC_ANTENNA, about 13.56MHz)
+  - Measure the assembled NFC antenna and select C29 only if resonance trimming is needed
   - Antenna keepout under ESP32-S3-WROOM-1 PCB antenna
   - Lanyard hole / CG placement

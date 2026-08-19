@@ -1,14 +1,16 @@
 # Progress — the-card
 
-> Living status log for the ESP32-S3 e-paper smart badge. Last updated 2026-08-11.
+> Living status log for the ESP32-S3 e-paper smart badge. Last updated 2026-08-19.
 
 ## Status
 
-🟢 **Single-page schematic and routed four-layer PCB generated (KiCad 10,
-   75 parts, ERC/DRC 0 violations).** Connectivity is verified against the SKiDL
-   circuit; the assembly BOM has 68 exact LCSC/JLCPCB assignments and one
-   intentionally distributor-sourced connector. The design is ready for a
-   physical-fit review and first prototype order.
+🟢 **Rev B single-page schematic and routed four-layer PCB source generated
+   (KiCad 10, 78 parts).** The revision adds the mandatory NFC GPO pull-up, moves
+   its interrupt off a strap pin, and replaces the provisional antenna with a
+   tunable nine-turn coil in an all-layer RF quiet area. Automated ERC/DRC and
+   connectivity checks are release gates; antenna resonance and range remain
+   mandatory measurements on the first assembled board. The published website
+   v0.1.0/Rev A artifact is immutable and is not silently replaced by Rev B.
 
 ---
 
@@ -24,8 +26,9 @@ watch-style buttons, on-board sensors, lanyard form factor. Open-source, MIT.
 - `docs/bom.md` — full BOM (LCSC #s / prices) + landed-cost analysis
 - `docs/power-budget.md` — state-based power model + battery-life scenarios
 
-Headline numbers: component BOM ~$21.5 (@100), landed ~$28/unit; daily-use battery
-life ~6–9 months on a 1000 mAh cell.
+Headline numbers: component BOM ~$21.5 (@100), landed ~$28/unit. The corrected
+datasheet-based daily-use model is about 5.4 months theoretical on a 1000 mAh
+cell, with 4–5 months used only as a planning range until Rev B is measured.
 
 ### 3. Repository
 Local git repo, MIT license, `main` branch.
@@ -62,7 +65,8 @@ Power muxing: switchable AUX branch rail (Q1, status LED only) and a gated e-ink
 VCI/booster input (Q2). The I²C sensors remain on +3V3 with the bus pullups to
 avoid back-powering an unpowered device.
 
-**ERC: 0 violations · 75 components · 286 component pins.** EN, IO0, battery,
+**Expected generated design: 78 components · 292 component pins · 43 canonical
+named nets.** EN, IO0, battery,
 3.3 V, and ground test points are included for first-board bring-up. Output:
 `the-card.net` plus the generated single-page `the-card.kicad_sch`.
 
@@ -73,11 +77,15 @@ Using Exa web search + the Good Display datasheet PDF:
 
 - **DW01A + FS8205A** ✓ — pin mapping confirmed (EasyEDA `DOUT/VM/COUT` = HMSEMI
   `DO/CS/CO` = discharge / sense / charge). Found **3 missing required parts** and
-  added them: R1 470Ω (VCC←B+), R2 2kΩ (VM←P-), C1 100nF (VCC-VSS). Gate
-  assignment COUT→G1 / DOUT→G2 and S1=B- / S2=P- verified correct.
-- **ST25DV04KC** ✓ — SO-8 pinout matches the symbol; **internal tuning cap
-  28.5 pF** means the antenna connects directly to AC0/AC1 with **no external
-  cap**. Only the PCB antenna geometry remains (a layout task).
+  added them: R9 100 Ω (VCC←B+), R10 1 kΩ (VM←P-), C7 100 nF (VCC-VSS). Gate
+  assignment DOUT→G1 / COUT→G2 and S1=B- / S2=P- is verified.
+- **ST25DV04KC** ✓ — SO-8 pinout matches the symbol. Its GPO is open-drain, so
+  Rev B adds mandatory 10 kΩ pull-up R17 and connects `NFC_IRQ` to RTC-capable,
+  non-strapping GPIO21 instead of GPIO3. The 28.5 pF internal tuning capacitance
+  is modeled with distinct `NFC_AC0`/`NFC_AC1` nets, etched-coil model L2, and a
+  DNP 0–22 pF C0G/NP0 tuning footprint C29. The SO-8 device has no LPD pin and is
+  specified at 76 µA typical / 100 µA maximum static standby at 3.3 V (up to
+  85 °C), not the previously assumed 1 µA.
 - **GDEY029T94** ✓ — the assumed 8-signal pinout was **wrong**; the real 24-pin
   FFC brings out raw SSD1680 pins. Rewired: SPI on pins 9–14, VCI/VDDIO/VSS on
   15–17, BS1=GND (4-wire SPI), and intentionally unused pins marked NC. The
@@ -124,8 +132,11 @@ Using Exa web search + the Good Display datasheet PDF:
 | 1 µF 50 V X5R 0603 (CL10A105KB8NNNC) | C15849 | C3/C8/C9 |
 | 4.7 µF 25 V X5R 0805 (CL21A475KAQNNNE) | C1779 | C20/C21 |
 | 1 µF 50 V X7R 0805 (CL21B105KBFNNNE) | C28323 | C22–C28 |
-| 0402 resistors, value-specific MPNs | C11702/C25076/C25744/C25774/C25879/C25900/C25905/C26083 | R1–R15 |
+| 0402 resistors, value-specific MPNs | C11702/C25076/C25744/C25774/C25879/C25900/C25905/C26083 | R1–R15, R17 |
 | 2.2 Ω 0.75 W pulse-rated 1206 (CRCW12062R20FKEAHP) | C1854860 | R16 |
+
+C29 is a DNP 0–22 pF C0G/NP0 tuning footprint and L2 represents copper etched into
+the PCB; neither is an initially populated assembly item.
 
 Battery (3.7 V 1000 mAh, 603048) and lanyard hardware are sourced from
 distributors (no LCSC number).
@@ -140,6 +151,10 @@ USBLC6-2 (D±/VBUS/GND), TP4056 (TEMP/CE/PROG), MAX17048 (CTG/QSTRT/CELL),
 LSM6DSO (CS=high→I²C, addr), ME6211 (CE active-high), SI2301 (1=G/2=S/3=D),
 SHT40 (1=SDA/2=SCL/3=VDD/4=VSS). **No wiring errors found.**
 
+The selected ME6211C33 is specified at 60 µA typical supply current while
+enabled. Its 0.1 µA standby figure applies only with CE low; this design ties CE
+to `+BAT`, so the power model uses 60 µA.
+
 TP4056 RPROG is 2.2 kΩ, limiting charge current to approximately 500 mA. This is
 a more conservative first-board setting for the planned 1000 mAh cell and gives
 the linear charger more thermal margin.
@@ -148,8 +163,15 @@ Remaining items are first-prototype validation risks, not CAD blockers:
 
 - **DW01A+FS8205A** — topology and routing are complete; verify U8 orientation
   and negative-path continuity before connecting a cell.
-- **ST25DV04KC antenna** — the continuous loop is routed; tune resonance and
-  measure read range on the first assembled board.
+- **ST25DV04KC antenna** — Rev B uses a nine-turn, 0.20 mm F.Cu spiral in an
+  all-copper-layer quiet area. The ST square-equivalent heuristic gives about
+  4.52 µH, while an NXP rectangular-coil cross-check brackets about
+  3.19–3.98 µH. That lower bracket implies roughly 6.1–14.7 pF nominal added
+  capacitance before antenna stray capacitance and assembly loading. Keep C29
+  DNP initially; measure assembled resonance/Q, then select the smallest
+  suitable C0G/NP0 value and test read/write range with multiple phones in the
+  final display/battery enclosure. Treat a required value above about 15–18 pF,
+  poor Q, or inadequate range as an antenna-respin signal.
 - **FH12 FPC orientation** — verify the physical panel FPC reaches the
   bottom-contact connector without twisting before ordering.
 - **JST-PH battery polarity** — confirm the selected cell's cable orientation.

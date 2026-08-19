@@ -120,6 +120,7 @@ SEMANTIC_REFS = {
     "R_sda": "R14",
     "R_epdg": "R15",
     "R_epds": "R16",
+    "R_nfc_irq": "R17",
     "C_mcu1": "C1",
     "C_mcu2": "C2",
     "C_en": "C3",
@@ -148,6 +149,7 @@ SEMANTIC_REFS = {
     "C_epd_vsl": "C26",
     "C_epd_vgl": "C27",
     "C_epd_vcom": "C28",
+    "C_nfc_tune": "C29",
 }
 
 # Every resistor and capacitor carries two documentation fields into KiCad and
@@ -173,6 +175,10 @@ PASSIVE_METADATA = {
     "R_sda": ("I2C_SDA / U1-U5", "Shared I2C data pull-up"),
     "R_epdg": ("J2 GDR / Q3", "E-paper boost MOSFET gate pull-down"),
     "R_epds": ("J2 RESE / Q3", "E-paper boost current-sense resistor"),
+    "R_nfc_irq": (
+        "U2 GPO / U1 IO21",
+        "NFC open-drain GPO pull-up to +3V3",
+    ),
     "C_mcu1": ("U1 3V3", "MCU high-frequency supply decoupling"),
     "C_mcu2": ("U1 3V3 / +3V3", "MCU local bulk capacitance"),
     "C_en": ("U1 EN", "MCU reset and startup timing"),
@@ -201,6 +207,10 @@ PASSIVE_METADATA = {
     "C_epd_vsl": ("J2 VSL", "E-paper negative source-rail reservoir"),
     "C_epd_vgl": ("J2 VGL", "E-paper negative gate-rail reservoir"),
     "C_epd_vcom": ("J2 VCOM", "E-paper common-electrode rail reservoir"),
+    "C_nfc_tune": (
+        "U2 AC0/AC1 / L2",
+        "DNP C0G footprint for measured NFC resonance trimming",
+    ),
 }
 
 _PASSIVE_REFS = {
@@ -330,9 +340,12 @@ i2c_scl += mcu["IO8"]; i2c_sda += mcu["IO18"]
 r_scl = R("4.7k", "R_scl"); p3v3 += r_scl[1]; r_scl[2] += i2c_scl
 r_sda = R("4.7k", "R_sda"); p3v3 += r_sda[1]; r_sda[2] += i2c_sda
 
-# Interrupts / status
+# Interrupts / status. The SO-8 ST25DV GPO is open-drain, so R17 provides the
+# mandatory external pull-up. GPIO21 is RTC-capable and is not a strap pin.
 nfc_irq, imu_int, chrg_stat = Net("NFC_IRQ"), Net("IMU_INT"), Net("~CHRG")
-nfc_irq += mcu["IO3"]; imu_int += mcu["IO2"]; chrg_stat += mcu["IO15"]
+nfc_irq += mcu["IO21"]; imu_int += mcu["IO2"]; chrg_stat += mcu["IO15"]
+r_nfc_irq = R("10k", "R_nfc_irq")
+p3v3 += r_nfc_irq[1]; r_nfc_irq[2] += nfc_irq
 
 # Buttons (to GND, internal RTC pullups; 100nF HW debounce)
 btn_up = Net("BTN_UP"); btn_dn = Net("BTN_DOWN")
@@ -348,7 +361,7 @@ for net, ref in [(btn_up, "C_btn1"), (btn_dn, "C_btn2"),
 pwr_aux = Net("PWR_AUX"); epd_pwr = Net("EPD_PWR_EN")
 pwr_aux += mcu["IO47"]; epd_pwr += mcu["IO16"]
 
-# WS2812 data. GPIO21 is intentionally left free for future expansion.
+# WS2812 data.
 led_din = Net("LED_DIN")
 led_din += mcu["IO48"]
 
@@ -455,18 +468,36 @@ r_q2g = R("10k", "R_q2g"); p3v3 += r_q2g[1]; r_q2g[2] += epd_pwr
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# NFC ST25DV04KC (U2)   ✓ VERIFIED vs ST datasheet (internal tuning C = 28.5 pF;
-#   antenna goes straight on AC0/AC1 — no external tuning cap. Both pins share
-#   one PCB net so the board editor can route a continuous ~4.8uH loop.)
+# NFC ST25DV04KC (U2). The chip's internal tuning capacitance is 28.5 pF.
+# L2 is a schematic model for the etched PCB coil; its net-tie footprint closes
+# the physical copper path while preserving distinct AC0/AC1 nets for C29.
+# C29 is intentionally DNP until the assembled badge is measured at 13.56 MHz.
 # ─────────────────────────────────────────────────────────────────────────────
 nfc = part("U2_NFC")
 p3v3 += nfc["VCC"]; gnd += nfc["VSS"]
 i2c_scl += nfc["SCL"]; i2c_sda += nfc["SDA"]
 nfc_irq += nfc["GPO"]            # RF-field / msg interrupt -> MCU
 # V_EH is intentionally unconnected in this core revision.
-nfc_antenna = Net("NFC_ANTENNA")
-nfc_antenna += nfc["AC0"]
-nfc_antenna += nfc["AC1"]
+nfc_ac0, nfc_ac1 = Net("NFC_AC0"), Net("NFC_AC1")
+nfc_ac0 += nfc["AC0"]
+nfc_ac1 += nfc["AC1"]
+nfc_antenna = std_part(
+    "Device",
+    "L",
+    "PCB NFC antenna",
+    "L2",
+    "NetTie:NetTie-2_SMD_Pad0.5mm",
+)
+nfc_antenna.fields.update({
+    "Related To": "U2 AC0/AC1",
+    "Function": "Etched 13.56MHz NFC antenna net tie",
+})
+nfc_ac0 += nfc_antenna[1]
+nfc_ac1 += nfc_antenna[2]
+c_nfc_tune = C("DNP 0-22pF C0G/NP0", "C_nfc_tune")
+c_nfc_tune.datasheet = ""
+nfc_ac0 += c_nfc_tune[1]
+nfc_ac1 += c_nfc_tune[2]
 decouple(p3v3, "C_nfc")
 
 

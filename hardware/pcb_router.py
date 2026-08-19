@@ -15,6 +15,14 @@ from typing import Iterable
 
 import pcbnew
 
+from nfc_antenna import (
+  ANTENNA_NETS,
+  QUIET_AREA,
+  TRACK_WIDTH_MM as NFC_TRACK_WIDTH_MM,
+  global_rectangle,
+  spiral_points,
+)
+
 
 BOARD_X = 20.0
 BOARD_Y = 20.0
@@ -120,8 +128,8 @@ def track_width(net: str) -> float:
 
 
 def via_geometry(net: str) -> tuple[float, float]:
-  if net == "NFC_ANTENNA":
-    return 0.70, 0.35
+  if net in ANTENNA_NETS:
+    return 0.60, 0.30
   if net in POWER_NETS:
     return 0.70, 0.35
   if net in USB_NETS:
@@ -345,9 +353,45 @@ class MazeRouter:
       self.raster_disk(via_blocked, via.x, via.y, radius)
 
     # The ESP32 antenna end must be clear of copper on every layer.
+    track_radius = width / 2
     for layer_blocked in blocked:
-      self.raster_rectangle(layer_blocked, 37.50, 20.20, 56.50, 27.40, 0.0)
-    self.raster_rectangle(via_blocked, 37.50, 20.20, 56.50, 27.40, 0.0)
+      self.raster_rectangle(
+        layer_blocked,
+        37.50 - track_radius,
+        20.20 - track_radius,
+        56.50 + track_radius,
+        27.40 + track_radius,
+        0.0,
+      )
+    via_diameter, _drill = via_geometry(net)
+    via_radius = via_diameter / 2
+    self.raster_rectangle(
+      via_blocked,
+      37.50 - via_radius,
+      20.20 - via_radius,
+      56.50 + via_radius,
+      27.40 + via_radius,
+      0.0,
+    )
+    if net not in ANTENNA_NETS:
+      quiet_area = global_rectangle(QUIET_AREA)
+      for layer_blocked in blocked:
+        self.raster_rectangle(
+          layer_blocked,
+          quiet_area.x - track_radius,
+          quiet_area.y - track_radius,
+          quiet_area.x + quiet_area.width + track_radius,
+          quiet_area.y + quiet_area.height + track_radius,
+          0.0,
+        )
+      self.raster_rectangle(
+        via_blocked,
+        quiet_area.x - via_radius,
+        quiet_area.y - via_radius,
+        quiet_area.x + quiet_area.width + via_radius,
+        quiet_area.y + quiet_area.height + via_radius,
+        0.0,
+      )
     return blocked, via_blocked
 
   def in_bounds(self, ix: int, iy: int) -> bool:
@@ -531,6 +575,33 @@ class MazeRouter:
       path = self.search(start, goal)
       self.commit_path(start, goal, path)
 
+  def route_between_points(
+    self,
+    net: str,
+    start: tuple[float, float],
+    goal: tuple[float, float],
+    layer: int,
+  ) -> None:
+    """Connect two existing same-net access points through routed copper."""
+    def endpoint(label: str, position: tuple[float, float]) -> Pad:
+      return Pad(
+        label,
+        "",
+        net,
+        *position,
+        layer,
+        position[0] - 0.02,
+        position[1] - 0.02,
+        position[0] + 0.02,
+        position[1] + 0.02,
+        False,
+        *position,
+      )
+
+    start_pad = endpoint("__BRIDGE_START__", start)
+    goal_pad = endpoint("__BRIDGE_GOAL__", goal)
+    self.commit_path(start_pad, goal_pad, self.search(start_pad, goal_pad))
+
   def manual_polyline(
     self,
     net_name: str,
@@ -603,6 +674,20 @@ class MazeRouter:
     pad = self.pads[index]
     if pad.ref == "U1":
       distance = 0.25
+    elif pad.ref == "U9" and pad.net == "+BAT":
+      distance = 0.95
+    elif pad.ref in {"U3", "U4", "U5"}:
+      # These sensors sit beside the NFC quiet-area boundary. Push their
+      # escapes beyond the neighboring fine-pitch pads so the bus can use the
+      # narrow service channel without cutting through a package courtyard.
+      # The SDA escape is longer so the two bus traces leave each package in
+      # separate lanes instead of trapping one another against adjacent pads.
+      if pad.net == "I2C_SDA":
+        distance = 2.40
+      elif pad.net == "I2C_SCL":
+        distance = 1.00
+    elif pad.ref in {"R13", "R14"}:
+      distance = 1.00
     dx = pad.x - pad.center_x
     dy = pad.y - pad.center_y
     if abs(dx) >= abs(dy):
@@ -660,7 +745,7 @@ class MazeRouter:
     dense = pad.ref in {"U3", "U5", "U9"}
     width = 0.15 if dense else 0.30
     if pad.ref == "U9" and pad.number == "5":
-      candidate = (29.00, 82.50)
+      candidate = (34.20, pad.y)
       self.manual_polyline(pad.net, pad.layer, [(pad.x, pad.y), candidate], width)
       self.manual_via(pad.net, candidate)
       return
@@ -980,7 +1065,10 @@ def fanout_display_connector(router: MazeRouter) -> None:
 
 
 def fanout_dense_components(router: MazeRouter, excluded: set[str]) -> None:
-  dense_refs = {"L1", "U1", "U2", "U3", "U4", "U5", "U6", "U7", "U8", "U9", "U10"}
+  dense_refs = {
+    "L1", "R13", "R14", "U1", "U2", "U3", "U4", "U5", "U6", "U7",
+    "U8", "U9", "U10",
+  }
   for index in reversed(range(len(router.pads))):
     pad = router.pads[index]
     if (
@@ -989,9 +1077,147 @@ def fanout_dense_components(router: MazeRouter, excluded: set[str]) -> None:
       or pad.net.startswith("unconnected-")
       or pad.net.startswith("__NO_NET__:")
       or pad.ref == "J2"
+      or (pad.ref == "U5" and pad.net == "+BAT")
     ):
       continue
     router.fanout_dense_pad(index)
+
+
+def join_u5_battery_pins(router: MazeRouter) -> None:
+  indexed = [
+    (index, pad)
+    for index, pad in enumerate(router.pads)
+    if pad.ref == "U5" and pad.net == "+BAT"
+  ]
+  if len(indexed) != 2:
+    raise RuntimeError(f"expected two U5 +BAT pads, found {len(indexed)}")
+  indexed.sort(key=lambda item: item[1].y)
+  (upper_index, upper), (lower_index, lower) = indexed
+  access = (30.30, upper.y)
+  router.manual_polyline(
+    "+BAT",
+    upper.layer,
+    [(lower.x, lower.y), (upper.x, upper.y), access],
+  )
+  router.manual_via("+BAT", access)
+  diameter, _drill = via_geometry("+BAT")
+  radius = diameter / 2
+  router.pads[upper_index] = Pad(
+    upper.ref,
+    upper.number,
+    upper.net,
+    access[0],
+    access[1],
+    pcbnew.In2_Cu,
+    access[0] - radius,
+    access[1] - radius,
+    access[0] + radius,
+    access[1] + radius,
+    False,
+    access[0],
+    access[1],
+  )
+  del router.pads[lower_index]
+
+
+def connect_u5_decoupling(router: MazeRouter) -> None:
+  """Join the fuel-gauge supply to C10 without crowding the I2C fanout."""
+  u5_index, u5 = next(
+    (index, pad)
+    for index, pad in enumerate(router.pads)
+    if pad.ref == "U5" and pad.net == "+BAT"
+  )
+  c10_index, c10 = next(
+    (index, pad)
+    for index, pad in enumerate(router.pads)
+    if pad.ref == "C10" and pad.net == "+BAT"
+  )
+  capacitor_access = (33.70, c10.y)
+  route_access = (36.50, c10.y)
+  router.manual_polyline(
+    "+BAT",
+    c10.layer,
+    [(c10.x, c10.y), capacitor_access],
+  )
+  router.manual_via("+BAT", capacitor_access)
+  router.manual_polyline(
+    "+BAT",
+    pcbnew.F_Cu,
+    [
+      (u5.x, u5.y),
+      (u5.x, 77.40),
+      (route_access[0], 77.40),
+      route_access,
+      capacitor_access,
+    ],
+  )
+  router.manual_via("+BAT", route_access)
+  diameter, _drill = via_geometry("+BAT")
+  radius = diameter / 2
+  router.pads[u5_index] = Pad(
+    u5.ref,
+    u5.number,
+    u5.net,
+    route_access[0],
+    route_access[1],
+    pcbnew.In2_Cu,
+    route_access[0] - radius,
+    route_access[1] - radius,
+    route_access[0] + radius,
+    route_access[1] + radius,
+    False,
+    route_access[0],
+    route_access[1],
+  )
+  del router.pads[c10_index]
+
+
+def join_u9_battery_enable(router: MazeRouter) -> None:
+  """Join the LDO VIN/CE pads without routing around its intervening GND pad."""
+  indexed = [
+    (index, pad)
+    for index, pad in enumerate(router.pads)
+    if pad.ref == "U9" and pad.net == "+BAT"
+  ]
+  if len(indexed) != 2:
+    raise RuntimeError(f"expected two U9 +BAT pads, found {len(indexed)}")
+  indexed.sort(key=lambda item: item[1].y)
+  (lower_index, lower), (upper_index, upper) = indexed
+  for pad in (lower, upper):
+    router.manual_via("+BAT", (pad.x, pad.y))
+  router.manual_polyline(
+    "+BAT",
+    pcbnew.In2_Cu,
+    [(lower.x, lower.y), (upper.x, upper.y)],
+  )
+  diameter, _drill = via_geometry("+BAT")
+  radius = diameter / 2
+  router.pads[upper_index] = Pad(
+    upper.ref,
+    upper.number,
+    upper.net,
+    upper.x,
+    upper.y,
+    pcbnew.In2_Cu,
+    upper.x - radius,
+    upper.y - radius,
+    upper.x + radius,
+    upper.y + radius,
+    False,
+    upper.x,
+    upper.y,
+  )
+  del router.pads[lower_index]
+
+
+def connect_u9_ground(router: MazeRouter) -> None:
+  pad = next(
+    pad for pad in router.pads
+    if pad.ref == "U9" and pad.number == "2" and pad.net == "GND"
+  )
+  access = (29.80, pad.y)
+  router.manual_polyline("GND", pad.layer, [(pad.x, pad.y), access], 0.20)
+  router.manual_via_geometry("GND", access, 0.50, 0.25)
 
 
 def fanout_battery_connector(router: MazeRouter) -> None:
@@ -1023,34 +1249,73 @@ def route_aux_power(router: MazeRouter) -> None:
 
 
 def route_nfc_antenna(router: MazeRouter) -> None:
-  """Add a two-turn front-layer spiral in the display-free left strip."""
-  router.manual_polyline(
-    "NFC_ANTENNA",
-    pcbnew.B_Cu,
-    [(23.55, 54.63), (21.00, 54.63)],
+  """Route the reviewed nine-turn spiral and its short rear crossover."""
+  pads = {
+    (pad.ref, pad.number): pad
+    for pad in router.pads
+    if pad.ref in {"U2", "C29", "L2"}
+  }
+  u2_ac0 = pads[("U2", "2")]
+  u2_ac1 = pads[("U2", "3")]
+  c29_ac0 = next(
+    pad for pad in pads.values()
+    if pad.ref == "C29" and pad.net == "NFC_AC0"
   )
-  router.manual_via("NFC_ANTENNA", (21.00, 54.63))
+  c29_ac1 = next(
+    pad for pad in pads.values()
+    if pad.ref == "C29" and pad.net == "NFC_AC1"
+  )
+  l2_ac0 = next(
+    pad for pad in pads.values()
+    if pad.ref == "L2" and pad.net == "NFC_AC0"
+  )
+  l2_ac1 = next(
+    pad for pad in pads.values()
+    if pad.ref == "L2" and pad.net == "NFC_AC1"
+  )
+  coil = spiral_points()
+  feed_via = (28.50, 27.40)
+  inner_via = coil[-1]
+
   router.manual_polyline(
-    "NFC_ANTENNA",
-    pcbnew.F_Cu,
+    "NFC_AC0",
+    pcbnew.B_Cu,
     [
-      (21.00, 54.63),
-      (21.00, 28.00),
-      (27.80, 28.00),
-      (27.80, 79.00),
-      (22.00, 79.00),
-      (22.00, 29.00),
-      (26.80, 29.00),
-      (26.80, 78.00),
-      (23.00, 78.00),
-      (23.00, 57.00),
+      (u2_ac0.x, u2_ac0.y),
+      (c29_ac0.x, c29_ac0.y),
+      (feed_via[0], 25.20),
+      feed_via,
     ],
+    NFC_TRACK_WIDTH_MM,
   )
-  router.manual_via("NFC_ANTENNA", (23.00, 57.00))
+  router.manual_via("NFC_AC0", feed_via)
   router.manual_polyline(
-    "NFC_ANTENNA",
+    "NFC_AC0",
+    pcbnew.F_Cu,
+    [feed_via, (coil[0][0], feed_via[1]), *coil],
+    NFC_TRACK_WIDTH_MM,
+  )
+  router.manual_via("NFC_AC0", inner_via)
+  router.manual_polyline(
+    "NFC_AC0",
     pcbnew.B_Cu,
-    [(23.00, 57.00), (25.00, 57.00), (25.00, 53.37), (23.55, 53.37)],
+    [
+      inner_via,
+      (inner_via[0], 25.80),
+      (l2_ac0.x, 25.80),
+      (l2_ac0.x, l2_ac0.y),
+    ],
+    NFC_TRACK_WIDTH_MM,
+  )
+  router.manual_polyline(
+    "NFC_AC1",
+    pcbnew.B_Cu,
+    [
+      (u2_ac1.x, u2_ac1.y),
+      (c29_ac1.x, c29_ac1.y),
+      (l2_ac1.x, l2_ac1.y),
+    ],
+    NFC_TRACK_WIDTH_MM,
   )
 
 
@@ -1059,35 +1324,18 @@ def connect_3v3_plane(router: MazeRouter) -> None:
     router.fanout_power_pad(pad)
 
 
-def connect_3v3_keepout(router: MazeRouter) -> None:
-  # The antenna plane keepout intentionally removes the In2.Cu pour beneath
-  # the left service strip.  These narrow feeders carry the affected vias to
-  # the plane boundary on In1.Cu, which is already void in this region.
-  for start in ((25.20, 60.80), (25.60, 69.40)):
-    router.manual_polyline(
-      "+3V3",
-      pcbnew.In1_Cu,
-      [start, (29.20, start[1])],
-      0.30,
-    )
-    router.manual_via("+3V3", (29.20, start[1]))
-  router.manual_polyline(
+def connect_3v3_islands(router: MazeRouter) -> None:
+  """Bridge the two In2.Cu pours split by the dense left-side routing."""
+  router.route_between_points(
     "+3V3",
-    pcbnew.In1_Cu,
-    [(24.00, 63.60), (24.00, 61.60), (25.20, 60.80)],
-    0.30,
-  )
-  router.manual_polyline(
-    "+3V3",
-    pcbnew.B_Cu,
-    [(30.40, 52.80), (30.40, 55.60)],
-    0.30,
+    (34.20, 81.95),
+    (30.60, 69.40),
+    pcbnew.In2_Cu,
   )
 
 
 def add_ground_stitching(router: MazeRouter) -> None:
   positions = [
-    (21.20, 80.00),
     (72.80, 30.00),
     (72.80, 35.00),
     (30.00, 21.20),
@@ -1103,7 +1351,7 @@ def add_ground_stitching_grid(router: MazeRouter) -> None:
   _blocked, via_blocked = router.obstacles("GND", 0.20)
   for x in range(25, 71, 5):
     for y in range(30, 101, 5):
-      if x < 29 and 28 <= y <= 80:
+      if x < 30 and 27 <= y <= 79:
         continue
       cell = (router.grid(float(x)), router.grid(float(y)))
       if cell in via_blocked:
@@ -1115,20 +1363,14 @@ def add_ground_island_connections(router: MazeRouter) -> None:
   """Tie cramped pad-connected pour pockets to the inner ground plane."""
   for position in (
     (32.01, 89.50),
-    (31.48, 78.50),
+    (63.00, 80.00),
     (61.00, 83.00),
-    (25.60, 67.00),
+    (30.20, 67.00),
     (32.50, 53.50),
     (34.00, 33.19),
+    (35.00, 30.00),
   ):
     router.manual_via_geometry("GND", position, 0.50, 0.25)
-  router.manual_polyline(
-    "GND",
-    pcbnew.In1_Cu,
-    [(25.60, 67.00), (29.20, 67.00)],
-    0.20,
-  )
-  router.manual_via_geometry("GND", (29.20, 67.00), 0.50, 0.25)
 
 
 def route_board(board: pcbnew.BOARD) -> None:
@@ -1142,7 +1384,8 @@ def route_board(board: pcbnew.BOARD) -> None:
   excluded = {
     "GND",
     "+3V3",
-    "NFC_ANTENNA",
+    "NFC_AC0",
+    "NFC_AC1",
     "AUX_3V3",
     "Net-(J1-CC1)",
     "Net-(J1-CC2)",
@@ -1153,6 +1396,7 @@ def route_board(board: pcbnew.BOARD) -> None:
     "VBUS",
   }
   preferred_order = [
+    "Net-(U6-PROG)",
     "AUX_3V3",
     "PWR_AUX",
     "LED_DIN",
@@ -1167,7 +1411,6 @@ def route_board(board: pcbnew.BOARD) -> None:
     "MCU_EN",
     "MCU_BOOT",
     "Net-(U1-IO1)",
-    "Net-(U6-PROG)",
     "~CHRG",
     "EPD_PWR_EN",
     "+BAT",
@@ -1205,10 +1448,26 @@ def route_board(board: pcbnew.BOARD) -> None:
   route_usb_data_pair(router)
   fanout_display_connector(router)
   fanout_dense_components(router, excluded)
+  join_u5_battery_pins(router)
+  join_u9_battery_enable(router)
+  connect_u9_ground(router)
   fanout_battery_connector(router)
   connect_3v3_plane(router)
+  router.manual_polyline(
+    "+3V3",
+    pcbnew.In2_Cu,
+    [(36.20, 25.60), (35.80, 30.20)],
+    0.30,
+  )
   add_ground_island_connections(router)
-  router.route_nets(net for net in preferred_order if net in by_net)
+  early_order = ("EPD_BUSY", "I2C_SDA", "I2C_SCL")
+  early_nets = set(early_order)
+  router.route_nets(net for net in early_order if net in by_net)
+  connect_u5_decoupling(router)
+  for net in preferred_order:
+    if net not in by_net or net in early_nets:
+      continue
+    router.route_net(net)
   router.route_nets(remaining)
-  connect_3v3_keepout(router)
+  connect_3v3_islands(router)
   add_ground_stitching_grid(router)

@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest import mock
 import zipfile
 
 from scripts import release_fabrication as release
@@ -131,10 +132,73 @@ class ReleaseFabricationTests(unittest.TestCase):
       release.validate_gerber_job(gerber_job, "B")
 
   def test_requested_revision_must_match_design_metadata(self) -> None:
-    release.assert_hardware_revision("A")
+    release.assert_hardware_revision("B")
 
     with self.assertRaisesRegex(ValueError, "design_metadata.py"):
-      release.assert_hardware_revision("B")
+      release.assert_hardware_revision("A")
+
+  def test_dnp_and_non_assembly_parts_are_explicitly_excluded(self) -> None:
+    self.assertEqual(
+      release.excluded_assembly_references(),
+      frozenset({"C29", "L2"}),
+    )
+    release.assert_no_excluded_assembly_references(
+      ["R17", "U2"],
+      "fixture",
+    )
+
+    with self.assertRaisesRegex(
+      ValueError,
+      r"fixture contains DNP/non-assembly references: \['C29', 'L2'\]",
+    ):
+      release.assert_no_excluded_assembly_references(
+        ["U2", "L2", "C29"],
+        "fixture",
+      )
+
+  def test_nfc_verifier_is_hashed_and_receives_exact_release_inputs(self) -> None:
+    self.assertIn(
+      release.VERIFY_NFC_DESIGN,
+      release.VERIFICATION_INPUT_FILES,
+    )
+    with mock.patch.object(release, "run") as run:
+      release.verify_nfc_design()
+
+    run.assert_called_once_with([
+      release.sys.executable,
+      str(release.VERIFY_NFC_DESIGN),
+      "--schematic",
+      str(release.SCHEMATIC),
+      "--board",
+      str(release.BOARD),
+      "--kicad-cli",
+      str(release.KICAD_CLI),
+    ])
+
+  def test_failed_nfc_verifier_stops_release_before_exports(self) -> None:
+    output = self.root / "release"
+    with (
+      mock.patch.object(release, "assert_inputs"),
+      mock.patch.object(release, "release_source_groups", return_value={}),
+      mock.patch.object(release, "capture_source_hashes", return_value={}),
+      mock.patch.object(
+        release,
+        "capture_git_state",
+        return_value={"dirty_worktree": False},
+      ),
+      mock.patch.object(release, "capture_toolchain", return_value={}),
+      mock.patch.object(release, "verify_schematic_connectivity"),
+      mock.patch.object(
+        release,
+        "verify_nfc_design",
+        side_effect=RuntimeError("foreign copper"),
+      ),
+      mock.patch.object(release, "export_reports") as export_reports,
+    ):
+      with self.assertRaisesRegex(RuntimeError, "foreign copper"):
+        release.build_release(output, "0.1.0", "B", False)
+
+    export_reports.assert_not_called()
 
   def test_pdf_sanitizer_neutralizes_javascript_names_in_place(self) -> None:
     pdf = self.write(

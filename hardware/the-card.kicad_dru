@@ -1,0 +1,9 @@
+(version 1)
+
+# The generated rule area removes plane fills on all four copper layers. This
+# companion rule prevents a future reroute from putting unrelated tracks,
+# vias, or pads back into the antenna's magnetic-field aperture.
+(rule "NFC antenna quiet area"
+  (severity error)
+  (condition "A.intersectsArea('NFC_ANTENNA_QUIET_AREA') && A.NetName != 'NFC_AC0' && A.NetName != 'NFC_AC1'")
+  (constraint disallow track via pad))

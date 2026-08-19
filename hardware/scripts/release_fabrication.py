@@ -71,6 +71,8 @@ CIRCUIT = HARDWARE / "circuit.py"
 SCHEMATIC_GENERATOR = HARDWARE / "gen_hierarchical_schematic.py"
 PCB_GENERATOR = HARDWARE / "gen_pcb.py"
 PCB_ROUTER = HARDWARE / "pcb_router.py"
+NFC_ANTENNA = HARDWARE / "nfc_antenna.py"
+DESIGN_RULES = HARDWARE / "the-card.kicad_dru"
 PYPROJECT = HARDWARE / "pyproject.toml"
 UV_LOCK = HARDWARE / "uv.lock"
 FP_LIB_TABLE = HARDWARE / "fp-lib-table"
@@ -85,6 +87,7 @@ FOOTPRINT_LIBRARIES = tuple(sorted(
 ))
 RASTERIZE_SVG = HARDWARE / "scripts" / "rasterize_svg.py"
 VERIFY_SCHEMATIC = HARDWARE / "verify_schematic.py"
+VERIFY_NFC_DESIGN = HARDWARE / "verify_nfc_design.py"
 RELEASE_SCRIPT = Path(__file__).resolve()
 FETCH_LIBRARIES = HARDWARE / "scripts" / "fetch_libs.sh"
 NORMALIZE_LIBRARIES = HARDWARE / "scripts" / "normalize_libraries.py"
@@ -98,10 +101,12 @@ RELEASE_INPUT_FILES = (
   SCHEMATIC,
   PARTS,
   DESIGN_METADATA,
+  DESIGN_RULES,
 )
 VERIFICATION_INPUT_FILES = (
   CIRCUIT,
   VERIFY_SCHEMATIC,
+  VERIFY_NFC_DESIGN,
   *SYMBOL_LIBRARIES,
 )
 RELEASE_TOOL_FILES = (
@@ -121,6 +126,7 @@ DESIGN_GENERATOR_FILES = (
   SCHEMATIC_GENERATOR,
   PCB_GENERATOR,
   PCB_ROUTER,
+  NFC_ANTENNA,
   FETCH_LIBRARIES,
   NORMALIZE_LIBRARIES,
 )
@@ -169,7 +175,10 @@ MANUAL_RELEASE_GATES = (
   "Inspect U8 orientation and protection-path continuity before connecting a cell.",
   "Import the assembly files and verify stock, package, side, rotation, pin 1, "
   "and polarized-part orientation.",
-  "Tune and range-test the NFC antenna on the first physical prototype.",
+  "With C29 DNP, measure NFC resonance and Q on the assembled prototype; "
+  "fit the smallest measured C0G trim only if needed, then verify read/write "
+  "range with multiple phones and retest in the final enclosure. Treat more "
+  "than about 15-18 pF, poor Q, or inadequate range as a respin signal.",
 )
 
 
@@ -216,12 +225,12 @@ def parse_args() -> argparse.Namespace:
   parser.add_argument(
     "--release-version",
     required=True,
-    help="Semantic output version, for example 0.1.0.",
+    help="Semantic output version, for example 0.2.0.",
   )
   parser.add_argument(
     "--hardware-revision",
     required=True,
-    help="Physical PCB revision, for example A.",
+    help="Physical PCB revision, for example B.",
   )
   parser.add_argument(
     "--include-3d",
@@ -425,6 +434,32 @@ def load_design_metadata() -> dict[str, str]:
   return metadata
 
 
+def excluded_assembly_references() -> frozenset[str]:
+  namespace = runpy.run_path(str(DESIGN_METADATA))
+  references: set[str] = set()
+  for name in ("DNP_REFERENCES", "NON_ASSEMBLY_REFERENCES"):
+    value = namespace.get(name, frozenset())
+    if not isinstance(value, (set, frozenset)) \
+        or any(not isinstance(reference, str) for reference in value):
+      raise ValueError(f"invalid design_metadata.py {name}: {value!r}")
+    references.update(value)
+  return frozenset(references)
+
+
+def assert_no_excluded_assembly_references(
+  references: Iterable[str],
+  context: str,
+) -> None:
+  unexpected = sorted(
+    set(references) & excluded_assembly_references(),
+    key=natural_reference_key,
+  )
+  if unexpected:
+    raise ValueError(
+      f"{context} contains DNP/non-assembly references: {unexpected}"
+    )
+
+
 def assert_hardware_revision(requested: str) -> None:
   configured = load_design_metadata()["hardware_revision"]
   if requested != configured:
@@ -466,6 +501,19 @@ def verify_schematic_connectivity() -> None:
     sys.executable,
     str(VERIFY_SCHEMATIC),
     str(SCHEMATIC),
+    "--kicad-cli",
+    str(KICAD_CLI),
+  ])
+
+
+def verify_nfc_design() -> None:
+  run([
+    sys.executable,
+    str(VERIFY_NFC_DESIGN),
+    "--schematic",
+    str(SCHEMATIC),
+    "--board",
+    str(BOARD),
     "--kicad-cli",
     str(KICAD_CLI),
   ])
@@ -703,6 +751,11 @@ def export_bom(root: Path) -> dict[str, int]:
     with Path(raw.name).open(newline="") as source:
       rows = list(csv.DictReader(source))
 
+  assert_no_excluded_assembly_references(
+    (row["reference"] for row in rows),
+    "schematic BOM export",
+  )
+
   grouped: dict[tuple[str, ...], list[str]] = defaultdict(list)
   jlc_grouped: dict[tuple[str, ...], list[str]] = defaultdict(list)
   relationships: dict[str, str] = {}
@@ -854,6 +907,11 @@ def export_positions(root: Path) -> int:
     ])
     with Path(raw.name).open(newline="") as source:
       rows = list(csv.DictReader(source))
+
+  assert_no_excluded_assembly_references(
+    (row["Ref"] for row in rows),
+    "PCB position export",
+  )
 
   with (jlcpcb / "bom.csv").open(newline="") as source:
     bom_references = {
@@ -1320,12 +1378,14 @@ def build_release(
     raise RuntimeError("refusing to release from a dirty worktree")
   toolchain = capture_toolchain()
   verify_schematic_connectivity()
+  verify_nfc_design()
 
   with tempfile.TemporaryDirectory(prefix=f".{output.name}-", dir=output.parent) as temp:
     root = Path(temp) / output.name
     root.mkdir()
     checks = export_reports(root)
     checks["connectivity_verifier"] = True
+    checks["nfc_design_verifier"] = True
     fabrication_files, plot_checks = export_fabrication(
       root,
       hardware_revision,

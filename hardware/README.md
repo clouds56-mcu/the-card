@@ -13,11 +13,13 @@ hardware/
 ├── gen_hierarchical_schematic.py # current deterministic A2 layout generator
 ├── gen_pcb.py              # deterministic placement, routing, planes, and keepouts
 ├── pcb_router.py           # board-specific fanout and deterministic maze routing
+├── nfc_antenna.py          # Rev B coil geometry and first-order RF model
 ├── verify_schematic.py     # compare every KiCad pin's peers with circuit.py
 ├── gen_schematic.py        # legacy flat-layout generator; not used currently
 ├── the-card.kicad_pro      # KiCad 10 project
 ├── the-card.kicad_sch      # GENERATED single-page A2 schematic
 ├── the-card.kicad_pcb      # GENERATED four-layer PCB layout
+├── the-card.kicad_dru      # project DRC rules, including the NFC quiet area
 ├── sym-lib-table / fp-lib-table  # register our the-card + passives libraries
 ├── SCHEMATIC-GUIDE.md      # functional-region drawing and review notes
 ├── datasheets/             # archived datasheet PDFs + index
@@ -49,8 +51,8 @@ kicad-cli sch erc --severity-all --output /tmp/erc.json --format json the-card.k
 
 The verifier exports the complete KiCad schematic and compares both the peer
 set of every component pin and every explicitly named net with the canonicalized
-SKiDL circuit. The expected result is 75 components and 286 component pins with
-identical connectivity across 42 canonical named nets. KiCad ERC has 0
+SKiDL circuit. The expected Rev B result is 78 components and 292 component
+pins with identical connectivity across 43 canonical named nets. KiCad ERC has 0
 violations.
 
 Generate the PCB layout with KiCad's bundled Python:
@@ -64,8 +66,10 @@ kicad-cli pcb drc --output /tmp/pcb-drc.json --format json the-card.kicad_pcb
 The board is a portrait ID-1 outline (53.98 × 85.60 mm), four layers, and
 0.8 mm thick. The display and controls are on the front; the ESP32, battery,
 sensors, power circuitry, USB-C, and display connector are on the rear. The
-generator encodes display, 603048 battery, ESP32 antenna, and NFC plane
-keepouts. F.Cu and B.Cu carry local signals over ground pours, In1.Cu is the
+generator encodes display, 603048 battery, ESP32 antenna, and NFC keepouts. The
+NFC coil occupies a dedicated all-copper-layer RF quiet area: only `NFC_AC0`
+and `NFC_AC1` antenna copper is allowed there, with no ground or power plane
+beneath it. F.Cu and B.Cu carry local signals over ground pours, In1.Cu is the
 primary ground plane, and In2.Cu is the primary 3V3 plane plus longer signal
 routes. Ground stitching ties the pours together. The generated board is fully
 routed and passes KiCad DRC with 0 violations and 0 unconnected items. Four
@@ -92,9 +96,9 @@ Build a manufacturing handoff into a new directory after generation:
 
 ```bash
 uv run python scripts/release_fabrication.py \
-  --release-version 0.1.0 \
-  --hardware-revision A \
-  --output ../outputs/the-card-hardware-v0.1.0
+  --release-version 0.2.0 \
+  --hardware-revision B \
+  --output ../outputs/the-card-hardware-v0.2.0
 ```
 
 The physical `--hardware-revision` must match `HARDWARE_REVISION` in
@@ -104,6 +108,10 @@ source value and regenerate the schematic and PCB before building the matching
 release. The semantic `--release-version` identifies an artifact handoff and
 can advance for corrected exports, sourcing data, documentation, or release
 tooling without renaming an unchanged PCB revision.
+
+The tracked source is now Rev B. The website's published v0.1.0/Rev A candidate
+is an immutable historical artifact; a Rev B handoff must use a new release
+identity rather than changing those Rev A files in place.
 
 The release command refuses to overwrite an existing directory or use a dirty
 worktree. It runs the connectivity and canonical-net-name verifier, then
@@ -176,11 +184,14 @@ SSD1680 booster, 25 V pump capacitors, and 50 V rail bypass network are now
 present on the host PCB. Residual
 PCB-layout items are:
 
-- **ST25DV04KC antenna** — the routed two-turn loop uses the available front-left
-  strip and is connectivity/DRC complete. The approved placement constrains its
-  area and keeps rear-side sensors and ground beneath part of the loop, so tune
-  resonance and verify read range on the first prototype. A revised coil or
-  matching network may be needed after measurement.
+- **ST25DV04KC antenna** — Rev B uses a nine-turn, 0.20 mm F.Cu spiral in the
+  front-left strip, with a dedicated quiet area on all four copper layers. The
+  ST square-equivalent heuristic gives about 4.52 µH; an NXP rectangular-coil
+  cross-check brackets about 3.19–3.98 µH and implies roughly 6.1–14.7 pF of
+  nominal added capacitance before stray/assembly loading. C29 therefore accepts
+  0–22 pF C0G/NP0, but remains unpopulated until measurement. Verify resonance,
+  Q, and multi-phone read/write range in the final enclosure; treat more than
+  about 15–18 pF, poor Q, or inadequate range as an antenna-respin signal.
 - **Display FPC** — J2 is now the verified single-row Hirose
   FH12-24S-0.5SH(55): 24 positions, 0.5 mm pitch, bottom contact, for a 0.30 mm
   FPC. The project footprint numbers its two hold-down tabs 25 and 26 so both
@@ -202,6 +213,9 @@ G2 on the pack-negative side.
   layout generator handles KiCad's screen-coordinate rotations explicitly.
 - **ESP32-S3-WROOM-1-N16R8** uses GPIO33–37 for its Octal PSRAM;
   `circuit.py` leaves GPIO35–37 unconnected and uses GPIO16 for `EPD_PWR_EN`.
+- The ST25DV SO-8 GPO is open-drain. Rev B adds its required 10 kΩ pull-up R17
+  and routes `NFC_IRQ` to GPIO21; GPIO3 is deliberately unused because it is a
+  strap-sensitive pin.
 - The generator sets embedded part pins to `passive` because several EasyEDA
   symbols have incorrect electrical types. `verify_schematic.py` independently
   checks actual connectivity rather than relying on those types.

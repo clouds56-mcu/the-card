@@ -24,7 +24,12 @@ import xml.etree.ElementTree as ET
 
 import pcbnew
 
-from design_metadata import HARDWARE_REVISION
+from design_metadata import (
+  DNP_REFERENCES,
+  HARDWARE_REVISION,
+  NON_ASSEMBLY_REFERENCES,
+)
+from nfc_antenna import ANTENNA_NETS, QUIET_AREA, RULE_AREA_NAME
 from pcb_router import route_board
 
 
@@ -106,20 +111,23 @@ PLACEMENTS = {
   "TP6": p(11.00, 24.00),
 
   # NFC and I2C sensors in the rear left service strip.
-  "U2": p(6.00, 34.00, 90),
-  "C11": p(11.20, 31.50),
-  "R13": p(11.00, 34.50),
-  "R14": p(11.00, 36.50),
-  "U3": p(6.00, 43.00, 90),
-  "C12": p(11.00, 41.50),
-  "C13": p(11.00, 44.50),
-  "U4": p(6.00, 51.00, 90),
-  "C14": p(11.00, 51.00),
-  "U5": p(6.00, 58.50, 90),
-  "C10": p(11.00, 58.50),
-  "U9": p(6.00, 63.50, 90),
-  "C8": p(11.00, 62.00),
-  "C9": p(11.00, 64.50),
+  "U2": p(12.90, 3.80, 90),
+  "C11": p(15.80, 8.80, 90),
+  "R17": p(13.00, 9.00, 90),
+  "C29": p(8.80, 3.80, 90),
+  "L2": p(6.50, 3.30),
+  "R13": p(12.50, 30.50),
+  "R14": p(12.50, 32.50),
+  "U3": p(11.60, 43.00, 90),
+  "C12": p(12.50, 39.50, 180),
+  "C13": p(11.20, 46.50, 180),
+  "U4": p(11.00, 51.00, 90),
+  "C14": p(12.50, 48.50, 180),
+  "U5": p(12.00, 56.00, 90),
+  "C10": p(12.50, 53.50, 180),
+  "U9": p(11.70, 61.00, 90),
+  "C8": p(12.00, 58.00),
+  "C9": p(11.90, 64.00, 180),
 
   # USB, charger, cell protection, and battery connection.
   "J1": p(6.00, 80.50),
@@ -297,7 +305,7 @@ def add_nets(
       net.SetNetClass(netclasses["EPD_HV"])
     elif name in USB_NETS:
       net.SetNetClass(netclasses["USB"])
-    elif name == "NFC_ANTENNA":
+    elif name in ANTENNA_NETS:
       net.SetNetClass(netclasses["NFC"])
     nets[name] = net
     for node in xml_net:
@@ -348,9 +356,11 @@ def add_footprints(
     board.Add(footprint)
     footprint.SetReference(ref)
     footprint.SetValue(value)
-    if ref.startswith("TP"):
+    if ref.startswith("TP") or ref in NON_ASSEMBLY_REFERENCES:
       footprint.SetExcludedFromBOM(True)
       footprint.SetExcludedFromPosFiles(True)
+    if ref in DNP_REFERENCES:
+      footprint.SetDNP(True)
     footprint.SetPosition(point(placement.x, placement.y))
     if ref == "J1":
       # The USB-C receptacle mixes SMD contacts with plated through-hole shell
@@ -571,13 +581,13 @@ def add_zone_fill_keepout(
   width: float,
   height: float,
 ) -> None:
-  """Keep plane pours out while allowing the intentional antenna tracks."""
-  for layer in [pcbnew.F_Cu, pcbnew.In1_Cu, pcbnew.In2_Cu]:
+  """Reserve an all-layer RF area while allowing reviewed antenna copper."""
+  for layer in [pcbnew.F_Cu, pcbnew.In1_Cu, pcbnew.In2_Cu, pcbnew.B_Cu]:
     zone = pcbnew.ZONE(board)
     zone.SetZoneName(name)
     zone.SetIsRuleArea(True)
     zone.SetLayer(layer)
-    zone.SetDoNotAllowFootprints(False)
+    zone.SetDoNotAllowFootprints(True)
     zone.SetDoNotAllowPads(False)
     zone.SetDoNotAllowTracks(False)
     zone.SetDoNotAllowVias(False)
@@ -704,11 +714,11 @@ def add_mechanics(board: pcbnew.BOARD) -> None:
   )
   add_zone_fill_keepout(
     board,
-    "NFC_ANTENNA_PLANE_KEEPOUT",
-    0.50,
-    8.00,
-    7.80,
-    51.50,
+    RULE_AREA_NAME,
+    QUIET_AREA.x,
+    QUIET_AREA.y,
+    QUIET_AREA.width,
+    QUIET_AREA.height,
   )
 
 

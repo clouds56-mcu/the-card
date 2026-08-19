@@ -4,11 +4,11 @@ on:
   workflow_dispatch:
     inputs:
       release_version:
-        description: Semantic artifact version, for example 0.1.0
+        description: Semantic artifact version, for example 0.2.0
         required: true
         type: string
       hardware_revision:
-        description: Physical PCB revision marked on the board, for example A
+        description: Physical PCB revision marked on the board, for example B
         required: true
         type: string
 

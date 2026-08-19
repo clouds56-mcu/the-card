@@ -54,6 +54,9 @@ jobs:
             --exit-code-violations \
             the-card.kicad_sch
 
+      - name: Verify Rev B NFC invariants
+        run: python3 verify_nfc_design.py
+
       - name: Run PCB DRC and schematic parity
         run: |
           kicad-cli pcb drc \
